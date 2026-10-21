@@ -24,7 +24,7 @@ def load(browser, level):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}
+      gate(key){return gateOpen(key)}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}
     };
     })();'''
     assert needle in html
@@ -384,6 +384,51 @@ def main():
             assert not errors
             page.close()
             print('PASS Build 010: chapter III evidence tally and chapter II synchronization feedback')
+
+            # Build 011: touch-pad layout and independent multi-touch directions.
+            page, errors = load(browser, 0)
+            page.set_viewport_size({"width":390,"height":844})
+            assert page.locator('.mobile-controls').is_visible()
+            assert page.locator('.mobilepad [data-dir]').count()==4
+            assert page.locator('#mobile-record').is_visible()
+            assert page.locator('#mobile-interact').is_visible()
+            assert page.evaluate("window.__echo12Test.floor()")==[864,528], 'Floor is cached at fixed game resolution'
+            start=page.evaluate("window.__echo12Test.position()")
+            page.evaluate("""() => {
+              const down=(code,id)=>document.querySelector('[data-dir="'+code+'"]').dispatchEvent(
+                new PointerEvent('pointerdown',{bubbles:true,pointerId:id,pointerType:'touch',isPrimary:id===11}));
+              down('ArrowUp',11);down('ArrowRight',22);
+            }""")
+            assert page.locator('[data-dir="ArrowUp"]').get_attribute('aria-pressed')=='true'
+            assert page.locator('[data-dir="ArrowRight"]').get_attribute('aria-pressed')=='true'
+            page.evaluate("window.__echo12Test.tick(.30)")
+            moved=page.evaluate("window.__echo12Test.position()")
+            assert moved['x']>start['x']+.5 and moved['y']<start['y']-.5, (start,moved)
+            page.evaluate("""() => document.querySelector('[data-dir="ArrowUp"]').dispatchEvent(
+              new PointerEvent('pointerup',{bubbles:true,pointerId:11,pointerType:'touch'}))""")
+            before=page.evaluate("window.__echo12Test.position()")
+            page.evaluate("window.__echo12Test.tick(.20)")
+            after=page.evaluate("window.__echo12Test.position()")
+            assert after['x']>before['x']+.3 and abs(after['y']-before['y'])<.01, (before,after)
+            page.evaluate("""() => document.querySelector('[data-dir="ArrowRight"]').dispatchEvent(
+              new PointerEvent('pointercancel',{bubbles:true,pointerId:22,pointerType:'touch'}))""")
+            assert page.locator('[data-dir="ArrowRight"]').get_attribute('aria-pressed')=='false'
+            assert not page.evaluate("window.__echo12Test.held()"), 'Touch cancel must release direction'
+            before=page.evaluate("window.__echo12Test.position()")
+            page.evaluate("window.__echo12Test.tick(.15)")
+            after=page.evaluate("window.__echo12Test.position()")
+            assert abs(after['x']-before['x'])<.01 and abs(after['y']-before['y'])<.01
+            page.locator('#mobile-record').click()
+            assert page.locator('#clones').inner_text()=='1 / 6'
+            page.locator('#mobile-undo').click()
+            assert page.locator('#clones').inner_text()=='0 / 6'
+            page.locator('#mobile-pause').click()
+            verify(page,errors,'DURDU')
+            page.locator('#mobile-pause').click()
+            verify(page,errors,'KAYIT')
+            assert not errors, errors
+            page.close()
+            print('PASS Build 011: responsive D-pad, concurrent touch, cancellation, central record and mobile pause')
 
             # Verify display and audio feedback without changing a real puzzle solution.
             page, errors = load(browser, 0)
