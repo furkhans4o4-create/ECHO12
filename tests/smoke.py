@@ -304,6 +304,49 @@ def main():
             page.close()
             print('PASS room 11: evidence triage, wrong verdict, correct verdict, final gate and chapter ending')
 
+            # Build 009: room selection pauses simulation, enforces unlocks and keeps saved progress.
+            page, errors = load(browser, 0)
+            assert page.locator('#hint-assist').is_hidden()
+            page.keyboard.press('h')
+            assert 'İPUCU 1/3' in page.locator('#hint-step').inner_text()
+            page.keyboard.press('h')
+            assert 'İPUCU 2/3' in page.locator('#hint-step').inner_text()
+            page.keyboard.press('h')
+            page.keyboard.press('h')
+            assert 'İPUCU 3/3' in page.locator('#hint-step').inner_text()
+            page.locator('#room-select').click()
+            verify(page,errors,'ODA SEÇİMİ')
+            assert page.locator('[data-room="0"]').is_enabled()
+            assert page.locator('[data-room="1"]').is_disabled()
+            assert page.locator('#room-picker-grid button').count() == 11
+            page.evaluate("window.__echo12Test.tick(1.3)")
+            frozen=page.locator('#time').inner_text()
+            page.evaluate("window.__echo12Test.tick(2)")
+            assert page.locator('#time').inner_text()==frozen
+            page.keyboard.press('Escape')
+            verify(page,errors,'KAYIT')
+            assert page.locator('#hint-assist').is_visible()
+            page.locator('#help-button').focus()
+            page.keyboard.press('Space')
+            assert page.locator('#clones').inner_text()=='0 / 6'
+            page.evaluate("localStorage.setItem('echo12-unlocked','10')")
+            page.keyboard.press('o')
+            assert page.locator('[data-room="10"]').is_enabled()
+            page.locator('[data-room="6"]').click()
+            verify(page,errors,'KAYIT')
+            assert page.locator('#room').inner_text()=='07 / 11'
+            assert page.locator('#hint-assist').is_hidden()
+            assert page.evaluate("localStorage.getItem('echo12-unlocked')")=='10'
+            page.keyboard.press('h')
+            assert 'EŞİK' in page.locator('#hint-step').inner_text()
+            page.keyboard.press('o')
+            page.locator('[data-room="0"]').click()
+            verify(page,errors,'KAYIT')
+            assert page.locator('#room').inner_text()=='01 / 11'
+            assert not errors, errors
+            page.close()
+            print('PASS Build 009: hints, room navigation, simulation pause, focus-safe Space and save integrity')
+
             # Verify display and audio feedback without changing a real puzzle solution.
             page, errors = load(browser, 0)
             page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
