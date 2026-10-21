@@ -66,6 +66,17 @@ def main():
             assert 'açık' in page.locator('#sound').inner_text()
             assert page.evaluate("localStorage.getItem('echo12-muted')") == '0'
             print('PASS sound toggle, local setting and sector title')
+            # Build 010: contextual onboarding and chapter pacing are visible from start.
+            assert page.locator('#chapter-label').inner_text() == 'BÖLÜM I · HAFIZA'
+            assert page.locator('#campaign-segments .campaign-cell').count() == 11
+            assert page.locator('#campaign-segments .campaign-cell.active').count() == 1
+            assert page.locator('#gate-counter').inner_text() == '0 / 1 açık'
+            assert 'WASD' in page.locator('#hint').inner_text()
+            page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.02)")
+            assert 'BOŞLUK' in page.locator('#hint').inner_text(), 'First-room tutorial advances at pressure plate'
+            page.evaluate("window.__echo12Test.teleport(2.5,5.5)")
+            print('PASS Build 010: dynamic first-room onboarding and chapter overview')
             move(page, "d", .99); move(page, "w", .49); commit(page)
             assert page.locator("#clones").inner_text() == "1 / 6"
             page.keyboard.press("z")
@@ -73,8 +84,16 @@ def main():
             move(page, "d", .99); move(page, "w", .49); commit(page)
             move(page, "d", 3.4)
             verify(page, errors, "BAŞARILI")
+            record=page.evaluate("JSON.parse(localStorage.getItem('echo12-best-runs'))")
+            assert record['0']['echoes']==1 and record['0']['seconds']>0, record
+            assert page.locator('#debrief .debrief-stat').count() >= 3
+            assert page.locator('#debrief').inner_text().find('Yeni kişisel rekor')>=0
+            assert page.locator('#gate-counter').inner_text() == '1 / 1 açık'
+            page.locator('#room-select').click()
+            assert 'EN İYİ 1 YANKI' in page.locator('[data-room="0"]').inner_text()
+            page.keyboard.press('Escape')
             page.close()
-            print("PASS 1/5 + undo")
+            print("PASS 1/5 + undo, performance records and post-room debrief")
             
             page, errors = load(browser, 1)
             move(page, "d", .247); move(page, "s", .985); commit(page)
@@ -346,6 +365,25 @@ def main():
             assert not errors, errors
             page.close()
             print('PASS Build 009: hints, room navigation, simulation pause, focus-safe Space and save integrity')
+
+            # Build 010: labels match chapter transitions and multi-gate requirements.
+            page, errors = load(browser, 6)
+            assert 'BÖLÜM II' in page.locator('#chapter-label').inner_text()
+            assert 'İki ayrı iz' not in page.locator('#hint').inner_text()
+            assert '0/2' in page.locator('#gate-status').inner_text(), 'Dual-echo plate has a live tally'
+            assert page.locator('#gate-counter').inner_text() == '0 / 2 açık'
+            assert 'KARŞI SİNYAL' in page.locator('#scene-banner-detail').inner_text() or 'bekliyor' in page.locator('#scene-banner-detail').inner_text().lower()
+            page.close()
+            page, errors = load(browser, 10)
+            assert page.locator('#chapter-label').inner_text() == 'BÖLÜM III · KANIT'
+            assert '0/3' in page.locator('#gate-status').inner_text()
+            page.evaluate("window.__echo12Test.teleport(9.5,5.5)")
+            page.keyboard.press('f')
+            page.keyboard.press('e')
+            assert '1/3' in page.locator('#gate-status').inner_text()
+            assert not errors
+            page.close()
+            print('PASS Build 010: chapter III evidence tally and chapter II synchronization feedback')
 
             # Verify display and audio feedback without changing a real puzzle solution.
             page, errors = load(browser, 0)
