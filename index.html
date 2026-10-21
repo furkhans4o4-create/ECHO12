@@ -294,6 +294,34 @@ function showHint(){
  $('hint-body').textContent=LEVEL_HINTS[levelIndex][hintStage-1];
  audioBeep(620,.07,'sine',.015);
 }
+
+function closeRoomSelectorPanel(){$('room-picker').classList.add('hidden');$('room-picker').setAttribute('aria-hidden','true')}
+function renderRoomSelector(){
+ const grid=$('room-picker-grid');grid.replaceChildren();const max=getUnlocked();
+ for(let i=0;i<LVLS.length;i++){
+  const room=LVLS[i],btn=document.createElement('button');btn.type='button';btn.className='room-tile'+(i===levelIndex?' current':'');btn.dataset.room=String(i);
+  const accessible=i<=max;btn.disabled=!accessible;btn.setAttribute('aria-label',String(i+1)+'. oda: '+room.title+(accessible?'':' (kilitli)'));
+  const heading=document.createElement('strong');heading.textContent=String(i+1).padStart(2,'0')+' · '+room.title;
+  const sub=document.createElement('small');sub.textContent=accessible?(i===levelIndex?'ŞU ANKİ ODA · ':'AÇIK · ')+(i<=5?'BÖLÜM I':i<=7?'BÖLÜM II':'BÖLÜM III'):'KİLİTLİ · Önceki odaları tamamla';
+  btn.append(heading,sub);btn.addEventListener('click',()=>selectRoom(i));grid.append(btn);
+ }
+}
+function openRoomSelector(){
+ if(!['menu','playing','paused','leveldone','allwon'].includes(mode))return;
+ selectorBefore=mode;selectorPreviousFocus=document.activeElement;keys.clear();mode='selecting';renderRoomSelector();
+ $('room-picker').classList.remove('hidden');$('room-picker').setAttribute('aria-hidden','false');
+ $('room-picker-close').focus();updateHUD();
+}
+function closeRoomSelector(){
+ if(mode!=='selecting')return;
+ mode=selectorBefore;keys.clear();closeRoomSelectorPanel();updateHUD();
+ if(selectorPreviousFocus&&typeof selectorPreviousFocus.focus==='function')selectorPreviousFocus.focus();
+}
+function selectRoom(index){
+ if(mode!=='selecting'||!Number.isInteger(index)||index<0||index>getUnlocked()||index>=LVLS.length)return;
+ closeRoomSelectorPanel();loadLevel(index);hideOverlay();keys.clear();
+ if(document.activeElement&&typeof document.activeElement.blur==='function')document.activeElement.blur();
+}
 function loadLevel(idx){closeRoomSelectorPanel();resetHints();levelIndex=idx;level=LVLS[levelIndex];scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=level.hint;updateHUD();}
 
 function closeAuditPanel(){$('audit').classList.add('hidden');$('audit').setAttribute('aria-hidden','true')}
