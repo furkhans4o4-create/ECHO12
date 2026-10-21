@@ -24,7 +24,7 @@ def load(browser, level):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}
+      gate(key){return gateOpen(key)}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}
     };
     })();'''
     assert needle in html
@@ -57,6 +57,15 @@ def main():
         browser = playwright.chromium.launch(headless=True, **kwargs)
         try:
             page, errors = load(browser, 0)
+            assert page.locator('#signal-value').inner_text() == 'KAYIT ALINIYOR'
+            assert page.locator('#scene-banner-title').inner_text() == 'SEKTÖR 01'
+            page.keyboard.press('m')
+            assert 'kapalı' in page.locator('#sound').inner_text()
+            assert page.evaluate("localStorage.getItem('echo12-muted')") == '1'
+            page.keyboard.press('m')
+            assert 'açık' in page.locator('#sound').inner_text()
+            assert page.evaluate("localStorage.getItem('echo12-muted')") == '0'
+            print('PASS sound toggle, local setting and sector title')
             move(page, "d", .99); move(page, "w", .49); commit(page)
             assert page.locator("#clones").inner_text() == "1 / 6"
             page.keyboard.press("z")
@@ -165,6 +174,20 @@ def main():
             verify(page,errors,'ARŞİV')
             page.close()
             print('PASS persisted endings: both results recoverable from storage')
+
+            # Verify display and audio feedback without changing a real puzzle solution.
+            page, errors = load(browser, 0)
+            page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.10)")
+            assert page.evaluate("window.__echo12Test.gate('A')")
+            assert page.evaluate("window.__echo12Test.fx().rings") > 0, 'Opening gate must create a visible temporal ring'
+            assert page.locator('#signal-value').inner_text() == 'GEÇİŞ AÇIK'
+            page.evaluate("window.__echo12Test.tick(9.2)")
+            assert page.locator('#signal-strip').evaluate("(e)=>e.classList.contains('critical')")
+            assert page.locator('#signal-value').inner_text().startswith('SON ')
+            assert not errors
+            page.close()
+            print('PASS gate VFX, live HUD and 3-second countdown alert')
 
         finally:
             browser.close()
