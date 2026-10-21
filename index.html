@@ -123,8 +123,79 @@ let archiveRead=new Set(),readBefore='playing',activeDecision=null,endingChoice=
 try{const saved=JSON.parse(localStorage.getItem('echo12-archive')||'[]');if(Array.isArray(saved))archiveRead=new Set(saved.filter(id=>ARCHIVE.some(a=>a.id===id)))}catch(e){}
 try{const saved=JSON.parse(localStorage.getItem('echo12-endings')||'[]');if(Array.isArray(saved))endingHistory=new Set(saved.filter(id=>CHOICES.some(c=>c.id===id)))}catch(e){}
 let levelIndex=0,level,player,clones=[],record=[],elapsed=0,mode='menu',keys=new Set(),msg='',msgUntil=0,wallClock=0,particles=[],soundOn=true,audio=null,lastFrame=0,accum=0,wonAll=false,relayUntil={};
+let gateMemory=new Map(),fxRings=[],rewindWash=0,sceneBannerUntil=0,lastCountdownBeat=-1,ambientBus=null,ambientNodes=null;
+try{soundOn=localStorage.getItem('echo12-muted')!=='1'}catch(e){}
 function getUnlocked(){try{return Math.max(0,Math.min(+localStorage.getItem('echo12-unlocked')||0,LVLS.length-1))}catch(e){return 0}}
-function audioBeep(freq=540,dur=.07,type='sine',volume=.042){if(!soundOn)return;try{audio??=new(window.AudioContext||window.webkitAudioContext)();let o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(volume,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+dur);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+dur)}catch(e){/* audio optional */}}
+
+function getAudio(){
+ if(!soundOn)return null;
+ try{
+  if(!audio)audio=new(window.AudioContext||window.webkitAudioContext)();
+  if(audio.state==='suspended')audio.resume().catch(()=>{});
+  if(!ambientBus){
+   ambientBus=audio.createGain();ambientBus.gain.value=0;const low=audio.createBiquadFilter();low.type='lowpass';low.frequency.value=260;
+   ambientBus.connect(low);low.connect(audio.destination);
+   const a=audio.createOscillator(),b=audio.createOscillator();
+   a.type='sine';a.frequency.value=55;b.type='triangle';b.frequency.value=82.41;
+   const aGain=audio.createGain(),bGain=audio.createGain();aGain.gain.value=.7;bGain.gain.value=.13;
+   a.connect(aGain);b.connect(bGain);aGain.connect(ambientBus);bGain.connect(ambientBus);
+   a.start();b.start();ambientNodes=[a,b];
+  }
+  return audio;
+ }catch(e){return null}
+}
+function audioBeep(freq=540,dur=.07,type='sine',volume=.042,when=0,finishFreq=0){
+ if(!soundOn)return;try{
+  const ac=getAudio();if(!ac)return;
+  const start=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();
+  o.type=type;o.frequency.setValueAtTime(Math.max(20,freq),start);
+  if(finishFreq)o.frequency.exponentialRampToValueAtTime(Math.max(20,finishFreq),start+dur);
+  g.gain.setValueAtTime(.0001,start);g.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),start+.009);
+  g.gain.exponentialRampToValueAtTime(.0001,start+dur);
+  o.connect(g);g.connect(ac.destination);o.start(start);o.stop(start+dur+.015);
+ }catch(e){/* Sound is optional. */}}
+function playCue(kind){
+ if(!soundOn)return;
+ if(kind==='echo'){audioBeep(460,.22,'triangle',.032,0,115);audioBeep(810,.23,'sine',.026,.055,480)}
+ if(kind==='gate'){audioBeep(270,.11,'triangle',.025);audioBeep(540,.18,'sine',.023,.075)}
+ if(kind==='close')audioBeep(160,.07,'sine',.015);
+ if(kind==='critical')audioBeep(660,.065,'sine',.027);
+ if(kind==='win'){audioBeep(392,.14,'triangle',.029);audioBeep(587,.17,'triangle',.026,.11);audioBeep(784,.35,'sine',.03,.22)}
+ if(kind==='keep'){audioBeep(261,.3,'sine',.04,0,392);audioBeep(523,.45,'triangle',.022,.2)}
+ if(kind==='cut'){audioBeep(420,.42,'sawtooth',.022,0,65);audioBeep(90,.57,'sine',.035,.22,45)}
+}
+function syncAtmos(){
+ if(!ambientBus||!audio)return;
+ const target=soundOn&&mode==='playing'?(0.009+Math.min(6,clones.length)*.001+(LOOP-elapsed<3?.004:0)):0;
+ ambientBus.gain.setTargetAtTime(target,audio.currentTime,.25);
+}
+function toggleSound(){
+ soundOn=!soundOn;
+ try{localStorage.setItem('echo12-muted',soundOn?'0':'1')}catch(e){}
+ $('sound').textContent='♪ Ses: '+(soundOn?'açık':'kapalı');
+ if(soundOn){getAudio();audioBeep(640,.11)}else if(ambientBus&&audio){ambientBus.gain.setTargetAtTime(0,audio.currentTime,.035)}
+}
+function signalBanner(title,detail){
+ $('scene-banner-title').textContent=title;$('scene-banner-detail').textContent=detail;
+ $('scene-banner').classList.add('visible');sceneBannerUntil=wallClock+1.8;
+}
+function pulseFX(x,y,color='#bca3ff',strength=1){
+ fxRings.push({x,y,color,life:.66,max:.66,strength});
+ if(fxRings.length>22)fxRings.shift();
+}
+function updateGateFeedback(){
+ for(const b of level.barriers){
+  const open=gateOpen(b.key),prior=gateMemory.get(b.key);
+  if(prior===open)continue;
+  gateMemory.set(b.key,open);
+  if(prior===undefined)continue;
+  if(open){
+   pulseFX(b.gate[0]+.5,b.gate[1]+.5,'#53f3d0',1.25);
+   for(let i=0;i<10;i++)spawnParticle(b.gate[0]+.5,b.gate[1]+.5,'#53f3d0');
+   playCue('gate');
+  }else if(prior && mode==='playing'){playCue('close')}
+ }
+}
 function loadLevel(idx){levelIndex=idx;level=LVLS[levelIndex];player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=level.hint;updateHUD();}
 function closeDecisionPanel(){$('decision').classList.add('hidden');$('decision').setAttribute('aria-hidden','true')}
 function nearestChoice(){return levelIndex===LVLS.length-1?CHOICES.find(c=>Math.hypot(player.x-c.x-.5,player.y-c.y-.5)<1.13):null}
@@ -155,9 +226,9 @@ function undoEcho(){if(mode!=='playing'||!clones.length)return;clones.pop();rese
 function flash(s){msg=s;msgUntil=wallClock+2.3}
 function restart(){if(!level)return;loadLevel(levelIndex);hideOverlay();audioBeep(400,.1)}
 function pause(){if(mode==='playing'){mode='paused';showOverlay('SİSTEM DURAKLATILDI','Zaman bekliyor.','Hazır olduğunda devam et. Kayıtların korunuyor.','DEVAM ET →')}else if(mode==='paused'){mode='playing';hideOverlay()}updateHUD()}
-function onKeyDown(e){if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.repeat&&['Space','KeyP','KeyR','KeyZ','Enter','KeyE','KeyL','Escape'].includes(e.code))return;keys.add(e.code);if(mode==='reading'){if(['Escape','KeyE','KeyL'].includes(e.code))closeArchive();return}if(mode==='decision'){if(e.code==='Escape')cancelDecision();else if(e.code==='Enter')confirmDecision();return}if(e.code==='KeyL'){openArchive();return}if(e.code==='KeyE'){interactTerminal();return}if(e.code==='Enter'&&mode!=='playing')startGame();if(e.code==='Space'){if(mode==='playing')cycleCommit();else if(mode==='menu'||mode==='leveldone'||mode==='allwon')startGame()}if(e.code==='KeyR'&&(mode==='playing'||mode==='paused'))restart();if(e.code==='KeyZ'&&mode==='playing')undoEcho();if(e.code==='KeyP'&&(mode==='playing'||mode==='paused'))pause()}
-window.addEventListener('keydown',onKeyDown);window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>keys.clear());
-$('decision-cancel').onclick=cancelDecision;$('decision-confirm').onclick=confirmDecision;$('replay-choice').onclick=()=>{loadLevel(LVLS.length-1);hideOverlay()};$('archive-close').onclick=closeArchive;$('logbook').onclick=()=>mode==='reading'?closeArchive():openArchive();$('interact').onclick=interactTerminal;$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('undo').onclick=undoEcho;$('restart').onclick=restart;$('sound').onclick=()=>{soundOn=!soundOn;$('sound').textContent=`♪ Ses: ${soundOn?'açık':'kapalı'}`;if(soundOn)audioBeep()};
+function onKeyDown(e){if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.repeat&&['Space','KeyP','KeyR','KeyZ','Enter','KeyE','KeyL','Escape'].includes(e.code))return;keys.add(e.code);if(mode==='reading'){if(['Escape','KeyE','KeyL'].includes(e.code))closeArchive();return}if(mode==='decision'){if(e.code==='Escape')cancelDecision();else if(e.code==='Enter')confirmDecision();return}if(e.code==='KeyM'){toggleSound();return}if(e.code==='KeyL'){openArchive();return}if(e.code==='KeyE'){interactTerminal();return}if(e.code==='Enter'&&mode!=='playing')startGame();if(e.code==='Space'){if(mode==='playing')cycleCommit();else if(mode==='menu'||mode==='leveldone'||mode==='allwon')startGame()}if(e.code==='KeyR'&&(mode==='playing'||mode==='paused'))restart();if(e.code==='KeyZ'&&mode==='playing')undoEcho();if(e.code==='KeyP'&&(mode==='playing'||mode==='paused'))pause()}
+window.addEventListener('keydown',onKeyDown);window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>{keys.clear();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)});document.addEventListener('visibilitychange',()=>{if(document.hidden&&ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)});
+$('decision-cancel').onclick=cancelDecision;$('decision-confirm').onclick=confirmDecision;$('replay-choice').onclick=()=>{loadLevel(LVLS.length-1);hideOverlay()};$('archive-close').onclick=closeArchive;$('logbook').onclick=()=>mode==='reading'?closeArchive():openArchive();$('interact').onclick=interactTerminal;$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('undo').onclick=undoEcho;$('restart').onclick=restart;$('sound').onclick=toggleSound;
 for(const btn of document.querySelectorAll('[data-dir]')){let code=btn.dataset.dir;btn.addEventListener('pointerdown',e=>{e.preventDefault();keys.add(code);btn.setPointerCapture(e.pointerId)});for(let evt of ['pointerup','pointercancel','lostpointercapture'])btn.addEventListener(evt,()=>keys.delete(code))}
 function ghostAt(c,t=elapsed){const index=Math.max(0,Math.min(c.samples.length-1,Math.round(t/DT)));return c.samples[index]}
 function platePressed(p){let x=p.x+.5,y=p.y+.5;if(!p.echoOnly&&Math.hypot(player.x-x,player.y-y)<.46)return true;return clones.some(c=>{let g=ghostAt(c);return Math.hypot(g.x-x,g.y-y)<.46})}
@@ -225,7 +296,7 @@ function drawTimeline(){
  if(tracks.length<=2){tc.textAlign='left';tc.fillStyle='#829ab2';tc.font='11px system-ui,sans-serif';tc.fillText('Yürü ve döngüyü kaydet: hareketlerin burada görünecek.',left+8,110)}
 }
 function frame(now){if(!lastFrame)lastFrame=now;accum+=Math.min((now-lastFrame)/1000,.08);lastFrame=now;let c=0;while(accum>=DT&&c++<5){step(DT);accum-=DT}draw();drawTimeline();requestAnimationFrame(frame)}
-levelIndex=getUnlocked();level=LVLS[levelIndex];player={x:level.start[0]+.5,y:level.start[1]+.5};record=[{...player}];updateHUD();requestAnimationFrame(frame);
+levelIndex=getUnlocked();level=LVLS[levelIndex];player={x:level.start[0]+.5,y:level.start[1]+.5};record=[{...player}];gateMemory=new Map(level.barriers.map(b=>[b.key,false]));$('sound').textContent='♪ Ses: '+(soundOn?'açık':'kapalı');updateHUD();requestAnimationFrame(frame);
 })();
 </script>
 </body>
