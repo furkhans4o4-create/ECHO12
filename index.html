@@ -89,19 +89,43 @@ button:focus-visible{outline:2px solid #b5ffe9;outline-offset:3px}button:disable
 button:focus-visible{outline:3px solid #62f3d3;outline-offset:2px}
 @media(max-width:680px){.room-picker-overlay{position:fixed;padding:8px}.room-picker{padding:15px}.room-picker-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.room-picker h2{font-size:20px}.room-tile{min-height:82px}}
 @media(max-width:420px){.room-picker-grid{grid-template-columns:1fr}}
+
+/* Build 010: legible chapter pacing and objective feedback */
+.campaign-strip{display:flex;align-items:center;gap:10px;margin:0 1px 12px;padding:9px 12px;border-radius:12px;border:1px solid #2d475a;background:#0c192a}
+.campaign-label{font:700 11px ui-monospace,Consolas,monospace;color:#d8eafa;min-width:146px;letter-spacing:.07em}
+.campaign-segments{display:flex;flex:1;gap:5px}
+.campaign-cell{height:7px;border-radius:4px;background:#25354a;flex:1;min-width:3px}
+.campaign-cell.finished{background:#548778}.campaign-cell.active{background:#5bedd0;box-shadow:0 0 13px #5bedd067}
+.campaign-cell.chapter-break{margin-left:8px}
+.campaign-counter{font:700 11px ui-monospace,monospace;color:#a5bacb;white-space:nowrap}
+.protocol-status{border:1px solid #34485a;border-radius:13px;background:#101d2b;padding:12px 16px;margin-top:9px}
+.protocol-status-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:9px}
+.protocol-status-head strong{font-size:12px;color:#ebf9fc}.protocol-status-head small{font:11px ui-monospace,Consolas,monospace;color:#93aec1}
+.gate-status-grid{display:flex;flex-wrap:wrap;gap:7px}
+.gate-chip{border-radius:8px;border:1px solid #45556b;padding:8px 11px;display:flex;align-items:center;gap:9px;font:11px ui-monospace,monospace;color:#bdcddd;background:#172534}
+.gate-chip strong{color:#f0f6ff;font-size:12px;white-space:nowrap}.gate-chip span{max-width:310px}
+.gate-chip[data-open="true"]{border-color:#317c72;background:#163b38;color:#95f7da}.gate-chip[data-open="true"] strong{color:#a3ffe4}
+.gate-chip[data-open="false"]{border-color:#665047}
+.current-objective{font-size:13px;line-height:1.55;margin-top:6px;color:#d7e9f1}
+.debrief{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:5px 0 15px}
+.debrief:empty{display:none}
+.debrief-stat{padding:7px 11px;border:1px solid #39586b;border-radius:8px;background:#132d40;color:#cae2ec;font:11px ui-monospace,Consolas,monospace}
+.debrief-stat.best{border-color:#5edbb7;color:#81ffdb}
+@media(max-width:680px){.campaign-strip{flex-wrap:wrap;padding:9px}.campaign-label{min-width:0}.campaign-segments{order:3;width:100%;flex-basis:100%}.gate-chip{flex:1;min-width:130px;align-items:flex-start;flex-direction:column;gap:3px}.gate-chip span{max-width:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 009</div></header>
+<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 010</div></header>
 <div class="topbar">
  <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 11</div></div>
  <div class="stat"><div class="label">Döngüye kalan</div><div class="value teal" id="time">12.0 sn</div><div class="meters"><div class="meter"><i id="timefill"></i></div></div></div>
  <div class="stat"><div class="label">Kaydedilmiş yankı</div><div class="value purple" id="clones">0 / 6</div></div>
  <div class="stat"><div class="label">Durum</div><div class="value" id="mode" style="font-size:16px;padding-top:4px">HAZIR</div></div>
 </div>
+<div class="campaign-strip" aria-label="Kampanya ilerlemesi"><span class="campaign-label" id="chapter-label">BÖLÜM I · HAFIZA</span><div class="campaign-segments" id="campaign-segments" aria-hidden="true"></div><span class="campaign-counter" id="campaign-counter">01 / 11</span></div>
 <div class="stage"><canvas id="scene" width="960" height="610" aria-label="ECHO/12 oyun sahnesi"></canvas>
- <div class="scene-banner" id="scene-banner" aria-hidden="true"><strong id="scene-banner-title"></strong><span id="scene-banner-detail"></span></div><div class="overlay" id="overlay"><div class="dialog"><div class="kicker" id="kicker">SAAT SIFIRLANACAK</div><h2 id="dialog-title">Geçmişin seninle kalır.</h2><p id="dialog-text">Her <strong>12 saniyede</strong> zaman başa sarar. Ama önceki hareketlerini tekrar eden bir <strong>yankın</strong> geride kalır. Baskı plakalarını yankılarınla tut ve çıkışa ulaş.</p><button class="primary" id="start">SİSTEME GİR →</button><button class="secondary replay-choice" id="replay-choice">SON KARARI YENİDEN OYNA ↺</button></div></div>
+ <div class="scene-banner" id="scene-banner" aria-hidden="true"><strong id="scene-banner-title"></strong><span id="scene-banner-detail"></span></div><div class="overlay" id="overlay"><div class="dialog"><div class="kicker" id="kicker">SAAT SIFIRLANACAK</div><h2 id="dialog-title">Geçmişin seninle kalır.</h2><p id="dialog-text">Her <strong>12 saniyede</strong> zaman başa sarar. Ama önceki hareketlerini tekrar eden bir <strong>yankın</strong> geride kalır. Baskı plakalarını yankılarınla tut ve çıkışa ulaş.</p><div class="debrief" id="debrief" aria-label="Oda performansı"></div><button class="primary" id="start">SİSTEME GİR →</button><button class="secondary replay-choice" id="replay-choice">SON KARARI YENİDEN OYNA ↺</button></div></div>
 <div class="archive-overlay hidden" id="archive" aria-hidden="true"><div class="archive-panel" role="dialog" aria-modal="true" aria-labelledby="archive-title" tabindex="-1"><div class="archive-toolbar"><div><div class="kicker">TESİS ARŞİVİ // ERİŞİM SINIRLI</div><h2 id="archive-title">Hatırlananlar</h2></div><button class="secondary" id="archive-close" aria-label="Arşivi kapat">Kapat ✕</button></div><div class="archive-grid"><div id="archive-list" class="archive-list" aria-label="Bulunan kayıtlar"></div><article id="archive-body" class="archive-body" aria-live="polite"></article></div><div id="archive-status" class="archive-status"></div></div></div>
 <div class="decision-overlay hidden" id="decision" aria-hidden="true"><div class="decision-panel" id="decision-panel" role="dialog" aria-modal="true" aria-labelledby="decision-title"><div class="kicker" id="decision-kicker">ÇEKİRDEK YÖNERGESİ</div><h2 id="decision-title"></h2><p id="decision-story"></p><div class="decision-effect" id="decision-effect"></div><div class="decision-actions"><button class="secondary" id="decision-cancel">Vazgeç</button><button class="primary" id="decision-confirm">KARARI VER →</button></div></div></div></div>
 <div class="audit-overlay hidden" id="audit" aria-hidden="true"><section class="audit-panel" role="dialog" aria-modal="true" aria-labelledby="audit-title"><div class="kicker">OPERATÖR 00 / KANIT DENETİMİ</div><h2 id="audit-title">Üç kayıt, tek açıklama</h2><p>Görsel, fiziksel ve kayıt kaynağını karşılaştır. Ekranda görünmek, gerçekten orada bulunmak değildir.</p><div class="audit-evidence" id="audit-evidence"></div><p id="audit-instruction"></p><div class="audit-options" id="audit-options"><button type="button" data-verdict="camera">Kamera arızalı; görüntü tamamen rastgele.</button><button type="button" data-verdict="real">İmza 00 fiziksel ve geçerli bir zaman yankısı.</button><button type="button" data-verdict="injected">İmza 00, gerçek bir kaydı olmadan ekrana enjekte edilmiş.</button></div><div class="audit-feedback" id="audit-feedback" role="status" aria-live="polite"></div><div class="audit-footer"><button type="button" class="secondary" id="audit-close">Kapat (Esc)</button></div></section></div>
@@ -112,7 +136,8 @@ button:focus-visible{outline:3px solid #62f3d3;outline-offset:2px}
 <div class="controls"><button class="secondary" id="commit">↺ Yankıyı kaydet</button><button class="secondary" id="undo">↶ Son yankıyı sil</button><button class="secondary" id="restart">↻ Odayı sıfırla</button><button class="secondary" id="interact" disabled>⌁ Terminali oku</button><button class="secondary" id="logbook">▤ Arşiv <span id="archive-count">0/15</span></button><button class="secondary" id="room-select" title="O: açılmış odaları seç">▦ Oda seç</button><button class="secondary" id="help-button" title="H: aşamalı ipucu">? İpucu</button><button class="sound" id="sound">♪ Ses: açık</button><button class="sound" id="frequency" title="F: kayıt doğrulama / ters kayıt" disabled>F · KAPALI</button></div><div id="hint-assist" class="hint-assist hidden" role="status" aria-live="polite"><strong id="hint-step"></strong><span id="hint-body"></span></div></div>
 <div class="mobilepad" aria-label="Dokunmatik yön tuşları"><button data-dir="ArrowLeft">←</button><button data-dir="ArrowUp">↑</button><button data-dir="ArrowDown">↓</button><button data-dir="ArrowRight">→</button></div>
 <div class="log"><div class="indicator"></div><div><div class="logtitle" id="mission">PROTOKOL 01 · İLK İZ</div><div class="logdesc" id="hint">Yeşil plakaya bas, SPACE ile yankını kaydet. Sonraki döngüde kapı açılınca çıkışa git.</div></div></div>
-<footer>BUILD 009 · OYUN DENEYİMİ / KONTROL KALİTESİ</footer>
+<section class="protocol-status" aria-label="Geçit hedefleri"><div class="protocol-status-head"><strong>ANLIK GEÇİT DURUMU</strong><small id="gate-counter">0 / 0 açık</small></div><div class="gate-status-grid" id="gate-status"></div></section>
+<footer>BUILD 010 · BÖLÜM AKIŞI / HEDEFLER / TEMPO</footer>
 </div>
 <script>
 (()=>{
