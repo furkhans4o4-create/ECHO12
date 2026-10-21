@@ -19,7 +19,7 @@ def load(browser, level):
     html = HTML.replace("loadLevel(getUnlocked())", f"loadLevel({level})")
     html = html.replace("levelIndex=getUnlocked();level=", f"levelIndex={level};level=")
     assert html != HTML
-    needle='updateHUD();requestAnimationFrame(frame);\\n})();'
+    needle='updateHUD();requestAnimationFrame(frame);\n})();'
     injected='''updateHUD();
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
