@@ -1,44 +1,57 @@
-# ECHO/12
+# ECHO/12 — Kendi Geçmişinle Kaç
 
-**Kendi geçmişinle kaç.** Türkçe arayüzlü, tarayıcıda oynanabilen tek oyunculu zaman-döngüsü bulmaca oyunu. Her 12 saniyelik hareket kaydı bir yankıya dönüşür; yankılar daha önce geçtiğin yolu tekrarlar. Kapıları açmak için geçmişinle işbirliği yap.
+Beş odalık, Türkçe, tarayıcıda oynanabilen bir **zaman döngüsü bulmaca / bilim kurgu** prototipi. Her 12 saniyelik hareket kaydın, önceki davranışlarını yeniden oynatan bağımsız bir yankıya dönüşür. Kendi kayıtlarınla iş birliği yaparak tesisin kapılarını aç ve kayıpların neden silindiğini öğren.
 
-## Build 002 — Dört oynanabilir oda
+## Build 003 — Arşiv Protokolü
 
-- **İlk İz:** Bir yankıyla baskı plakasını tut ve çıkışı aç.
-- **İki Ses:** İki yankıyı aynı anda kullanarak iki bariyeri aş.
-- **Kör Nokta:** Hareketli bir güvenlik küresinden kaç.
-- **Kısa Devre (yeni):** Altın renkli süreli röle plakaları, üzerlerinden ayrıldıktan sonra kapıyı kısa süre daha açık tutar.
-- **Yeni:** 12 saniyelik yankı zaman çizelgesi. Hareketli kısımlar renkli; plakalara temaslar altın renkte.
-- **Yeni:** Son yankıyı silme; doğru çözümü denemeyi kolaylaştırır.
-- **Düzeltme:** Tarayıcı yerel depolamayı kısıtlasa bile oyun başlayabilir.
-- **Düzeltme:** Altı yankı sınırında otomatik döngü zamanının kilitlenmesi giderildi.
+Oynanabilir odalar:
 
-## Oynama
+1. **İlk İz:** Baskı plakasında yankını bırakarak çıkışı aç.
+2. **İki Ses:** İki yankıyı eşzamanlı kullan.
+3. **Kör Nokta:** Yankıları yönetirken güvenlik küresinden kaç.
+4. **Kısa Devre:** Sadece kısa süre açık kalan röle kapılarını zamanla.
+5. **Sahte Yankı (yeni):** Mavi `C` plakasını canlı oyuncu **etkinleştiremez**. Kaydedilmiş bir yankı onu açmalı; ikinci yankıyla diğer kapıyı açıp çıkışa ulaş.
 
-`index.html` dosyasını modern bir tarayıcıda aç. Kurulum, bağımlılık ve hesap gerekmez. GitHub Pages kullanılıyorsa depodaki kök `index.html` doğrudan yayımlanabilir.
+Bu sürümde ayrıca:
+
+- **Keşfedilebilir üç terminal:** 1., 3. ve 5. odalarda bulunan tesis kayıtları hikâyeyi açar. `E` ile yaklaşarak oku veya **Terminali oku** düğmesini kullan.
+- **Arşiv defteri:** `L` / **Arşiv** ile bulunan kayıtları tekrar oku. Henüz bulunmayan kayıtlar şifreli görünür. Arşiv açıkken oyun zamanı durur. Kayıtlar mümkün olduğunda tarayıcının yerel depolamasına yazılır.
+- **Yankı zaman çizelgesi:** Hareketlerin, plakalara temasların ve saniye göstergesinin görsel karşılığı.
+- **Son yankıyı geri alma:** `Z` ile son kaydı silerek yeniden dene.
+- **Mobil arşiv arayüzü:** Dar ekranlarda kaydırılabilir, tam ekran kayıt okuyucusu.
+
+## Oynamak
+
+Kök dizindeki **`index.html`** dosyasını güncel bir tarayıcıda aç. Derleme, harici asset, hesap veya sunucu gerekmez. İstenirse GitHub Pages, Vercel vb. statik barındırmada aynı dosyayla yayımlanabilir; repoya kod yüklemek tek başına siteyi canlıya almaz.
 
 | Tuş | Eylem |
 | --- | --- |
-| WASD / ok tuşları | Hareket |
-| Space | 12 saniyeyi beklemeden hareket kaydını bitir ve yankı oluştur |
-| Z | Son yankıyı sil ve geçerli döngüyü sıfırla |
-| R | Odayı tamamen sıfırla |
-| P | Duraklat / devam et |
+| `WASD` veya oklar | Hareket et |
+| `Space` | Döngüyü kaydet, yeni yankı oluştur |
+| `Z` | Son yankıyı sil |
+| `R` | Geçerli odayı sıfırla |
+| `P` | Duraklat / devam et |
+| `E` | Yakındaki terminali aç |
+| `L` | Arşiv defterini aç veya kapat |
+| `Escape` | Arşiv defterini kapat |
+| `Enter` | Açılış ve oda geçişlerini onayla |
 
-Mobilde yön tuşları, masaüstünde butonlar da vardır. Yerel kayıt mümkün olduğunda tamamlanan odalar saklanır.
+Ekrandaki düğmeler dokunmatik girişe de uygundur. Ses isteğe bağlıdır. Tamamlanan odalar ve bulunan terminal kayıtları yerel depolama izin veriyorsa hatırlanır.
 
 ## Test
 
-Python ve [Playwright](https://playwright.dev/python/) ile dört odayı ve yankı silme özelliğini test edebilirsin:
+Python Playwright ile beş odanın bitirilebildiği, yankı geri alma, canlı oyuncunun mavi plakayı tetikleyememesi, kayıtlı yankının tetiklemesi, terminalin keşfi ve arşivde zamanın durması sınanır.
 
-```bash
-pip install playwright
-playwright install chromium
+```sh
+python -m pip install playwright
+python -m playwright install chromium
 python tests/smoke.py
 ```
 
-## Teknoloji ve geliştirme
+Testler hızlı ve deterministiktir: oyun kodu yalnızca test sayfasında enjekte edilen kontrollü zaman ilerletme arabirimiyle sınanır; ürün sürümünde test kancası yoktur. GitHub Actions iş akışı aynı testleri her push'ta çalıştırır.
 
-Tek dosyalık HTML / CSS / JavaScript, Canvas 2D. Dış varlık, sunucu ya da oyun motoru gerektirmeyen prototip. Dört oyun odasının tamamı tarayıcı testleriyle doğrulanmıştır. Her sonraki **devam** isteğinde yeni bir oynanabilir dilim geliştirilecek.
+## Teknoloji
 
-Sonraki odak: oyun içi anlatı, farklı etkileşimli nesneler ve daha güçlü seviye tasarımı.
+Dış bağımlılığı olmayan HTML / CSS / JavaScript ve Canvas 2D. Aşamalı prototip geliştirme yaklaşımı: oynanabilirlik, okunabilirlik ve testlerden sonra yeni içerik.
+
+**Sonraki geliştirme yönü:** Seçim sonuçları olan daha ileri arşiv kayıtları, yeni kapı mantığı, gerçek bir bölüm sonu ve seviyeler arasında güçlü dramatik geçiş.
