@@ -114,7 +114,7 @@ def main():
             page.keyboard.press("e")
             assert page.locator("#mode").inner_text() == "ARŞİV"
             assert "PERSONEL NO. 12" in page.locator("#archive-body").inner_text()
-            assert page.locator("#archive-count").inner_text() == "1/14"
+            assert page.locator("#archive-count").inner_text() == "1/15"
             saved = page.locator("#time").inner_text()
             page.evaluate("window.__echo12Test.tick(1.5)")
             assert page.locator("#time").inner_text() == saved, "Archive must pause simulation"
@@ -164,13 +164,13 @@ def main():
             verify(page,errors,'BAŞARILI')
             assert 'Kimse cevap vermedi' in page.locator('#dialog-title').inner_text()
             assert set(page.evaluate("JSON.parse(localStorage.getItem('echo12-endings'))"))=={'cut','keep'}
-            assert page.locator('#archive-count').inner_text()=='2/14'
+            assert page.locator('#archive-count').inner_text()=='2/15'
             saved=page.evaluate('JSON.stringify(window.__echo12Store)')
             html=page.evaluate('document.documentElement.outerHTML')
             html=html.replace('window.__echo12Store ??= {};','window.__echo12Store = '+saved+';')
             page.set_content(html,wait_until='load')
             page.locator('#logbook').click()
-            assert '2 / 14' in page.locator('#archive-status').inner_text()
+            assert '2 / 15' in page.locator('#archive-status').inner_text()
             verify(page,errors,'ARŞİV')
             page.close()
             print('PASS persisted endings: both results recoverable from storage')
@@ -212,7 +212,7 @@ def main():
             assert page.evaluate("window.__echo12Test.gate('P')")
             move(page,'d',1.6)
             verify(page,errors,'BAŞARILI')
-            assert page.locator('#archive-count').inner_text().endswith('/14')
+            assert page.locator('#archive-count').inner_text().endswith('/15')
             assert 'BÖLÜM II' in page.locator('#kicker').inner_text()
             page.close()
             print('PASS room 8: dual echo gate, live-only pulse, chapter II handoff')
@@ -255,11 +255,54 @@ def main():
             move(page,'d',1.976);move(page,'s',.493);commit(page)
             assert not page.evaluate("window.__echo12Test.gate('Y')"),'Normal replay must take time to reach Y'
             move(page,'d',3.5)
-            verify(page,errors,'TAMAMLANDI')
+            verify(page,errors,'BAŞARILI')
             assert 'OPERATÖR 00' in page.locator('#dialog-text').inner_text()
-            assert page.locator('#archive-count').inner_text().endswith('/14')
+            assert page.locator('#archive-count').inner_text().endswith('/15')
             page.close()
-            print('PASS room 10: reverse replay, forward-only gate, chapter III outcome')
+            print('PASS room 10: reverse replay, forward-only gate, chapter III handoff')
+
+            # Build 008: 3 forensic observations are required before a gated, reasoned verdict.
+            page, errors = load(browser, 10)
+            assert not page.evaluate("window.__echo12Test.gate('AUDIT')")
+            move(page,'d',.493); move(page,'w',.493); commit(page)
+            page.evaluate("window.__echo12Test.tick(1.3)")
+            assert page.evaluate("window.__echo12Test.gate('B')"), 'The first barrier needs a real recorded echo'
+            page.evaluate("window.__echo12Test.teleport(9.5,2.5)")
+            page.keyboard.press('e')
+            assert not page.locator('#mode').inner_text() == 'KANIT', 'Scanner-off sample must not open audit'
+            page.keyboard.press('f')
+            page.keyboard.press('e')
+            page.evaluate("window.__echo12Test.teleport(9.5,5.5)")
+            page.keyboard.press('e')
+            page.evaluate("window.__echo12Test.teleport(11.5,5.5)")
+            page.keyboard.press('e')
+            assert page.locator('#mode').inner_text() == 'KANIT'
+            assert page.locator('#audit-options [data-verdict="injected"]').is_disabled(), 'All three measurements must be supplied'
+            prev_time=page.locator('#time').inner_text()
+            page.evaluate("window.__echo12Test.tick(2)")
+            assert page.locator('#time').inner_text()==prev_time, 'The audit board pauses the clock'
+            page.keyboard.press('Escape')
+            page.evaluate("window.__echo12Test.teleport(9.5,8.5)")
+            page.keyboard.press('e')
+            page.evaluate("window.__echo12Test.teleport(11.5,5.5)")
+            page.keyboard.press('e')
+            assert page.locator('#audit-options [data-verdict="injected"]').is_enabled()
+            facts=page.locator('#audit-evidence').inner_text()
+            assert 'optik siluet' in facts and '00 doğrulanmış fiziksel temas' in facts and 'yakalama imzası yok' in facts, facts
+            page.locator('#audit-options [data-verdict="real"]').click()
+            assert not page.evaluate("window.__echo12Test.gate('AUDIT')")
+            assert 'Yanlış:' in page.locator('#audit-feedback').inner_text()
+            page.locator('#audit-options [data-verdict="injected"]').click()
+            assert page.evaluate("window.__echo12Test.gate('AUDIT')")
+            assert 'kimliği henüz doğrulanmadı' in page.locator('#audit-feedback').inner_text()
+            page.keyboard.press('Escape')
+            page.evaluate("window.__echo12Test.teleport(11.5,5.5)")
+            move(page,'d',1.11)
+            verify(page,errors,'TAMAMLANDI')
+            assert 'yönetici yetkisi' in page.locator('#dialog-text').inner_text()
+            assert page.locator('#archive-count').inner_text().endswith('/15')
+            page.close()
+            print('PASS room 11: evidence triage, wrong verdict, correct verdict, final gate and chapter ending')
 
             # Verify display and audio feedback without changing a real puzzle solution.
             page, errors = load(browser, 0)
