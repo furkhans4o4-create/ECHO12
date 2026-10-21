@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 010 — Bölüm Akışı ve Bulmaca Geri Bildirimi
+
+Bu sürümde oda sayısı yine **11** olarak korunur. Öncelik artık oyuncunun hedefleri fark etmesi, ilk mekaniği kendisi öğrenmesi ve uzun bir oyunda kendi gelişimini izlemesidir.
+
+- **Bölüm şeridi:** 11 odanın ilerlemesi, üç bölüm halinde görünür. Bulunulan oda öne çıkar; tamamlanıp açılmış önceki odalar farklı renktedir.
+- **Dinamik hedefler:** Sabit, doğrudan çözüm veren oda açıklaması yerine kısa bir görev tanımı gösterilir. İlk odada oyuncu yeşil plakaya ulaşınca yönlendirme değişir: önce hareket, sonra kayıt, sonra çıkış. Geri kalanı için isteğe bağlı üç kademeli H ipucu sistemi korunur.
+- **Kapı durum panosu:** Her kapının harfi, açık/kapalı hâli ve neden açılmadığı anlık gösterilir. İki yankı isteyen plakaların sayacı, tarayıcı, canlı oyuncu, ters kayıt, süreli röle, kanıt sayısı ve onaylanmamış karar gibi mekanikler kendi açıklamalarıyla izlenebilir.
+- **Bölüm açılışları:** İlk bölüm ve Bölüm II/III başlangıçlarında kısa bağlamsal hikâye girişleri gösterilir. Kısa oda başlıkları ve ilgili arşiv kayıtları korunur.
+- **Oda sonuç özeti:** Tamamlanan odada kaydedilmiş yankı sayısı, aktif toplam süre ve kullanılan ipucu düzeyi gösterilir. Oyuncunun en iyi sonucu daha az yankı, eşitlik hâlinde daha kısa aktif süre ölçütüne göre yerel olarak saklanır; tekrar oynanan oda seçme ekranında görünür.
+- **Kayıt politikası:** Yeni rekorlar `echo12-best-runs` anahtarında tutulur. Mevcut `echo12-unlocked`, hikâye seçimleri ve arşiv kayıtları değiştirilmez. Oda yeniden başlatılırsa yeni denemenin sayaçları sıfırlanır.
+
 ## Build 009 — Oyun deneyimi ve kontrol kalitesi
 
 Bu sürümde yeni oda eklemek yerine **oynanış erişimini ve keşfedilebilirliği** iyileştirdik. Mevcut 11 oda ve 15 arşiv kaydı korunur.
@@ -107,4 +118,4 @@ Testler tüm **on bir odayı** oynanış kurallarıyla çözerek denetler. Build
 
 Tamamen bağımsız HTML / CSS / JavaScript ve Canvas 2D. Oyun kaynak kodu `index.html` içindedir; `tests/smoke.py` testleri ve `.github/workflows/smoke.yml` otomatik doğrulamayı sağlar.
 
-**Yön:** Build 010: seviyelerin tempo ve zorluk eğrisini yeniden tasarlama, hikâye-oynanış entegrasyonu ve bütünlüklü bölüm akışı.
+**Yön:** Build 011: cihazlar arası erişim kolaylığı, dokunmatik testler ve kritik bulmaca durumlarının daha açıklayıcı animasyonları.
