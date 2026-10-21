@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 011 — Mobil Kontroller ve Çizim Performansı
+
+Bu sürüm, oyun kurallarına ve 11 oda / 15 arşiv yapısına dokunmadan mobil kullanım ile çizim maliyetini iyileştirir.
+
+- **Yeniden düzenlenen mobil gamepad:** Dört yön tuşu artık 3×3 alanın kenarlarında, merkezde yankı kaydı var. Alt sırada Etkileşim, Geri Al ve Duraklat tuşları bulunuyor. Başparmak kullanımına uygun büyük dokunma alanları ve tuşun basılı olduğunu gösteren görsel durumlar eklendi. Mobil kumanda oyun alanının hemen altında, zaman çizelgesinden önce gösterilir.
+- **Gerçek eşzamanlı dokunma:** İki farklı parmak/yön, çapraz yürümeyi destekler. Her dokunma ayrı kimlikle izlenir; parmağı bırakmak veya dokunmanın iptal edilmesi ilgili hareketi durdurur. Fiziksel klavye ile dokunmatik aynı anda kullanılsa da birinin serbest bırakılması diğerinin yönünü kesmez. Oda değiştirme, panel açma, duraklatma ve pencere odağını kaybetme tüm basılı yönleri temizler.
+- **Mobilde daha okunaklı arayüz:** Dar ekranlarda kontrol butonları, görev durumu ve oyun alanı boşlukları yeniden düzenlendi. Mobil kumandadaki kontroller için erişilebilir etiket ve basılı durum bilgisi vardır.
+- **Statik zemin önbelleği:** Odanın 18×11 sabit karo zemini ve sahne arka planı tekrar tekrar hesaplanmak yerine önbellekten çizilir; kapılar, yankılar ve güvenlik elemanları dinamik kalır.
+- **Dengeli kare bütçesi:** Dokunmatik cihazlarda görsel yenileme yaklaşık 30 FPS hedefler; bulmaca simülasyonu 60 Hz adımlarla sürer. Oyun duraklatılmışken ve görsel efekt kalmadığında gereksiz çizimler atlanır. Sekme görünmezken simülasyon ilerlemez, girişler temizlenir.
+- **Geriye uyumluluk:** Eski kayıtlar, bölüm kararları, mekanikler, ipuçları, yerel rekorlar ve tüm odalar korunur. Mobil dokunma/iptal davranışları için otomatik tarayıcı testleri eklendi.
+
 ## Build 010 — Bölüm Akışı ve Bulmaca Geri Bildirimi
 
 Bu sürümde oda sayısı yine **11** olarak korunur. Öncelik artık oyuncunun hedefleri fark etmesi, ilk mekaniği kendisi öğrenmesi ve uzun bir oyunda kendi gelişimini izlemesidir.
@@ -118,4 +129,4 @@ Testler tüm **on bir odayı** oynanış kurallarıyla çözerek denetler. Build
 
 Tamamen bağımsız HTML / CSS / JavaScript ve Canvas 2D. Oyun kaynak kodu `index.html` içindedir; `tests/smoke.py` testleri ve `.github/workflows/smoke.yml` otomatik doğrulamayı sağlar.
 
-**Yön:** Build 011: cihazlar arası erişim kolaylığı, dokunmatik testler ve kritik bulmaca durumlarının daha açıklayıcı animasyonları.
+**Yön:** Build 012: dokunmatik oynanış için gerçek cihaz verisiyle dengeleme; görsel okunabilirlik, bölüm sonu deneyimi ve yeni oyun içi keşiflerin değerlendirilmesi.
