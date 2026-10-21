@@ -114,7 +114,7 @@ def main():
             page.keyboard.press("e")
             assert page.locator("#mode").inner_text() == "ARŞİV"
             assert "PERSONEL NO. 12" in page.locator("#archive-body").inner_text()
-            assert page.locator("#archive-count").inner_text() == "1/6"
+            assert page.locator("#archive-count").inner_text() == "1/10"
             saved = page.locator("#time").inner_text()
             page.evaluate("window.__echo12Test.tick(1.5)")
             assert page.locator("#time").inner_text() == saved, "Archive must pause simulation"
@@ -148,7 +148,7 @@ def main():
             page.locator('#decision-confirm').click()
             assert page.evaluate("window.__echo12Test.gate('OUT')")
             move(page,'s',.74); move(page,'d',.48)
-            verify(page,errors,'TAMAMLANDI')
+            verify(page,errors,'BAŞARILI')
             assert 'Yalnız da değilsin' in page.locator('#dialog-title').inner_text()
             assert page.evaluate("JSON.parse(localStorage.getItem('echo12-endings'))")==['keep']
             print('PASS 6/6: keep-ending and cancellation checks')
@@ -161,19 +161,60 @@ def main():
             assert page.locator('#decision-title').inner_text()=='ÇEKİRDEĞİ SUSTUR'
             page.locator('#decision-confirm').click()
             move(page,'w',.74); move(page,'d',.48)
-            verify(page,errors,'TAMAMLANDI')
+            verify(page,errors,'BAŞARILI')
             assert 'Kimse cevap vermedi' in page.locator('#dialog-title').inner_text()
             assert set(page.evaluate("JSON.parse(localStorage.getItem('echo12-endings'))"))=={'cut','keep'}
-            assert page.locator('#archive-count').inner_text()=='2/6'
+            assert page.locator('#archive-count').inner_text()=='2/10'
             saved=page.evaluate('JSON.stringify(window.__echo12Store)')
             html=page.evaluate('document.documentElement.outerHTML')
             html=html.replace('window.__echo12Store ??= {};','window.__echo12Store = '+saved+';')
             page.set_content(html,wait_until='load')
             page.locator('#logbook').click()
-            assert '2 / 6' in page.locator('#archive-status').inner_text()
+            assert '2 / 10' in page.locator('#archive-status').inner_text()
             verify(page,errors,'ARŞİV')
             page.close()
             print('PASS persisted endings: both results recoverable from storage')
+
+            # Build 006: a live player never counts toward a dual-echo switch.
+            page, errors = load(browser, 6)
+            move(page,'d',.493); move(page,'w',.493); commit(page)
+            move(page,'d',1.73); move(page,'s',.493)
+            assert not page.evaluate("window.__echo12Test.gate('R')"), "One recorded echo plus live player must not satisfy 2-echo plate"
+            commit(page)
+            move(page,'d',1.73); move(page,'s',.493)
+            assert not page.evaluate("window.__echo12Test.gate('R')"), "Two echoes must exist simultaneously"
+            commit(page)
+            page.evaluate("window.__echo12Test.tick(2.3)")
+            assert page.evaluate("window.__echo12Test.gate('R')"), "Two synchronized echo replays must open R"
+            page.keyboard.press('r')
+            move(page,'d',.493);move(page,'w',.493);commit(page)
+            move(page,'d',1.73);move(page,'s',.493);commit(page)
+            move(page,'d',1.73);move(page,'s',.493);commit(page)
+            move(page,'d',3.3)
+            verify(page,errors,'BAŞARILI')
+            page.close()
+            print('PASS room 7: echo consensus opens synchronized gate')
+
+            # Build 006: only live player can energize the short relay; older echoes cannot.
+            page, errors = load(browser, 7)
+            page.evaluate("window.__echo12Test.teleport(9.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.05)")
+            assert page.evaluate("window.__echo12Test.gate('P')"),"The live player should trigger P"
+            page.evaluate("window.__echo12Test.teleport(2.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(3)")
+            assert not page.evaluate("window.__echo12Test.gate('P')"),"Live pulse must expire"
+            page.keyboard.press('r')
+            move(page,'d',.493);move(page,'w',.493);commit(page)
+            move(page,'d',.493);move(page,'w',.493);commit(page)
+            page.evaluate("window.__echo12Test.tick(1.2)")
+            assert page.evaluate("window.__echo12Test.gate('S')")
+            move(page,'d',1.73)
+            assert page.evaluate("window.__echo12Test.gate('P')")
+            move(page,'d',1.6)
+            verify(page,errors,'TAMAMLANDI')
+            assert page.locator('#archive-count').inner_text().endswith('/10')
+            page.close()
+            print('PASS room 8: dual echo gate, live-only pulse, chapter II ending')
 
             # Verify display and audio feedback without changing a real puzzle solution.
             page, errors = load(browser, 0)
