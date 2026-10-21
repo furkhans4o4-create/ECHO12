@@ -114,7 +114,7 @@ def main():
             page.keyboard.press("e")
             assert page.locator("#mode").inner_text() == "ARŞİV"
             assert "PERSONEL NO. 12" in page.locator("#archive-body").inner_text()
-            assert page.locator("#archive-count").inner_text() == "1/10"
+            assert page.locator("#archive-count").inner_text() == "1/14"
             saved = page.locator("#time").inner_text()
             page.evaluate("window.__echo12Test.tick(1.5)")
             assert page.locator("#time").inner_text() == saved, "Archive must pause simulation"
@@ -164,13 +164,13 @@ def main():
             verify(page,errors,'BAŞARILI')
             assert 'Kimse cevap vermedi' in page.locator('#dialog-title').inner_text()
             assert set(page.evaluate("JSON.parse(localStorage.getItem('echo12-endings'))"))=={'cut','keep'}
-            assert page.locator('#archive-count').inner_text()=='2/10'
+            assert page.locator('#archive-count').inner_text()=='2/14'
             saved=page.evaluate('JSON.stringify(window.__echo12Store)')
             html=page.evaluate('document.documentElement.outerHTML')
             html=html.replace('window.__echo12Store ??= {};','window.__echo12Store = '+saved+';')
             page.set_content(html,wait_until='load')
             page.locator('#logbook').click()
-            assert '2 / 10' in page.locator('#archive-status').inner_text()
+            assert '2 / 14' in page.locator('#archive-status').inner_text()
             verify(page,errors,'ARŞİV')
             page.close()
             print('PASS persisted endings: both results recoverable from storage')
@@ -211,10 +211,51 @@ def main():
             move(page,'d',1.73)
             assert page.evaluate("window.__echo12Test.gate('P')")
             move(page,'d',1.6)
-            verify(page,errors,'TAMAMLANDI')
-            assert page.locator('#archive-count').inner_text().endswith('/10')
+            verify(page,errors,'BAŞARILI')
+            assert page.locator('#archive-count').inner_text().endswith('/14')
+            assert 'BÖLÜM II' in page.locator('#kicker').inner_text()
             page.close()
-            print('PASS room 8: dual echo gate, live-only pulse, chapter II ending')
+            print('PASS room 8: dual echo gate, live-only pulse, chapter II handoff')
+
+            # Build 007 / Room 9: an injected phantom cannot open even the scanned plate.
+            page, errors = load(browser, 8)
+            assert page.locator('#frequency').is_enabled()
+            assert not page.evaluate("window.__echo12Test.gate('T')")
+            page.keyboard.press('f')
+            assert 'AÇIK' in page.locator('#frequency').inner_text()
+            page.evaluate("window.__echo12Test.tick(1.2)")
+            assert not page.evaluate("window.__echo12Test.gate('T')"),'Phantom is not a recorded ghost'
+            page.keyboard.press('r')
+            move(page,'d',.493);move(page,'w',.493);commit(page)
+            page.keyboard.press('f')
+            assert not page.evaluate("window.__echo12Test.gate('T')"),'Record must be authenticated to trigger T'
+            page.keyboard.press('f')
+            move(page,'d',1.976);move(page,'s',.493)
+            assert page.evaluate("window.__echo12Test.gate('T')")
+            commit(page)
+            move(page,'d',3.5)
+            verify(page,errors,'BAŞARILI')
+            page.close()
+            print('PASS room 9: spoofed signal rejected, verified echoes unlock both gates')
+
+            # Build 007 / Room 10: a reversed trace starts at its last position.
+            page, errors = load(browser, 9)
+            assert page.locator('#frequency').is_enabled()
+            page.keyboard.press('f')
+            assert 'TERS' in page.locator('#frequency').inner_text()
+            move(page,'d',.493);move(page,'w',.493);commit(page)
+            assert page.evaluate("window.__echo12Test.gate('V')"),'Reverse replay must activate V at t=0'
+            assert not page.evaluate("window.__echo12Test.gate('Y')"),'Reverse replay must never count as a forward trace'
+            page.keyboard.press('f')
+            assert 'NORMAL' in page.locator('#frequency').inner_text()
+            move(page,'d',1.976);move(page,'s',.493);commit(page)
+            assert not page.evaluate("window.__echo12Test.gate('Y')"),'Normal replay must take time to reach Y'
+            move(page,'d',3.5)
+            verify(page,errors,'TAMAMLANDI')
+            assert 'OPERATÖR 00' in page.locator('#dialog-text').inner_text()
+            assert page.locator('#archive-count').inner_text().endswith('/14')
+            page.close()
+            print('PASS room 10: reverse replay, forward-only gate, chapter III outcome')
 
             # Verify display and audio feedback without changing a real puzzle solution.
             page, errors = load(browser, 0)
