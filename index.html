@@ -361,7 +361,7 @@ function openDecision(choice){if(mode!=='playing'||!choice||endingChoice)return;
 function cancelDecision(){if(mode!=='decision')return;activeDecision=null;mode='playing';keys.clear();closeDecisionPanel();updateHUD()}
 function confirmDecision(){if(mode!=='decision'||!activeDecision)return;endingChoice=activeDecision.id;activeDecision=null;mode='playing';keys.clear();closeDecisionPanel();flash(endingChoice==='keep'?'Tanık kanalı etkin: çekirdeğe geçiş açık.':'Çekirdek susturuldu: dış çıkış açık.');pulseFX(player.x,player.y,endingChoice==='keep'?'#6bead0':'#ff8693',1.8);rewindWash=.45;playCue(endingChoice==='keep'?'keep':'cut');updateHUD()}
 function showOverlay(kicker,title,body,button){$('kicker').textContent=kicker;$('dialog-title').textContent=title;$('dialog-text').innerHTML=body;$('start').textContent=button;$('replay-choice').classList.toggle('visible',mode==='allwon'||(mode==='leveldone'&&levelIndex===5));$('overlay').classList.remove('hidden')}
-function hideOverlay(){$('overlay').classList.add('hidden')}
+function hideOverlay(){const overlay=$('overlay');overlay.classList.add('hidden');if(overlay.contains(document.activeElement)&&typeof document.activeElement.blur==='function')document.activeElement.blur()}
 function nearestTerminal(){return TERMINALS.find(t=>t.level===levelIndex&&Math.hypot(player.x-t.x-.5,player.y-t.y-.5)<1.13)||null}
 function refreshArchiveCount(){$('archive-count').textContent=archiveRead.size+'/'+ARCHIVE.length}
 function renderArchive(activeId){
@@ -495,12 +495,12 @@ function drawTimeline(){
  const w=960,h=155,left=91,right=933,trackW=right-left;tc.clearRect(0,0,w,h);
  tc.fillStyle='#8fa7bf';tc.font='11px ui-monospace,Consolas,monospace';tc.textAlign='center';
  for(let second=0;second<=12;second+=2){let x=left+trackW*second/12;tc.fillStyle='#8ea3bd';tc.fillText(second+'s',x,13);tc.strokeStyle='#2b4157';tc.beginPath();tc.moveTo(x,19);tc.lineTo(x,148);tc.stroke()}
- let tracks=[...clones.map((c,i)=>({label:(c.reverse?'R':'E')+String(i+1).padStart(2,'0'),samples:c.samples,live:false})),{label:'CANLI',samples:record,live:true}];
+ let tracks=[...clones.map((c,i)=>({label:(c.reverse?'R':'E')+String(i+1).padStart(2,'0'),samples:c.samples,live:false,reverse:!!c.reverse})),{label:'CANLI',samples:record,live:true,reverse:false}];
  for(let i=0;i<tracks.length;i++){
   const row=24+i*18,track=tracks[i];tc.textAlign='left';tc.font='bold 11px ui-monospace,monospace';tc.fillStyle=track.live?'#53f3d0':track.label[0]==='R'?'#ffcb97':'#c8b1ff';tc.fillText(track.label,11,row+10);
   tc.fillStyle='#192b3d';tc.fillRect(left,row,trackW,11);
   const samples=track.samples;
-  for(let k=1;k<samples.length;k+=5){const p=samples[k],prev=samples[Math.max(0,k-5)],x=left+trackW*(k/60)/LOOP,width=Math.max(2,trackW*5/720);let moving=Math.hypot(p.x-prev.x,p.y-prev.y)>.04;
+  for(let k=1;k<samples.length;k+=5){const sampleAt=i=>samples[track.reverse?Math.max(0,samples.length-1-i):i];const p=sampleAt(k),prev=sampleAt(Math.max(0,k-5)),x=left+trackW*(k/60)/LOOP,width=Math.max(2,trackW*5/720);let moving=Math.hypot(p.x-prev.x,p.y-prev.y)>.04;
    if(moving){tc.fillStyle=track.live?'#3bccad':'#9272d5';tc.fillRect(x,row+1,width,9)}
    if(level.plates.some(plate=>Math.hypot(p.x-plate.x-.5,p.y-plate.y-.5)<.46)){tc.fillStyle='#ffd17e';tc.fillRect(x,row-1,Math.max(3,width),13)}
   }
