@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 009 — Oyun deneyimi ve kontrol kalitesi
+
+Bu sürümde yeni oda eklemek yerine **oynanış erişimini ve keşfedilebilirliği** iyileştirdik. Mevcut 11 oda ve 15 arşiv kaydı korunur.
+
+- **Oda seçimi (O):** Açılmış herhangi bir odaya geri dönebilirsin. Kilitli odalar erişilemez ve ayrı gösterilir. Seçim ekranı zamanı durdurur; oda değiştirmek yalnızca o odanın aktif yankılarını sıfırlar. Arşiv, önceki seçimler ve açılmış oda ilerlemesi silinmez.
+- **Üç kademeli ipucu (H):** Her oda için aşamalı, isteğe bağlı üç ayrı çözüm desteği vardır. Önce mekaniğe yönlendirir; sonraki seviyeler daha somut yol gösterir. İpuçları otomatik gösterilmez. Oda değiştirince aşama sıfırlanır.
+- **Odak ve klavye kontrolü:** Space tuşu ekrandaki bir butona odaklıysa yanlışlıkla yankı kaydetmez; butonun doğal klavye etkileşimini korur. Açılış menüsü kapanınca gizli buton odağı temizlenir.
+- **Ters kayıt zaman çizelgesi:** Ters oynatılan yankılar artık çizelgede gerçekten **ters örnek sırasıyla** görünür; hareket ve baskı plakası temasları ters yönde doğru zamanlarda işaretlenir.
+- **Erişilebilirlik:** Oda düğmeleri ekran okuyucu etiketleri, belirgin klavye odağı ve dar ekranlarda sütun sayısı değişen düzen kullanır.
+- **Testler:** Açılmamış odaların kilitli kalması, mevcut ilerlemenin korunması, seçim menüsünde saatin durması, ipuçları ve tuş odağı için ek tarayıcı testleri.
+
 ## Build 008 — Kanıtın Gölgesi
 
 **11 oynanabilir oda, 15 arşiv kaydı ve yeni adli inceleme bulmacası.** Bu sürüm yeni oda sayısı yerine oyuncunun çıkarım yapmasını ön plana çıkarır.
@@ -75,6 +86,8 @@ Her şey tek `index.html` içindedir; harici ses/görsel paketi, ağ bağlantıs
 | `E` | Yakındaki arşiv terminalini veya karar konsolunu kullan |
 | `L` | Bulunan kayıtları oku |
 | `M` | Sesi aç / kapat |
+| `O` | Oda seçimi ekranını aç (açılmış odalar) |
+| `H` | Kademeli ipucu göster |
 | `Esc` | Arşivi veya henüz onaylanmamış kararı kapat |
 | `Enter` | Açılış, onay ve oda geçişi |
 
@@ -94,4 +107,4 @@ Testler tüm **on bir odayı** oynanış kurallarıyla çözerek denetler. Build
 
 Tamamen bağımsız HTML / CSS / JavaScript ve Canvas 2D. Oyun kaynak kodu `index.html` içindedir; `tests/smoke.py` testleri ve `.github/workflows/smoke.yml` otomatik doğrulamayı sağlar.
 
-**Yön:** Build 009: doğrulama bulmacasının oyuncu tarafından anlaşılabilirliğini ve sürtünmesini yeniden değerlendirme; ses, erişilebilirlik ve zaman çizelgesi iyileştirmeleri.
+**Yön:** Build 010: seviyelerin tempo ve zorluk eğrisini yeniden tasarlama, hikâye-oynanış entegrasyonu ve bütünlüklü bölüm akışı.
