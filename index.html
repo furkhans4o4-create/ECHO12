@@ -270,7 +270,31 @@ function updateGateFeedback(){
   }else if(prior && mode==='playing'){playCue('close')}
  }
 }
-function loadLevel(idx){levelIndex=idx;level=LVLS[levelIndex];scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=level.hint;updateHUD();}
+
+const LEVEL_HINTS=[
+ ['İlk kapıdaki A işareti ile yeşil A plakasını eşleştir.','İlk döngüde A plakasına basıp Boşluk ile yankını oluştur.','Yankın plakada kaldığında yeni döngüde doğuya, kapıdan geçip çıkışa git.'],
+ ['Her bariyerin kendi harfli plakası var.','İlk döngü A, ikinci döngü B için ayrı yankı oluştur; tek yankı iki plakayı tutamaz.','Üçüncü döngüde iki kayıt da aktifken geçitleri ardı ardına aş.'],
+ ['Kırmızı devriye doğrudan temas ettiğinde geçerli döngü başa döner.','A ve B plakalarına ayrı yankılar kaydet; devriye diğer döngülere karışmaz.','İki kapı açıldıktan sonra sağ tarafta dikey gezen kırmızı kürenin olmadığı anı bekle.'],
+ ['Altın plakalarda kapı yalnızca kısa süre daha açık kalır.','Yankıların plakaya vardığı anları zaman çizelgesinde karşılaştır.','A ve B için kayıtları zamanlayıp son döngüde hız kaybetmeden kapıları aş.'],
+ ['Mavi C plakası canlı oyuncunun ağırlığını kabul etmiyor.','C için önce kaydedilmiş yankıyı kullan, D için ayrı bir kayıt bırak.','Her ikisi etkinleşince aynı döngü içinde doğuya ilerle.'],
+ ['Mavi F plakası yalnızca yankılara, G ise canlı veya yankılara tepki verir.','F ve G için iki ayrı kayıt oluştur; ardından sağdaki konsollara git.','Konsollardan birinde E ile incele, sonucu okuyup onayla; iptal etmek çıkış kapısını açmaz.'],
+ ['Mor R plakası bir değil iki yankının aynı anda durmasını ister.','Q için ayrı bir yankı; R için aynı hareketi izleyen iki yankı kaydet.','R göstergesinin 2/2 olmasını sağla. Son döngüde açık bariyerlerden geç.'],
+ ['Mor S yalnızca iki yankıyı sayar, turuncu P yalnızca canlı oyuncuyu tanır.','İki yankıyı S üzerine kaydet; P geçici rölesini kendin tetikle.','P üzerindeyken kapı yaklaşık 2,8 saniye açık kalır. Doğuya hemen ilerle.'],
+ ['Görünen her hayalet gerçek kayıt değildir.','F ile doğrulamayı aç. T ve U üzerinde gerçek hareket kaydı oluştur.','Sahte gölgeleri değil kendi kaydettiğin iki gerçek yankıyı kullanarak bariyerleri aç.'],
+ ['Bir kayıt, son konumundan başlayarak geriye oynatılabilir.','F ile TERS moddayken V üzerine hareket kaydet; sonra NORMAL modu seç.','Y üzerine normal yankı kaydet. V yalnızca ters, Y yalnızca normal kayıt kabul eder.'],
+ ['Üç istasyon üç farklı ölçüm tutuyor; tek görüntü yetmez.','B plakasını bir yankıyla aç, F ile doğrulamayı etkinleştir; kamera, basınç ve kayıt istasyonlarında E kullan.','AUDIT konsolunda üç kaydı karşılaştır: Görünen 00 için fiziksel temas ve imzalı kayıt bulunmuyor.']
+];
+let hintStage=0,selectorBefore='menu',selectorPreviousFocus=null;
+function resetHints(){hintStage=0;$('hint-assist').classList.add('hidden');$('hint-step').textContent='';$('hint-body').textContent=''}
+function showHint(){
+ if(mode!=='playing'&&mode!=='paused')return;
+ hintStage=Math.min(3,hintStage+1);
+ $('hint-assist').classList.remove('hidden');
+ $('hint-step').textContent='İPUCU '+hintStage+'/3 · '+level.title;
+ $('hint-body').textContent=LEVEL_HINTS[levelIndex][hintStage-1];
+ audioBeep(620,.07,'sine',.015);
+}
+function loadLevel(idx){closeRoomSelectorPanel();resetHints();levelIndex=idx;level=LVLS[levelIndex];scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=level.hint;updateHUD();}
 
 function closeAuditPanel(){$('audit').classList.add('hidden');$('audit').setAttribute('aria-hidden','true')}
 function nearestSensor(){return (level.sensors||[]).find(v=>Math.hypot(player.x-v.x-.5,player.y-v.y-.5)<.72)||null}
