@@ -227,8 +227,12 @@ def main():
             assert not page.evaluate("window.__echo12Test.gate('T')"),'Phantom is not a recorded ghost'
             page.keyboard.press('r')
             move(page,'d',.493);move(page,'w',.493);commit(page)
+            page.evaluate("window.__echo12Test.tick(1.2)")
+            assert not page.evaluate("window.__echo12Test.gate('T')"),'Recording without verification cannot trigger T'
             page.keyboard.press('f')
-            assert not page.evaluate("window.__echo12Test.gate('T')"),'Record must be authenticated to trigger T'
+            assert page.evaluate("window.__echo12Test.gate('T')"),'Scanning must authenticate true ghost'
+            page.keyboard.press('r')
+            move(page,'d',.493);move(page,'w',.493);commit(page)
             page.keyboard.press('f')
             move(page,'d',1.976);move(page,'s',.493)
             assert page.evaluate("window.__echo12Test.gate('T')")
