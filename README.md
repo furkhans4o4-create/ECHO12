@@ -1,46 +1,41 @@
 # ECHO/12 — Kendi Geçmişinle Kaç
 
-Beş odalık, Türkçe, tarayıcıda oynanabilen bir **zaman döngüsü bulmaca / bilim kurgu** prototipi. Her 12 saniyelik hareket kaydın, önceki davranışlarını yeniden oynatan bağımsız bir yankıya dönüşür. Kendi kayıtlarınla iş birliği yaparak tesisin kapılarını aç ve kayıpların neden silindiğini öğren.
+Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
-## Build 003 — Arşiv Protokolü
+## Build 004 — Çekirdek Çatışması
 
-Oynanabilir odalar:
+**Altı oynanabilir oda:**
 
-1. **İlk İz:** Baskı plakasında yankını bırakarak çıkışı aç.
-2. **İki Ses:** İki yankıyı eşzamanlı kullan.
-3. **Kör Nokta:** Yankıları yönetirken güvenlik küresinden kaç.
-4. **Kısa Devre:** Sadece kısa süre açık kalan röle kapılarını zamanla.
-5. **Sahte Yankı (yeni):** Mavi `C` plakasını canlı oyuncu **etkinleştiremez**. Kaydedilmiş bir yankı onu açmalı; ikinci yankıyla diğer kapıyı açıp çıkışa ulaş.
+1. **İlk İz** — Bir yankıyı baskı plakasında bırak.
+2. **İki Ses** — İki eşzamanlı kayıtla kapıları aç.
+3. **Kör Nokta** — Güvenlik küresinden kaç.
+4. **Kısa Devre** — Süreli röleleri yönet.
+5. **Sahte Yankı** — Yalnızca geçmiş yankının etkinleştirebildiği kapıyı geç.
+6. **Karar Odası (yeni)** — Önce yankılarla iki kilidi aş, ardından iki farklı çekirdek konsolu arasında fiziksel olarak seçim yap. Odayı terk edeceğin güzergâh bu tercihe göre çekirdeğe veya dış dünyaya yönlenir.
 
-Bu sürümde ayrıca:
+**Yeni hikâye sistemi:** Altıncı odada M. Kora'nın yeni terminal kaydını bulabilirsin. Son bölümde iki bilinçli tercih sunulur: yankıların belleğini koruyup tesiste kalmak veya çekirdeği kapatıp dışarı çıkmak. Her tercih önceden açıkça anlatılır ve onay istenir. Vazgeçilebilir; yalnızca onaylanan karar çıkış kapısını açar.
 
-- **Keşfedilebilir üç terminal:** 1., 3. ve 5. odalarda bulunan tesis kayıtları hikâyeyi açar. `E` ile yaklaşarak oku veya **Terminali oku** düğmesini kullan.
-- **Arşiv defteri:** `L` / **Arşiv** ile bulunan kayıtları tekrar oku. Henüz bulunmayan kayıtlar şifreli görünür. Arşiv açıkken oyun zamanı durur. Kayıtlar mümkün olduğunda tarayıcının yerel depolamasına yazılır.
-- **Yankı zaman çizelgesi:** Hareketlerin, plakalara temasların ve saniye göstergesinin görsel karşılığı.
-- **Son yankıyı geri alma:** `Z` ile son kaydı silerek yeniden dene.
-- **Mobil arşiv arayüzü:** Dar ekranlarda kaydırılabilir, tam ekran kayıt okuyucusu.
+**Kalıcı sonuçlar:** İki farklı bölüm sonu ve bunlara özel ayrı arşiv kayıtları vardır. Tamamlanan finaller tarayıcı izin verirse `localStorage` ile korunur; son bölüm tekrar oynanıp diğer final de keşfedilebilir. Seviye ilerlemesi artık önceki odalara dönerken geriye sarılmaz. Toplam **6 keşfedilebilir arşiv kaydı** vardır (iki kayıt farklı finallere bağlıdır).
 
-## Oynamak
+## Oyna
 
-Kök dizindeki **`index.html`** dosyasını güncel bir tarayıcıda aç. Derleme, harici asset, hesap veya sunucu gerekmez. İstenirse GitHub Pages, Vercel vb. statik barındırmada aynı dosyayla yayımlanabilir; repoya kod yüklemek tek başına siteyi canlıya almaz.
+`index.html` dosyasını tarayıcıda aç. Tek dosyadır, dış kütüphane, sunucu, hesap veya kurulum gerektirmez. GitHub Pages gibi bir statik barındırma sağlayıcısıyla yayımlanabilir; kaynak dosyanın GitHub'a yüklenmesi tek başına canlı site oluşturmaz.
 
-| Tuş | Eylem |
+| Kontrol | İşlev |
 | --- | --- |
-| `WASD` veya oklar | Hareket et |
-| `Space` | Döngüyü kaydet, yeni yankı oluştur |
+| `WASD` veya oklar | Hareket |
+| `Space` | Döngüyü bitirip yankıyı kaydet |
 | `Z` | Son yankıyı sil |
-| `R` | Geçerli odayı sıfırla |
-| `P` | Duraklat / devam et |
-| `E` | Yakındaki terminali aç |
-| `L` | Arşiv defterini aç veya kapat |
-| `Escape` | Arşiv defterini kapat |
-| `Enter` | Açılış ve oda geçişlerini onayla |
+| `R` | Odayı sıfırla |
+| `P` | Duraklat |
+| `E` | Yakındaki arşiv terminalini veya karar konsolunu kullan |
+| `L` | Bulunan kayıtları oku |
+| `Esc` | Arşivi veya henüz onaylanmamış kararı kapat |
+| `Enter` | Açılış, onay ve oda geçişi |
 
-Ekrandaki düğmeler dokunmatik girişe de uygundur. Ses isteğe bağlıdır. Tamamlanan odalar ve bulunan terminal kayıtları yerel depolama izin veriyorsa hatırlanır.
+Dokunmatik yön tuşları ve ekrandaki butonlar da kullanılabilir. Zaman çizelgesi geçmiş hareketleri, plaka temaslarını ve anlık döngü ilerlemesini gösterir.
 
-## Test
-
-Python Playwright ile beş odanın bitirilebildiği, yankı geri alma, canlı oyuncunun mavi plakayı tetikleyememesi, kayıtlı yankının tetiklemesi, terminalin keşfi ve arşivde zamanın durması sınanır.
+## Otomatik test
 
 ```sh
 python -m pip install playwright
@@ -48,10 +43,10 @@ python -m playwright install chromium
 python tests/smoke.py
 ```
 
-Testler hızlı ve deterministiktir: oyun kodu yalnızca test sayfasında enjekte edilen kontrollü zaman ilerletme arabirimiyle sınanır; ürün sürümünde test kancası yoktur. GitHub Actions iş akışı aynı testleri her push'ta çalıştırır.
+Testler tüm **altı odayı** oynanış kurallarıyla çözerek denetler. Çift yankılı kilitler, arşiv sırasında zamanın durması, kararın iptali, her iki final, final tekrar oynama ve sonuçların depolamadan yeniden okunması ayrıca test edilir. Hız için yalnızca test sayfasına kontrollü zaman ilerletici eklenir. Test ortamındaki `about:blank` sayfasının güvenli depolama kökeni olmadığından, saklama kontrollerinde bir `localStorage` taklidi kullanılır; gerçek tarayıcı alanında tekrar yükleme davranışı ayrıca elle kontrol edilebilir. **GitHub Actions** her ana dal güncellemesinde aynı testleri çalıştırır.
 
-## Teknoloji
+## Teknik
 
-Dış bağımlılığı olmayan HTML / CSS / JavaScript ve Canvas 2D. Aşamalı prototip geliştirme yaklaşımı: oynanabilirlik, okunabilirlik ve testlerden sonra yeni içerik.
+Tamamen bağımsız HTML / CSS / JavaScript ve Canvas 2D. Oyun kaynak kodu `index.html` içindedir; `tests/smoke.py` testleri ve `.github/workflows/smoke.yml` otomatik doğrulamayı sağlar.
 
-**Sonraki geliştirme yönü:** Seçim sonuçları olan daha ileri arşiv kayıtları, yeni kapı mantığı, gerçek bir bölüm sonu ve seviyeler arasında güçlü dramatik geçiş.
+**Yön:** Build 005'te ilk bölüm boyunca mekâna duyarlı anlatı, daha derin yankı kullanımı ve güçlü ses/görsel geri bildirimler.
