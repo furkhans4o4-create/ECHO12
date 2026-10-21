@@ -256,10 +256,34 @@ function tileType(x,y){if(x<1||x>=W-1||y<1||y>=H-1)return 'wall';if(level.block.
 function collides(x,y){const r=.27;for(let tx=Math.floor(x-r);tx<=Math.floor(x+r);tx++)for(let ty=Math.floor(y-r);ty<=Math.floor(y+r);ty++){const tp=tileType(tx,ty);if(tp==='wall'||tp==='gate'){let nx=Math.max(tx,Math.min(x,tx+1)),ny=Math.max(ty,Math.min(y,ty+1));if((x-nx)**2+(y-ny)**2<r*r)return true}}return false}
 function spawnParticle(x,y,color){particles.push({x,y,vx:(Math.random()-.5)*2.4,vy:(Math.random()-.5)*2.4,life:.4+Math.random()*.6,color})}
 function guardPos(g){const travel=g.y2-g.y1,p=((elapsed*g.speed+g.offset)%(2*travel));return{x:g.x+.5,y:(p<travel?g.y1+p:g.y2-(p-travel))+.5}}
-function victory(){if(levelIndex===LVLS.length-1&&!endingChoice){flash('Çıkış mühürlü. Önce iki konsoldan birinde karar vermelisin.');return}
- mode='leveldone';playCue('win');pulseFX(player.x,player.y,'#53f3d0',2.3);rewindWash=.4;let n=levelIndex+1;try{localStorage.setItem('echo12-unlocked',String(Math.max(getUnlocked(),Math.min(n,LVLS.length-1))))}catch(e){};for(let i=0;i<40;i++)spawnParticle(player.x,player.y,i%2?'#53f3d0':'#ba9dff');if(n===LVLS.length){wonAll=true;mode='allwon';const kept=endingChoice==='keep',recordId=kept?'A05_KEEP':'A05_CUT';archiveRead.add(recordId);endingHistory.add(endingChoice);try{localStorage.setItem('echo12-endings',JSON.stringify([...endingHistory]));localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){};
-  showOverlay(kept?'BÖLÜM I · TANIKLAR':'BÖLÜM I · SESSİZLİK',kept?'Dışarı çıkmadın. Yalnız da değilsin.':'Kapı açıldı. Kimse cevap vermedi.',kept?`Yankıların kimlikleri bellekte kaldı. <strong>${clones.length} ayrı yankı</strong> artık yalnızca görüntü değil. Sen çekirdekte kaldın; Kora kurtarma protokolünü yeniden açtı. Son söz henüz söylenmedi.`:'Dışarıdaki saat artık sıfırlanmıyor. Ama çekirdekte kalan kayıtlar geri döndürülemez biçimde susturuldu. <strong>Bu özgürlüğün bir bedeli var.</strong> Kora sana sesleniyor; cevap verip vermemek artık sana kalmış.','BAŞTAN OYNA ↺')}
- else showOverlay('GEÇİŞ KİLİDİ AÇILDI',`ODA 0${n} TAMAMLANDI`,`${clones.length} yankıyla kapıyı aştın. Bir sonraki protokol seni bekliyor.`,'SONRAKİ ODA →');updateHUD()}
+
+function victory(){
+ if(levelIndex===5&&!endingChoice){flash('Çıkış mühürlü. Önce çekirdekte karar vermelisin.');return}
+ mode='leveldone';playCue('win');pulseFX(player.x,player.y,'#53f3d0',2.3);rewindWash=.4;
+ const n=levelIndex+1;
+ try{localStorage.setItem('echo12-unlocked',String(Math.max(getUnlocked(),Math.min(n,LVLS.length-1))))}catch(e){}
+ for(let i=0;i<40;i++)spawnParticle(player.x,player.y,i%2?'#53f3d0':'#ba9dff');
+ if(levelIndex===5){
+   chapterPath=endingChoice;endingHistory.add(endingChoice);archiveRead.add(endingChoice==='keep'?'A05_KEEP':'A05_CUT');
+   try{localStorage.setItem('echo12-chapter-path',chapterPath);localStorage.setItem('echo12-endings',JSON.stringify([...endingHistory]));localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
+   const kept=chapterPath==='keep';
+   showOverlay(kept?'BÖLÜM I / TANIKLAR':'BÖLÜM I / SESSİZLİK',
+      kept?'Dışarı çıkmadın. Yalnız da değilsin.':'Kapı açıldı. Kimse cevap vermedi.',
+      kept?'Çekirdeğin içinde kaldın. İki ayrı imza şimdi birbirini bekliyor. <strong>Bölüm II: Eşik</strong> bu izlerin peşinde.':'Dışarıdaki alıcıdan iki ayrı geçmiş sinyali geliyor. Çekirdek kapandı ama verinin tamamı yok olmamış olabilir. <strong>Bölüm II: Eşik</strong> bu çağrıyı izleyecek.',
+      'BÖLÜM II →');
+ }else if(n===LVLS.length){
+   wonAll=true;mode='allwon';const kept=chapterPath!=='cut';archiveRead.add(kept?'A08_KEEP':'A08_CUT');
+   try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
+   showOverlay('BÖLÜM II / KARŞI SİNYAL',
+     kept?'Kayıtlar birbirini bekledi.':'Kapatılan sistemden bir ses geldi.',
+     kept?'Çekirdeği koruduğun için iki ayrı yankının aynı anda yanıt verebildiğini gördün. Bunun bilinç mi, protokol hatası mı olduğu henüz belli değil. <strong>İç hatta yeni bir kaynak belirdi.</strong>':'Çekirdeği susturup dışarı çıktın. Buna rağmen iki ayrı imza taşınabilir alıcıda buluştu. <strong>Verinin nerede kaldığını bilmiyorsun.</strong>',
+     'BAŞTAN OYNA ↺');
+ }else{
+   showOverlay('GEÇİŞ KİLİDİ AÇILDI','ODA '+String(n).padStart(2,'0')+' TAMAMLANDI',
+      clones.length+' yankıyla kapıyı aştın. Bir sonraki protokol seni bekliyor.','SONRAKİ ODA →');
+ }
+ updateHUD();
+}
 function step(dt){wallClock+=dt;for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt}particles=particles.filter(p=>p.life>0);
 for(const f of fxRings)f.life-=dt;fxRings=fxRings.filter(f=>f.life>0);rewindWash=Math.max(0,rewindWash-dt*1.6);
 if(sceneBannerUntil&&wallClock>sceneBannerUntil){$('scene-banner').classList.remove('visible');sceneBannerUntil=0}if(mode!=='playing')return;elapsed+=dt;if(elapsed>=LOOP){cycleCommit(false);return}
