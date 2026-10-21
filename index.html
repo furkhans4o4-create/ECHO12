@@ -288,12 +288,19 @@ function victory(){
       kept?'Dışarı çıkmadın. Yalnız da değilsin.':'Kapı açıldı. Kimse cevap vermedi.',
       kept?'Çekirdeğin içinde kaldın. İki ayrı imza şimdi birbirini bekliyor. <strong>Bölüm II: Eşik</strong> bu izlerin peşinde.':'Dışarıdaki alıcıdan iki ayrı geçmiş sinyali geliyor. Çekirdek kapandı ama verinin tamamı yok olmamış olabilir. <strong>Bölüm II: Eşik</strong> bu çağrıyı izleyecek.',
       'BÖLÜM II →');
- }else if(n===LVLS.length){
-   wonAll=true;mode='allwon';const kept=chapterPath!=='cut';archiveRead.add(kept?'A08_KEEP':'A08_CUT');
+ }else if(levelIndex===7){
+   const kept=chapterPath!=='cut';archiveRead.add(kept?'A08_KEEP':'A08_CUT');
    try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
    showOverlay('BÖLÜM II / KARŞI SİNYAL',
      kept?'Kayıtlar birbirini bekledi.':'Kapatılan sistemden bir ses geldi.',
-     kept?'Çekirdeği koruduğun için iki ayrı yankının aynı anda yanıt verebildiğini gördün. Bunun bilinç mi, protokol hatası mı olduğu henüz belli değil. <strong>İç hatta yeni bir kaynak belirdi.</strong>':'Çekirdeği susturup dışarı çıktın. Buna rağmen iki ayrı imza taşınabilir alıcıda buluştu. <strong>Verinin nerede kaldığını bilmiyorsun.</strong>',
+     kept?'İki ayrı yankı aynı anda yanıt verdi. Fakat aralarına karışan üçüncü siluetin kaydı bulunamıyor. <strong>Bölüm III: Hayalet İmza</strong> başlıyor.':'Dış alıcı iki imzayı tespit etti. Bir de kaynağı olmayan üçüncü bir görüntü var. <strong>Bölüm III: Hayalet İmza</strong> başlıyor.',
+     'BÖLÜM III →');
+ }else if(n===LVLS.length){
+   wonAll=true;mode='allwon';const kept=chapterPath!=='cut';archiveRead.add(kept?'A11_KEEP':'A11_CUT');
+   try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
+   showOverlay('BÖLÜM III / GÜVENİLMEZ KAYIT',
+     kept?'Kayıtların arasında biri var.':'Susturulan hat yeniden konuştu.',
+     kept?'Çekirdekte kalan kayıtların hepsi aynı kaynağa ait değil. Ters oynatılan son izde yeni bir kimlik görüyorsun: <strong>OPERATÖR 00</strong>. Onun kim olduğunu hâlâ bilmiyorsun.':'Sinyal çekirdek dışından da üretilebiliyor. Ters oynatılan son izde <strong>OPERATÖR 00</strong> kodu belirdi. Tesisin dışında hangi kapıların açıldığını henüz bilmiyorsun.',
      'BAŞTAN OYNA ↺');
  }else{
    showOverlay('GEÇİŞ KİLİDİ AÇILDI','ODA '+String(n).padStart(2,'0')+' TAMAMLANDI',
