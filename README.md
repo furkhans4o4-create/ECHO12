@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 008 — Kanıtın Gölgesi
+
+**11 oynanabilir oda, 15 arşiv kaydı ve yeni adli inceleme bulmacası.** Bu sürüm yeni oda sayısı yerine oyuncunun çıkarım yapmasını ön plana çıkarır.
+
+- **Oda 11 / Üç Tanık:** İlk kapıyı daha önce kaydettiğin bir yankıyla açarsın. Diğer tarafta üç ayrı istasyon vardır: kamera, basınç ve kayıt defteri. `F` ile doğrulayıcıyı açtıktan sonra her istasyondan `E` ile ayrı ölçüm toplarsın. Kanıtlar arşive otomatik olarak değil, bu odanın denetim ekranına aktarılır.
+- **Gerçek kayıt izi:** Kayıt defteri, mevcut yankı hareketlerinden örneklenmiş bir tanımlayıcı hesaplar. Bu oyun içi karşılaştırma parmak izidir; kriptografik imza değildir. Sahte siluetin bu kayıtlarda bir karşılığı yoktur.
+- **Kanıt panosu:** AUDIT konsolu zamanı durdurur ve üç bağımsız gözlemi yan yana gösterir. Üç ölçüm olmadan hüküm verilemez. Yanlış yorumlarda hangi çıkarımın delille çeliştiği açıklanır; doğru yorum ikinci kapının kilidini kaldırır. Önceki yankılar sıfırlanmaz.
+- **Hikâye sonucu:** 00'ın bir kişi olduğu varsayımı sorgulanır. Kanıtın desteklediği dar sonuç, kayıt bulunmadan görüntü enjekte edilebildiğidir; bunun arkasında kimin olduğu hâlâ bilinmez. Yeni `A12` arşiv tutanağı son odadan sonra açılır.
+- **Arayüz:** Kanıt ekranı mobil/dar ekranlara uyum sağlar, klavyeyle kullanılabilir ve `Esc` ile kapatılabilir. Eski 10 oda, hikâye seçimleri ve kayıtlar korunur.
+
 ## Build 007 — Bölüm III: Güvenilmez Kayıt
 
 **Toplam 10 oynanabilir oda, 14 keşfedilebilir arşiv girdisi ve birbiriyle tutarlı iki hikâye hattı.**
@@ -78,10 +88,10 @@ python -m playwright install chromium
 python tests/smoke.py
 ```
 
-Testler tüm **on odayı** oynanış kurallarıyla çözerek denetler. Build 005 için kapı efektleri, sinyal göstergesi, kritik geri sayım ve ses tercihi ayrıca sınanır. Çift yankılı kilitler, arşiv sırasında zamanın durması, kararın iptali, her iki final, final tekrar oynama ve sonuçların depolamadan yeniden okunması ayrıca test edilir. Hız için yalnızca test sayfasına kontrollü zaman ilerletici eklenir. Test ortamındaki `about:blank` sayfasının güvenli depolama kökeni olmadığından, saklama kontrollerinde bir `localStorage` taklidi kullanılır; gerçek tarayıcı alanında tekrar yükleme davranışı ayrıca elle kontrol edilebilir. **GitHub Actions** her ana dal güncellemesinde aynı testleri çalıştırır.
+Testler tüm **on bir odayı** oynanış kurallarıyla çözerek denetler. Build 005 için kapı efektleri, sinyal göstergesi, kritik geri sayım ve ses tercihi ayrıca sınanır. Çift yankılı kilitler, arşiv sırasında zamanın durması, kararın iptali, her iki final, final tekrar oynama ve sonuçların depolamadan yeniden okunması ayrıca test edilir. Hız için yalnızca test sayfasına kontrollü zaman ilerletici eklenir. Test ortamındaki `about:blank` sayfasının güvenli depolama kökeni olmadığından, saklama kontrollerinde bir `localStorage` taklidi kullanılır; gerçek tarayıcı alanında tekrar yükleme davranışı ayrıca elle kontrol edilebilir. **GitHub Actions** her ana dal güncellemesinde aynı testleri çalıştırır.
 
 ## Teknik
 
 Tamamen bağımsız HTML / CSS / JavaScript ve Canvas 2D. Oyun kaynak kodu `index.html` içindedir; `tests/smoke.py` testleri ve `.github/workflows/smoke.yml` otomatik doğrulamayı sağlar.
 
-**Yön:** Build 008: kayıtların arasına karışan Operatör 00'ın izini oyuncunun yaptığı eylemlerle çözümleyebileceği bir üçüncü bölüm devamı.
+**Yön:** Build 009: doğrulama bulmacasının oyuncu tarafından anlaşılabilirliğini ve sürtünmesini yeniden değerlendirme; ses, erişilebilirlik ve zaman çizelgesi iyileştirmeleri.
