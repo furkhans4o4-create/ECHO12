@@ -112,11 +112,39 @@ button:focus-visible{outline:3px solid #62f3d3;outline-offset:2px}
 .debrief-stat{padding:7px 11px;border:1px solid #39586b;border-radius:8px;background:#132d40;color:#cae2ec;font:11px ui-monospace,Consolas,monospace}
 .debrief-stat.best{border-color:#5edbb7;color:#81ffdb}
 @media(max-width:680px){.campaign-strip{flex-wrap:wrap;padding:9px}.campaign-label{min-width:0}.campaign-segments{order:3;width:100%;flex-basis:100%}.gate-chip{flex:1;min-width:130px;align-items:flex-start;flex-direction:column;gap:3px}.gate-chip span{max-width:none}}
+
+/* Build 011 - touch affordances and performance preferences */
+.mobile-controls{display:none}
+.mobile-controls-info{color:#c6e4e9;font:700 11px ui-monospace,Consolas,monospace;letter-spacing:.05em;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.mobile-controls-info span{font-weight:400;color:#809db4;letter-spacing:0}
+.mobilepad{display:grid;grid-template-columns:repeat(3,68px);grid-template-rows:repeat(3,60px);gap:6px;justify-content:center;margin:9px auto;touch-action:none;user-select:none;-webkit-user-select:none}
+.mobilepad button{display:grid;place-items:center;min-width:0;min-height:0;width:68px;height:60px;border:1px solid #4b7a87;background:#162d3e;color:#ddfffa;border-radius:12px;font-size:27px;font-weight:800;touch-action:none;cursor:pointer}
+.mobilepad button[data-dir="ArrowUp"]{grid-column:2;grid-row:1}
+.mobilepad button[data-dir="ArrowLeft"]{grid-column:1;grid-row:2}
+.mobilepad button[data-dir="ArrowDown"]{grid-column:2;grid-row:3}
+.mobilepad button[data-dir="ArrowRight"]{grid-column:3;grid-row:2}
+.mobilepad button#mobile-record{grid-column:2;grid-row:2;background:#1c564e;border-color:#67e6d4;color:#b6ffee;display:flex;align-items:center;justify-content:center;gap:2px;flex-direction:column;font-size:23px}
+.mobilepad button#mobile-record small{font-size:8px;letter-spacing:.09em}
+.mobilepad button.is-held,.mobilepad button[data-dir][aria-pressed="true"]{background:#276a68;box-shadow:0 0 0 2px #65e6d367 inset;color:#fff;transform:scale(.97)}
+.mobile-shortcuts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.mobile-shortcuts button{flex:1;min-height:45px;max-width:150px;padding:10px}
+@media(max-width:680px){
+ .mobile-controls{display:block;margin:7px 0 12px;padding:10px;border-radius:12px;border:1px solid #365b6b;background:#101f2e}
+ .mobilepad{display:grid}
+ .stage{margin-left:-5px;margin-right:-5px;border-radius:9px}
+ .help{gap:8px}
+ .controls{width:100%;gap:6px}
+ .controls button{flex:1 1 120px;min-height:42px}
+ .timeline-head{flex-wrap:wrap}
+ .log,.protocol-status{padding:11px}
+}
+@media(max-width:360px){.mobilepad{grid-template-columns:repeat(3,62px);grid-template-rows:repeat(3,54px)}.mobilepad button{width:62px;height:54px}}
+@media(prefers-reduced-motion:reduce){.mobilepad button.is-held{transform:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 010</div></header>
+<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 011</div></header>
 <div class="topbar">
  <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 11</div></div>
  <div class="stat"><div class="label">Döngüye kalan</div><div class="value teal" id="time">12.0 sn</div><div class="meters"><div class="meter"><i id="timefill"></i></div></div></div>
@@ -130,14 +158,15 @@ button:focus-visible{outline:3px solid #62f3d3;outline-offset:2px}
 <div class="decision-overlay hidden" id="decision" aria-hidden="true"><div class="decision-panel" id="decision-panel" role="dialog" aria-modal="true" aria-labelledby="decision-title"><div class="kicker" id="decision-kicker">ÇEKİRDEK YÖNERGESİ</div><h2 id="decision-title"></h2><p id="decision-story"></p><div class="decision-effect" id="decision-effect"></div><div class="decision-actions"><button class="secondary" id="decision-cancel">Vazgeç</button><button class="primary" id="decision-confirm">KARARI VER →</button></div></div></div></div>
 <div class="audit-overlay hidden" id="audit" aria-hidden="true"><section class="audit-panel" role="dialog" aria-modal="true" aria-labelledby="audit-title"><div class="kicker">OPERATÖR 00 / KANIT DENETİMİ</div><h2 id="audit-title">Üç kayıt, tek açıklama</h2><p>Görsel, fiziksel ve kayıt kaynağını karşılaştır. Ekranda görünmek, gerçekten orada bulunmak değildir.</p><div class="audit-evidence" id="audit-evidence"></div><p id="audit-instruction"></p><div class="audit-options" id="audit-options"><button type="button" data-verdict="camera">Kamera arızalı; görüntü tamamen rastgele.</button><button type="button" data-verdict="real">İmza 00 fiziksel ve geçerli bir zaman yankısı.</button><button type="button" data-verdict="injected">İmza 00, gerçek bir kaydı olmadan ekrana enjekte edilmiş.</button></div><div class="audit-feedback" id="audit-feedback" role="status" aria-live="polite"></div><div class="audit-footer"><button type="button" class="secondary" id="audit-close">Kapat (Esc)</button></div></section></div>
 <div class="room-picker-overlay hidden" id="room-picker" aria-hidden="true"><section class="room-picker" role="dialog" aria-modal="true" aria-labelledby="room-picker-title"><div class="room-picker-head"><div><div class="kicker">PROTOKOL NAVİGASYONU</div><h2 id="room-picker-title">Oda seçimi</h2><p>Açılmış odaları tekrar oynayabilirsin. Oda değiştirmek mevcut döngüyü sıfırlar; kaydedilmiş ilerlemeyi ve arşivi silmez.</p></div><button type="button" class="secondary" id="room-picker-close">Kapat ✕</button></div><div id="room-picker-grid" class="room-picker-grid"></div></section></div>
+<div class="mobile-controls" aria-label="Dokunmatik oyun kontrolleri"><div class="mobile-controls-info">DOKUNMATİK KONTROL <span>İki yöne aynı anda basarak çapraz yürü</span></div><div class="mobilepad" role="group" aria-label="Yön tuşları"><button type="button" data-dir="ArrowUp" aria-label="Yukarı yürü" aria-pressed="false">↑</button><button type="button" data-dir="ArrowLeft" aria-label="Sola yürü" aria-pressed="false">←</button><button type="button" data-dir="ArrowDown" aria-label="Aşağı yürü" aria-pressed="false">↓</button><button type="button" data-dir="ArrowRight" aria-label="Sağa yürü" aria-pressed="false">→</button><button type="button" id="mobile-record" aria-label="Mevcut döngüyü kaydet">↺<small>KAYDET</small></button></div><div class="mobile-shortcuts"><button type="button" id="mobile-interact" class="secondary">⌁ Etkileşim</button><button type="button" id="mobile-undo" class="secondary">↶ Geri al</button><button type="button" id="mobile-pause" class="secondary">Ⅱ Duraklat</button></div></div>
 <div class="signal-strip" id="signal-strip" aria-label="Canlı sistem durumu"><span>SİSTEM SİNYALİ / <strong id="signal-value">HAZIR</strong></span><span class="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></div>
 <div class="timeline" aria-label="Yankıların zaman çizelgesi"><div class="timeline-head"><span>HAREKET KAYITLARI</span><small>Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas</small></div><canvas id="timeline" width="960" height="155" role="img" aria-label="12 saniyelik hareket ve plaka tetikleme çizelgesi"></canvas></div>
 <div class="help"><div class="helptext"><kbd>W A S D</kbd> veya <kbd>← ↑ ↓ →</kbd> yürü &nbsp; <kbd>Boşluk</kbd> döngüyü kaydet &nbsp; <kbd>R</kbd> odayı sıfırla &nbsp; <kbd>Z</kbd> son yankıyı sil &nbsp; <kbd>P</kbd> duraklat &nbsp; <kbd>E</kbd> terminal &nbsp; <kbd>L</kbd> arşiv &nbsp; <kbd>M</kbd> ses &nbsp; <kbd>H</kbd> ipucu &nbsp; <kbd>O</kbd> oda seçimi</div>
 <div class="controls"><button class="secondary" id="commit">↺ Yankıyı kaydet</button><button class="secondary" id="undo">↶ Son yankıyı sil</button><button class="secondary" id="restart">↻ Odayı sıfırla</button><button class="secondary" id="interact" disabled>⌁ Terminali oku</button><button class="secondary" id="logbook">▤ Arşiv <span id="archive-count">0/15</span></button><button class="secondary" id="room-select" title="O: açılmış odaları seç">▦ Oda seç</button><button class="secondary" id="help-button" title="H: aşamalı ipucu">? İpucu</button><button class="sound" id="sound">♪ Ses: açık</button><button class="sound" id="frequency" title="F: kayıt doğrulama / ters kayıt" disabled>F · KAPALI</button></div><div id="hint-assist" class="hint-assist hidden" role="status" aria-live="polite"><strong id="hint-step"></strong><span id="hint-body"></span></div></div>
-<div class="mobilepad" aria-label="Dokunmatik yön tuşları"><button data-dir="ArrowLeft">←</button><button data-dir="ArrowUp">↑</button><button data-dir="ArrowDown">↓</button><button data-dir="ArrowRight">→</button></div>
+
 <div class="log"><div class="indicator"></div><div><div class="logtitle" id="mission">PROTOKOL 01 · İLK İZ</div><div class="logdesc" id="hint">Yeşil plakaya bas, SPACE ile yankını kaydet. Sonraki döngüde kapı açılınca çıkışa git.</div></div></div>
 <section class="protocol-status" aria-label="Geçit hedefleri"><div class="protocol-status-head"><strong>ANLIK GEÇİT DURUMU</strong><small id="gate-counter">0 / 0 açık</small></div><div class="gate-status-grid" id="gate-status"></div></section>
-<footer>BUILD 010 · BÖLÜM AKIŞI / HEDEFLER / TEMPO</footer>
+<footer>BUILD 011 · MOBİL KONTROL / PERFORMANS</footer>
 </div>
 <script>
 (()=>{
@@ -146,6 +175,10 @@ const canvas=document.getElementById('scene'),ctx=canvas.getContext('2d');
 const timeline=document.getElementById('timeline'),tc=timeline.getContext('2d');
 const $=id=>document.getElementById(id);
 const W=18,H=11,T=48,OX=48,OY=40,LOOP=12,DT=1/60,SPEED=4.05,MAX_CLONES=6;
+const floorCache=document.createElement('canvas');floorCache.width=W*T;floorCache.height=H*T;const fc=floorCache.getContext('2d');
+for(let y=0;y<H;y++)for(let x=0;x<W;x++){const px=x*T,py=y*T;fc.fillStyle=(x+y)%2?'#152132':'#172537';fc.fillRect(px+1,py+1,T-2,T-2);fc.strokeStyle='#25364a';fc.lineWidth=1;fc.strokeRect(px+.5,py+.5,T-1,T-1)}
+const sceneGradient=ctx.createRadialGradient(480,310,60,480,310,570);sceneGradient.addColorStop(0,'#142538');sceneGradient.addColorStop(1,'#080f1a');
+
 const LVLS=[
  {title:'İLK İZ',tag:'Önce orada olmalıydın.',hint:'Sol taraftaki yeşil plakaya basıp BOŞLUK ile yankını kaydet. Tekrar başlarken yankın kapıyı senin için açık tutacak.',start:[2,5],exit:[15,5],barriers:[{x:9,gate:[9,5],key:'A'}],plates:[{x:6,y:3,key:'A'}],guards:[],block:[]},
  {title:'İKİ SES',tag:'Bir beden. İki geçmiş.',hint:'Önce A plakasında bir yankı bırak. Açılan ilk kapıdan geç, B plakasında ikinci yankıyı kaydet. Üçüncü döngüde iki kapıyı da aş.',start:[2,3],exit:[15,7],barriers:[{x:6,gate:[6,3],key:'A'},{x:12,gate:[12,7],key:'B'}],plates:[{x:3,y:7,key:'A'},{x:9,y:8,key:'B'}],guards:[],block:[]},
@@ -222,6 +255,7 @@ try{const p=localStorage.getItem('echo12-chapter-path');if(p==='keep'||p==='cut'
 try{const saved=JSON.parse(localStorage.getItem('echo12-archive')||'[]');if(Array.isArray(saved))archiveRead=new Set(saved.filter(id=>ARCHIVE.some(a=>a.id===id)))}catch(e){}
 try{const saved=JSON.parse(localStorage.getItem('echo12-endings')||'[]');if(Array.isArray(saved))endingHistory=new Set(saved.filter(id=>CHOICES.some(c=>c.id===id)))}catch(e){}
 let levelIndex=0,level,player,clones=[],record=[],elapsed=0,mode='menu',keys=new Set(),msg='',msgUntil=0,wallClock=0,particles=[],soundOn=true,audio=null,lastFrame=0,accum=0,wonAll=false,relayUntil={};
+let keyboardHeld=new Set(),touchHeld=new Map();
 let gateMemory=new Map(),fxRings=[],rewindWash=0,sceneBannerUntil=0,lastCountdownBeat=-1,ambientBus=null,ambientNodes=null;
 try{soundOn=localStorage.getItem('echo12-muted')!=='1'}catch(e){}
 function getUnlocked(){try{return Math.max(0,Math.min(+localStorage.getItem('echo12-unlocked')||0,LVLS.length-1))}catch(e){return 0}}
@@ -334,18 +368,18 @@ function renderRoomSelector(){
 }
 function openRoomSelector(){
  if(!['menu','playing','paused','leveldone','allwon'].includes(mode))return;
- selectorBefore=mode;selectorPreviousFocus=document.activeElement;keys.clear();mode='selecting';renderRoomSelector();
+ selectorBefore=mode;selectorPreviousFocus=document.activeElement;clearInputs();mode='selecting';renderRoomSelector();
  $('room-picker').classList.remove('hidden');$('room-picker').setAttribute('aria-hidden','false');
  $('room-picker-close').focus();updateHUD();
 }
 function closeRoomSelector(){
  if(mode!=='selecting')return;
- mode=selectorBefore;keys.clear();closeRoomSelectorPanel();updateHUD();
+ mode=selectorBefore;clearInputs();closeRoomSelectorPanel();updateHUD();
  if(selectorPreviousFocus&&typeof selectorPreviousFocus.focus==='function')selectorPreviousFocus.focus();
 }
 function selectRoom(index){
  if(mode!=='selecting'||!Number.isInteger(index)||index<0||index>getUnlocked()||index>=LVLS.length)return;
- closeRoomSelectorPanel();loadLevel(index);hideOverlay();keys.clear();
+ closeRoomSelectorPanel();loadLevel(index);hideOverlay();clearInputs();
  if(document.activeElement&&typeof document.activeElement.blur==='function')document.activeElement.blur();
 }
 
@@ -421,7 +455,7 @@ function showDebrief(improved){
  if(improved)tokens.push(['Yeni kişisel rekor','★']);
  for(const [label,value] of tokens){const tag=document.createElement('span');tag.className='debrief-stat'+(label==='Yeni kişisel rekor'?' best':'');tag.textContent=label+': '+value;d.append(tag)}
 }
-function loadLevel(idx){closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
+function loadLevel(idx){needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
 
 function closeAuditPanel(){$('audit').classList.add('hidden');$('audit').setAttribute('aria-hidden','true')}
 function nearestSensor(){return (level.sensors||[]).find(v=>Math.hypot(player.x-v.x-.5,player.y-v.y-.5)<.72)||null}
@@ -447,8 +481,8 @@ function renderAuditPanel(){
  for(const btn of $('audit-options').querySelectorAll('button'))btn.disabled=!ready||auditUnlocked;
  $('audit-feedback').textContent=auditUnlocked?'DOĞRULANDI — denetim geçidi açık.':'';
 }
-function openAuditPanel(){if(mode!=='playing')return;mode='auditing';keys.clear();renderAuditPanel();$('audit').classList.remove('hidden');$('audit').setAttribute('aria-hidden','false');$('audit-close').focus();updateHUD()}
-function exitAuditPanel(){if(mode!=='auditing')return;closeAuditPanel();mode='playing';keys.clear();updateHUD()}
+function openAuditPanel(){if(mode!=='playing')return;mode='auditing';clearInputs();renderAuditPanel();$('audit').classList.remove('hidden');$('audit').setAttribute('aria-hidden','false');$('audit-close').focus();updateHUD()}
+function exitAuditPanel(){if(mode!=='auditing')return;closeAuditPanel();mode='playing';clearInputs();updateHUD()}
 function submitVerdict(answer){
  if(mode!=='auditing'||auditEvidence.size<3||auditUnlocked)return;
  if(answer!=='injected'){auditMistakes++;$('audit-feedback').textContent=answer==='real'?'Yanlış: fiziksel temas sıfır ve kayıt imzası bulunmuyor.':'Yetersiz: kamera görüntüyü yakaladı; öteki iki sistem onu doğrulamıyor.';audioBeep(200,.15);return}
@@ -456,9 +490,9 @@ function submitVerdict(answer){
 }
 function closeDecisionPanel(){$('decision').classList.add('hidden');$('decision').setAttribute('aria-hidden','true')}
 function nearestChoice(){return levelIndex===5?CHOICES.find(c=>Math.hypot(player.x-c.x-.5,player.y-c.y-.5)<1.13):null}
-function openDecision(choice){if(mode!=='playing'||!choice||endingChoice)return;keys.clear();activeDecision=choice;mode='decision';$('decision-panel').dataset.choice=choice.id;$('decision-kicker').textContent=choice.kicker;$('decision-title').textContent=choice.title;$('decision-story').textContent=choice.story;$('decision-effect').textContent=choice.effect;$('decision').classList.remove('hidden');$('decision').setAttribute('aria-hidden','false');$('decision-cancel').focus();updateHUD()}
-function cancelDecision(){if(mode!=='decision')return;activeDecision=null;mode='playing';keys.clear();closeDecisionPanel();updateHUD()}
-function confirmDecision(){if(mode!=='decision'||!activeDecision)return;endingChoice=activeDecision.id;activeDecision=null;mode='playing';keys.clear();closeDecisionPanel();flash(endingChoice==='keep'?'Tanık kanalı etkin: çekirdeğe geçiş açık.':'Çekirdek susturuldu: dış çıkış açık.');pulseFX(player.x,player.y,endingChoice==='keep'?'#6bead0':'#ff8693',1.8);rewindWash=.45;playCue(endingChoice==='keep'?'keep':'cut');updateHUD()}
+function openDecision(choice){if(mode!=='playing'||!choice||endingChoice)return;clearInputs();activeDecision=choice;mode='decision';$('decision-panel').dataset.choice=choice.id;$('decision-kicker').textContent=choice.kicker;$('decision-title').textContent=choice.title;$('decision-story').textContent=choice.story;$('decision-effect').textContent=choice.effect;$('decision').classList.remove('hidden');$('decision').setAttribute('aria-hidden','false');$('decision-cancel').focus();updateHUD()}
+function cancelDecision(){if(mode!=='decision')return;activeDecision=null;mode='playing';clearInputs();closeDecisionPanel();updateHUD()}
+function confirmDecision(){if(mode!=='decision'||!activeDecision)return;endingChoice=activeDecision.id;activeDecision=null;mode='playing';clearInputs();closeDecisionPanel();flash(endingChoice==='keep'?'Tanık kanalı etkin: çekirdeğe geçiş açık.':'Çekirdek susturuldu: dış çıkış açık.');pulseFX(player.x,player.y,endingChoice==='keep'?'#6bead0':'#ff8693',1.8);rewindWash=.45;playCue(endingChoice==='keep'?'keep':'cut');updateHUD()}
 function showOverlay(kicker,title,body,button){$('debrief').replaceChildren();$('kicker').textContent=kicker;$('dialog-title').textContent=title;$('dialog-text').innerHTML=body;$('start').textContent=button;$('replay-choice').classList.toggle('visible',mode==='allwon'||(mode==='leveldone'&&levelIndex===5));$('overlay').classList.remove('hidden')}
 function hideOverlay(){const overlay=$('overlay');overlay.classList.add('hidden');if(overlay.contains(document.activeElement)&&typeof document.activeElement.blur==='function')document.activeElement.blur()}
 function nearestTerminal(){return TERMINALS.find(t=>t.level===levelIndex&&Math.hypot(player.x-t.x-.5,player.y-t.y-.5)<1.13)||null}
@@ -472,21 +506,44 @@ function renderArchive(activeId){
  else{const p=document.createElement('p');p.textContent='Odalardaki parlayan terminallere yaklaş ve E tuşuna bas. Bulduğun kayıtlar burada saklanır.';body.append(p)}
  $('archive-status').textContent=archiveRead.size+' / '+ARCHIVE.length+' KAYIT ÇÖZÜLDÜ · Oyun arşiv açıkken durur.';refreshArchiveCount();
 }
-function openArchive(entryId){if(mode==='reading')return;readBefore=mode;keys.clear();if(entryId&&!archiveRead.has(entryId)){archiveRead.add(entryId);try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}audioBeep(780,.14,'triangle')}
+function openArchive(entryId){if(mode==='reading')return;readBefore=mode;clearInputs();if(entryId&&!archiveRead.has(entryId)){archiveRead.add(entryId);try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}audioBeep(780,.14,'triangle')}
  mode='reading';renderArchive(entryId||[...archiveRead][archiveRead.size-1]||null);$('archive').classList.remove('hidden');$('archive').setAttribute('aria-hidden','false');$('archive-close').focus();updateHUD()}
-function closeArchive(){if(mode!=='reading')return;$('archive').classList.add('hidden');$('archive').setAttribute('aria-hidden','true');mode=readBefore;keys.clear();updateHUD()}
+function closeArchive(){if(mode!=='reading')return;$('archive').classList.add('hidden');$('archive').setAttribute('aria-hidden','true');mode=readBefore;clearInputs();updateHUD()}
 function interactTerminal(){if(mode!=='playing')return;const sensor=nearestSensor();if(sensor){scanSensor(sensor);return}if(nearestAuditConsole()){openAuditPanel();return}const choice=nearestChoice();if(choice){openDecision(choice);return}const terminal=nearestTerminal();if(terminal)openArchive(terminal.entry);else flash('Bir terminale veya konsola yaklaş.')}
 function startGame(){if(wonAll){loadLevel(0)}else if(mode==='menu'){loadLevel(getUnlocked())}else if(mode==='leveldone'){loadLevel(Math.min(levelIndex+1,LVLS.length-1))}else if(mode==='allwon'){loadLevel(0)}else if(mode==='paused'){mode='playing'}hideOverlay();audioBeep(700)}
-function resetPlayer(){player={x:level.start[0]+.5,y:level.start[1]+.5};elapsed=0;relayUntil={};record=[{...player}];lastCountdownBeat=-1;}
+function resetPlayer(){needsRedraw=true;player={x:level.start[0]+.5,y:level.start[1]+.5};elapsed=0;relayUntil={};record=[{...player}];lastCountdownBeat=-1;}
 function cycleCommit(manual=true){if(mode!=='playing')return;if(clones.length>=MAX_CLONES){if(!manual)resetPlayer();flash('6 yankı sınırı doldu. Z ile son yankıyı sil.');audioBeep(190,.2,'sawtooth');return}const samples=record.map(p=>({...p})),last=samples[samples.length-1];while(samples.length<Math.round(LOOP/DT)+1)samples.push({...last});clones.push({samples,color:clones.length,reverse:!!(level.reverseEnabled&&reverseMode)});for(let j=0;j<17;j++)spawnParticle(player.x,player.y,'#ba9dff');pulseFX(player.x,player.y,'#bd9dff',2);rewindWash=.55;playCue('echo');resetPlayer();flash(manual?'Yankın kaydedildi. Yeni döngü başladı.':'12 saniye doldu. Geçmişin kaydedildi.');updateHUD()}
 function undoEcho(){if(mode!=='playing'||!clones.length)return;clones.pop();resetPlayer();flash('Son yankı silindi. Bu döngü de başa alındı.');audioBeep(390,.12);pulseFX(player.x,player.y,'#f0b8ff');updateHUD()}
 function flash(s){msg=s;msgUntil=wallClock+2.3}
 function restart(){if(!level)return;loadLevel(levelIndex);hideOverlay();audioBeep(400,.1)}
-function pause(){if(mode==='playing'){mode='paused';showOverlay('SİSTEM DURAKLATILDI','Zaman bekliyor.','Hazır olduğunda devam et. Kayıtların korunuyor.','DEVAM ET →')}else if(mode==='paused'){mode='playing';hideOverlay()}updateHUD()}
-function onKeyDown(e){const focusedButton=e.target?.closest?.('button');if(e.code==='Space'&&focusedButton&&!focusedButton.disabled&&!focusedButton.closest('.hidden'))return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.repeat&&['Space','KeyO','KeyH','KeyF','KeyP','KeyR','KeyZ','Enter','KeyE','KeyL','Escape'].includes(e.code))return;if(mode==='selecting'){if(e.code==='Escape')closeRoomSelector();return}if(mode==='playing'&&['KeyW','KeyA','KeyS','KeyD','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.code))keys.add(e.code);if(mode==='auditing'){if(e.code==='Escape')exitAuditPanel();return}if(mode==='reading'){if(['Escape','KeyE','KeyL'].includes(e.code))closeArchive();return}if(mode==='decision'){if(e.code==='Escape')cancelDecision();else if(e.code==='Enter')confirmDecision();return}if(e.code==='KeyO'){openRoomSelector();return}if(e.code==='KeyH'){showHint();return}if(e.code==='KeyF'){toggleFrequency();return}if(e.code==='KeyM'){toggleSound();return}if(e.code==='KeyL'){openArchive();return}if(e.code==='KeyE'){interactTerminal();return}if(e.code==='Enter'&&mode!=='playing')startGame();if(e.code==='Space'){if(mode==='playing')cycleCommit();else if(mode==='menu'||mode==='leveldone'||mode==='allwon')startGame()}if(e.code==='KeyR'&&(mode==='playing'||mode==='paused'))restart();if(e.code==='KeyZ'&&mode==='playing')undoEcho();if(e.code==='KeyP'&&(mode==='playing'||mode==='paused'))pause()}
-window.addEventListener('keydown',onKeyDown);window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>{keys.clear();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)});document.addEventListener('visibilitychange',()=>{if(document.hidden&&ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)});
+function pause(){if(mode==='playing'){clearInputs();mode='paused';showOverlay('SİSTEM DURAKLATILDI','Zaman bekliyor.','Hazır olduğunda devam et. Kayıtların korunuyor.','DEVAM ET →')}else if(mode==='paused'){clearInputs();mode='playing';hideOverlay()}updateHUD()}
+function clearInputs(){
+ keys.clear();keyboardHeld.clear();touchHeld.clear();
+ for(const btn of document.querySelectorAll('.mobilepad [data-dir]')){btn.classList.remove('is-held');btn.setAttribute('aria-pressed','false')}
+}
+function holdTouchDirection(code,id,btn){
+ if(mode!=='playing')return;
+ let ids=touchHeld.get(code);if(!ids){ids=new Set();touchHeld.set(code,ids)}
+ ids.add(id);keys.add(code);btn.classList.add('is-held');btn.setAttribute('aria-pressed','true');
+}
+function releaseTouchDirection(code,id,btn){
+ const ids=touchHeld.get(code);if(ids){ids.delete(id);if(ids.size===0)touchHeld.delete(code)}
+ if(!touchHeld.has(code)&&!keyboardHeld.has(code))keys.delete(code);
+ if(!touchHeld.has(code)){btn.classList.remove('is-held');btn.setAttribute('aria-pressed','false')}
+}
+function onKeyDown(e){const focusedButton=e.target?.closest?.('button');if(e.code==='Space'&&focusedButton&&!focusedButton.disabled&&!focusedButton.closest('.hidden'))return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.repeat&&['Space','KeyO','KeyH','KeyF','KeyP','KeyR','KeyZ','Enter','KeyE','KeyL','Escape'].includes(e.code))return;if(mode==='selecting'){if(e.code==='Escape')closeRoomSelector();return}if(mode==='playing'&&['KeyW','KeyA','KeyS','KeyD','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.code)){keys.add(e.code);keyboardHeld.add(e.code)}if(mode==='auditing'){if(e.code==='Escape')exitAuditPanel();return}if(mode==='reading'){if(['Escape','KeyE','KeyL'].includes(e.code))closeArchive();return}if(mode==='decision'){if(e.code==='Escape')cancelDecision();else if(e.code==='Enter')confirmDecision();return}if(e.code==='KeyO'){openRoomSelector();return}if(e.code==='KeyH'){showHint();return}if(e.code==='KeyF'){toggleFrequency();return}if(e.code==='KeyM'){toggleSound();return}if(e.code==='KeyL'){openArchive();return}if(e.code==='KeyE'){interactTerminal();return}if(e.code==='Enter'&&mode!=='playing')startGame();if(e.code==='Space'){if(mode==='playing')cycleCommit();else if(mode==='menu'||mode==='leveldone'||mode==='allwon')startGame()}if(e.code==='KeyR'&&(mode==='playing'||mode==='paused'))restart();if(e.code==='KeyZ'&&mode==='playing')undoEcho();if(e.code==='KeyP'&&(mode==='playing'||mode==='paused'))pause()}
+window.addEventListener('keydown',onKeyDown);window.addEventListener('keyup',e=>{keyboardHeld.delete(e.code);if(!touchHeld.has(e.code))keys.delete(e.code)});window.addEventListener('blur',()=>{clearInputs();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)});document.addEventListener('visibilitychange',()=>{if(document.hidden){clearInputs();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)}});
 $('audit-close').onclick=exitAuditPanel;for(const btn of $('audit-options').querySelectorAll('button'))btn.onclick=()=>submitVerdict(btn.dataset.verdict);$('decision-cancel').onclick=cancelDecision;$('decision-confirm').onclick=confirmDecision;$('replay-choice').onclick=()=>{loadLevel(5);hideOverlay()};$('archive-close').onclick=closeArchive;$('logbook').onclick=()=>mode==='reading'?closeArchive():openArchive();$('interact').onclick=interactTerminal;$('room-select').onclick=openRoomSelector;$('room-picker-close').onclick=closeRoomSelector;$('help-button').onclick=showHint;$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('undo').onclick=undoEcho;$('restart').onclick=restart;$('sound').onclick=toggleSound;$('frequency').onclick=toggleFrequency;
-for(const btn of document.querySelectorAll('[data-dir]')){let code=btn.dataset.dir;btn.addEventListener('pointerdown',e=>{e.preventDefault();keys.add(code);btn.setPointerCapture(e.pointerId)});for(let evt of ['pointerup','pointercancel','lostpointercapture'])btn.addEventListener(evt,()=>keys.delete(code))}
+for(const btn of document.querySelectorAll('.mobilepad [data-dir]')){
+ const code=btn.dataset.dir;
+ btn.addEventListener('pointerdown',e=>{e.preventDefault();if(mode!=='playing')return;holdTouchDirection(code,e.pointerId,btn);try{btn.setPointerCapture(e.pointerId)}catch(err){}});
+ const release=e=>{releaseTouchDirection(code,e.pointerId,btn)};
+ for(const eventName of ['pointerup','pointercancel','lostpointercapture'])btn.addEventListener(eventName,release);
+}
+$('mobile-record').onclick=()=>cycleCommit();
+$('mobile-interact').onclick=interactTerminal;
+$('mobile-undo').onclick=undoEcho;
+$('mobile-pause').onclick=pause;
 function ghostAt(c,t=elapsed){const moment=c.reverse?LOOP-t:t;const index=Math.max(0,Math.min(c.samples.length-1,Math.round(moment/DT)));return c.samples[index]}
 function plateOccupancy(p){const x=p.x+.5,y=p.y+.5;return {live:Math.hypot(player.x-x,player.y-y)<.46,echoes:clones.reduce((n,c)=>{if(p.reverseOnly&&!c.reverse||p.forwardOnly&&c.reverse)return n;const g=ghostAt(c);return n+(Math.hypot(g.x-x,g.y-y)<.46?1:0)},0)}}
 function platePressed(p){const count=plateOccupancy(p);if(p.needsScan)return scannerOn&&count.echoes>0;if(p.reverseOnly||p.forwardOnly)return count.echoes>0;if(p.selfOnly)return count.live;if(p.echoCount)return count.echoes>=p.echoCount;if(p.echoOnly)return count.echoes>0;return count.live||count.echoes>0}
@@ -544,16 +601,23 @@ if(secondLeft<=3&&secondLeft>0&&lastCountdownBeat!==secondLeft){lastCountdownBea
  for(const g of level.guards){const pos=guardPos(g);if(Math.hypot(player.x-pos.x,player.y-pos.y)<.46){for(let i=0;i<20;i++)spawnParticle(player.x,player.y,'#ff6a7c');audioBeep(140,.28,'sawtooth');resetPlayer();flash('Güvenlik sensörüne yakalandın. Mevcut döngü silindi.');break}}
  if(Math.hypot(player.x-level.exit[0]-.5,player.y-level.exit[1]-.5)<.48)victory();if((Math.round(elapsed*10)!==Math.round((elapsed-dt)*10)))updateHUD()
 }
-function updateHUD(){updateCampaignUI();updateProtocolStatus();if(levelIndex===0)$('hint').textContent=currentObjective();$('frequency').disabled=mode!=='playing'||!(level.phantoms||level.reverseEnabled);$('frequency').textContent=level.phantoms?'F · DOĞRULA '+(scannerOn?'AÇIK':'KAPALI'):level.reverseEnabled?'F · '+(reverseMode?'TERS':'NORMAL'):'F · KAPALI';const canInteract=!!(nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice());$('interact').disabled=mode!=='playing'||!canInteract;$('interact').textContent=nearestSensor()?'⌁ Kanıt topla':nearestAuditConsole()?'⌁ Kanıtları karşılaştır':nearestChoice()?'⌁ Çekirdek kararı':'⌁ Terminali oku';refreshArchiveCount();$('room').textContent=`${String(levelIndex+1).padStart(2,'0')} / ${String(LVLS.length).padStart(2,'0')}`;$('time').textContent=`${Math.max(0,LOOP-elapsed).toFixed(1)} sn`;$('timefill').style.width=(100*elapsed/LOOP)+'%';$('clones').textContent=`${clones.length} / ${MAX_CLONES}`;$('mode').textContent={menu:'HAZIR',playing:'KAYIT',paused:'DURDU',leveldone:'BAŞARILI',allwon:'TAMAMLANDI',reading:'ARŞİV',decision:'KARAR',auditing:'KANIT',selecting:'ODA SEÇİMİ'}[mode]||mode;
+function updateHUD(){
+ const playing=mode==='playing';
+ $('mobile-record').disabled=!playing;
+ $('mobile-interact').disabled=!playing||!(nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice());
+ $('mobile-undo').disabled=!playing||clones.length===0;
+ $('mobile-pause').disabled=!(playing||mode==='paused');
+ $('mobile-pause').textContent=mode==='paused'?'▶ Devam':'Ⅱ Duraklat';
+ updateCampaignUI();updateProtocolStatus();if(levelIndex===0)$('hint').textContent=currentObjective();$('frequency').disabled=mode!=='playing'||!(level.phantoms||level.reverseEnabled);$('frequency').textContent=level.phantoms?'F · DOĞRULA '+(scannerOn?'AÇIK':'KAPALI'):level.reverseEnabled?'F · '+(reverseMode?'TERS':'NORMAL'):'F · KAPALI';const canInteract=!!(nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice());$('interact').disabled=mode!=='playing'||!canInteract;$('interact').textContent=nearestSensor()?'⌁ Kanıt topla':nearestAuditConsole()?'⌁ Kanıtları karşılaştır':nearestChoice()?'⌁ Çekirdek kararı':'⌁ Terminali oku';refreshArchiveCount();$('room').textContent=`${String(levelIndex+1).padStart(2,'0')} / ${String(LVLS.length).padStart(2,'0')}`;$('time').textContent=`${Math.max(0,LOOP-elapsed).toFixed(1)} sn`;$('timefill').style.width=(100*elapsed/LOOP)+'%';$('clones').textContent=`${clones.length} / ${MAX_CLONES}`;$('mode').textContent={menu:'HAZIR',playing:'KAYIT',paused:'DURDU',leveldone:'BAŞARILI',allwon:'TAMAMLANDI',reading:'ARŞİV',decision:'KARAR',auditing:'KANIT',selecting:'ODA SEÇİMİ'}[mode]||mode;
 const rem=LOOP-elapsed,critical=mode==='playing'&&rem<=3,anyOpen=level.barriers.some(b=>gateOpen(b.key));
 $('signal-value').textContent=critical?'SON '+Math.ceil(rem)+' SANİYE':mode==='playing'?(level.phantoms&&!scannerOn?'SİNYAL DOĞRULANMADI':level.reverseEnabled&&reverseMode?'TERS KAYIT HAZIR':anyOpen?'GEÇİŞ AÇIK':'KAYIT ALINIYOR'):mode==='allwon'?'PROTOKOL TAMAMLANDI':mode==='decision'?'ONAY BEKLENİYOR':mode==='auditing'?'KANIT DENETİMİ':mode==='reading'?'ARŞİV OKUNUYOR':'SİSTEM BEKLEMEDE';
 $('signal-strip').classList.toggle('critical',critical);syncAtmos();}
 const round=(x,y,w,h,r)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r)};
 function glowCircle(x,y,r,col,blur=20){ctx.save();ctx.shadowColor=col;ctx.shadowBlur=blur;ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.restore()}
 function draw(){ctx.clearRect(0,0,960,610);ctx.fillStyle='#0c1523';ctx.fillRect(0,0,960,610);const t=wallClock;
- const bg=ctx.createRadialGradient(480,310,60,480,310,570);bg.addColorStop(0,'#142538');bg.addColorStop(1,'#080f1a');ctx.fillStyle=bg;ctx.fillRect(0,0,960,610);
- ctx.save();ctx.translate(OX,OY);
- for(let y=0;y<H;y++)for(let x=0;x<W;x++){let px=x*T,py=y*T;ctx.fillStyle=(x+y)%2?'#152132':'#172537';ctx.fillRect(px+1,py+1,T-2,T-2);ctx.strokeStyle='#25364a';ctx.lineWidth=1;ctx.strokeRect(px+.5,py+.5,T-1,T-1);const tp=tileType(x,y);if(tp==='wall'){ctx.fillStyle='#293a50';round(px+2,py+2,T-4,T-4,5);ctx.fill();ctx.fillStyle='#32475d';ctx.fillRect(px+5,py+5,T-10,3);ctx.fillStyle='#203247';ctx.fillRect(px+5,py+T-9,T-10,3)}else if(tp==='gate'||tp==='gateopen'){let col=tp==='gate'?'#f1ae6c':'#53f3d0';ctx.fillStyle=tp==='gate'?'#51382f':'#1a453d';ctx.fillRect(px+4,py+3,T-8,T-6);ctx.strokeStyle=col;ctx.lineWidth=tp==='gate'?3:1.5;ctx.strokeRect(px+6,py+5,T-12,T-10);if(tp==='gate'){ctx.fillStyle=col;for(let q=0;q<4;q++)ctx.fillRect(px+12+q*7,py+9,3,T-18)}}}
+ ctx.fillStyle=sceneGradient;ctx.fillRect(0,0,960,610);
+ ctx.save();ctx.translate(OX,OY);ctx.drawImage(floorCache,0,0);
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){let px=x*T,py=y*T;const tp=tileType(x,y);if(tp==='wall'){ctx.fillStyle='#293a50';round(px+2,py+2,T-4,T-4,5);ctx.fill();ctx.fillStyle='#32475d';ctx.fillRect(px+5,py+5,T-10,3);ctx.fillStyle='#203247';ctx.fillRect(px+5,py+T-9,T-10,3)}else if(tp==='gate'||tp==='gateopen'){let col=tp==='gate'?'#f1ae6c':'#53f3d0';ctx.fillStyle=tp==='gate'?'#51382f':'#1a453d';ctx.fillRect(px+4,py+3,T-8,T-6);ctx.strokeStyle=col;ctx.lineWidth=tp==='gate'?3:1.5;ctx.strokeRect(px+6,py+5,T-12,T-10);if(tp==='gate'){ctx.fillStyle=col;for(let q=0;q<4;q++)ctx.fillRect(px+12+q*7,py+9,3,T-18)}}}
  // faint ghost trails
  for(let j=0;j<clones.length;j++){let c=clones[j];ctx.beginPath();for(let i=0;i<c.samples.length;i+=12){let p=c.samples[i],x=p.x*T,y=p.y*T;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.strokeStyle=c.reverse?'rgba(252,183,110,.40)':`rgba(183,148,255,${.19+j*.025})`;ctx.lineWidth=3;ctx.stroke()}
  // plates
@@ -607,7 +671,18 @@ function drawTimeline(){
  let x=left+trackW*Math.min(1,elapsed/LOOP);tc.strokeStyle='#f3f8ff';tc.lineWidth=2;tc.beginPath();tc.moveTo(x,18);tc.lineTo(x,150);tc.stroke();tc.lineWidth=1;
  if(tracks.length<=2){tc.textAlign='left';tc.fillStyle='#829ab2';tc.font='11px system-ui,sans-serif';tc.fillText('Yürü ve döngüyü kaydet: hareketlerin burada görünecek.',left+8,110)}
 }
-function frame(now){if(!lastFrame)lastFrame=now;accum+=Math.min((now-lastFrame)/1000,.08);lastFrame=now;let c=0;while(accum>=DT&&c++<5){step(DT);accum-=DT}draw();drawTimeline();if(ambientBus&&audio)syncAtmos();requestAnimationFrame(frame)}
+const frameBudget=window.matchMedia&&window.matchMedia('(pointer:coarse)').matches?1000/30:1000/60;
+let lastVisualRender=0,lastAudioRefresh=0,needsRedraw=true;
+function frame(now){
+ if(!lastFrame)lastFrame=now;
+ if(document.hidden){lastFrame=now;accum=0;needsRedraw=true;requestAnimationFrame(frame);return}
+ const advance=Math.min((now-lastFrame)/1000,.08);lastFrame=now;
+ const live=mode==='playing'||particles.length>0||fxRings.length>0||rewindWash>0||sceneBannerUntil>0;
+ if(live){accum+=advance;let c=0;while(accum>=DT&&c++<5){step(DT);accum-=DT}}else accum=0;
+ if((live&&now-lastVisualRender>=frameBudget)||needsRedraw){draw();drawTimeline();lastVisualRender=now;needsRedraw=false}
+ if(ambientBus&&audio&&now-lastAudioRefresh>900){syncAtmos();lastAudioRefresh=now}
+ requestAnimationFrame(frame)
+}
 levelIndex=getUnlocked();level=LVLS[levelIndex];player={x:level.start[0]+.5,y:level.start[1]+.5};record=[{...player}];gateMemory=new Map(level.barriers.map(b=>[b.key,false]));$('sound').textContent='♪ Ses: '+(soundOn?'açık':'kapalı');updateHUD();requestAnimationFrame(frame);
 })();
 </script>
