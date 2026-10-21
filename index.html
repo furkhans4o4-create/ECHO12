@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECHO/12 — Kendi Geçmişinle Kaç</title>
+<style>
+:root{color-scheme:dark;--bg:#090e18;--panel:#111b2a;--line:#2c3b50;--faint:#8294af;--teal:#53f3d0;--purple:#ba9dff;--gold:#f3c57a;--red:#ff6a7c}*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Inter,Segoe UI,system-ui,sans-serif;background:radial-gradient(ellipse at 50% -16%,#213349 0%,#0a111d 50%,#080c14 100%);color:#ecf4ff}
+.wrap{max-width:1200px;padding:24px 20px 35px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:19px}
+.brand{display:flex;gap:14px;align-items:center}.glyph{width:42px;height:42px;border:1px solid #65e9d3;border-radius:12px;display:grid;place-items:center;color:var(--teal);font-weight:900;font-size:23px;box-shadow:0 0 28px #53f3d01a,inset 0 0 14px #53f3d018}
+h1{letter-spacing:.18em;font-size:22px;margin:0;font-weight:850}h1 span{color:var(--teal)}.sub{font-size:11px;letter-spacing:.15em;color:#92a2b9;margin:5px 0 0;text-transform:uppercase}
+.version{color:#8ea0b7;font:11px ui-monospace,Consolas,monospace;border:1px solid #35465a;padding:8px 11px;border-radius:20px}
+.topbar{display:grid;grid-template-columns:1.2fr 1fr 1fr 1.1fr;gap:8px;margin:0 0 10px}.stat{background:#111b29bc;border:1px solid #28364a;border-radius:12px;padding:11px 15px}.label{font-size:10px;letter-spacing:.16em;color:#8e9fb5;text-transform:uppercase}.value{font-weight:800;font-size:21px;letter-spacing:.03em;margin-top:2px}.value.teal{color:var(--teal)}.value.purple{color:var(--purple)}
+.stage{position:relative;background:#080f1a;border-radius:17px;border:1px solid #324257;overflow:hidden;box-shadow:0 17px 60px #0006}.stage canvas{display:block;width:100%;height:auto;aspect-ratio:960/610}.overlay{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;z-index:2;background:#080e19cf;backdrop-filter:blur(5px);padding:22px}.overlay.hidden{display:none}
+.dialog{max-width:545px;width:100%;text-align:center;padding:34px 32px;background:linear-gradient(145deg,#1d2a3e,#0e1727);border:1px solid #557089;border-radius:18px;box-shadow:0 25px 70px #0009}.kicker{color:var(--teal);letter-spacing:.28em;font-size:11px;font-weight:800}.dialog h2{font-size:36px;line-height:1.12;letter-spacing:-.035em;margin:15px 0}.dialog p{color:#b5c2d5;line-height:1.7;font-size:15px;margin:0 0 21px}.dialog strong{color:#fff}.primary{border:none;border-radius:10px;background:var(--teal);color:#0a1921;font-size:14px;font-weight:850;padding:15px 32px;cursor:pointer;box-shadow:0 0 25px #53f3d034}.primary:hover{background:#86ffe5}.secondary{border:1px solid #52647d;border-radius:10px;background:transparent;color:#e9f4ff;font-size:13px;font-weight:700;padding:12px 16px;cursor:pointer}.secondary:hover{background:#27384c}
+.help{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 2px}.helptext{color:#a7b7cc;font-size:13px;line-height:1.6}.helptext b{color:#eef4ff}kbd{font:11px ui-monospace,Consolas,monospace;color:#e5efff;border:1px solid #46586d;background:#182437;padding:4px 7px;border-radius:5px}.controls{display:flex;gap:7px;flex-wrap:wrap}.controls button{font-size:12px}
+.log{margin-top:15px;border:1px solid #29384e;background:#0f1a29c9;border-radius:13px;padding:14px 19px;display:flex;gap:12px;align-items:flex-start}.indicator{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 14px var(--teal);margin-top:6px;flex-shrink:0}.logtitle{font-weight:750;font-size:13px}.logdesc{font-size:13px;margin-top:4px;color:#9aafc8;line-height:1.5}
+.meters{display:flex;gap:6px;margin-top:8px}.meter{height:5px;background:#304056;border-radius:9px;flex:1;overflow:hidden}.meter>i{height:100%;display:block;background:var(--teal);width:0%}
+.sound{cursor:pointer;background:transparent;border:1px solid #40516a;border-radius:8px;color:#c9d8e9;padding:9px 11px;font-size:12px}
+.mobilepad{display:none;justify-content:center;gap:8px;margin:10px 0}.mobilepad button{min-width:55px;min-height:55px;border:1px solid #415571;background:#172437;color:#eaf8ff;border-radius:10px;font-size:20px;touch-action:none}
+footer{font-size:11px;color:#697e99;margin:24px 0 0;text-align:center;letter-spacing:.05em}
+@media(max-width:680px){.wrap{padding:13px 9px 25px}header{margin:4px 2px 15px}.version{display:none}.topbar{grid-template-columns:repeat(2,1fr)}.stat{padding:9px 13px}.value{font-size:18px}.help{align-items:flex-start}.dialog{padding:23px 16px}.dialog h2{font-size:28px}.dialog p{font-size:13px}.mobilepad{display:flex}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">PROTOTYPE · BUILD 001</div></header>
+<div class="topbar">
+ <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 03</div></div>
+ <div class="stat"><div class="label">Döngüye kalan</div><div class="value teal" id="time">12.0 sn</div><div class="meters"><div class="meter"><i id="timefill"></i></div></div></div>
+ <div class="stat"><div class="label">Kaydedilmiş yankı</div><div class="value purple" id="clones">0 / 6</div></div>
+ <div class="stat"><div class="label">Durum</div><div class="value" id="mode" style="font-size:16px;padding-top:4px">HAZIR</div></div>
+</div>
+<div class="stage"><canvas id="scene" width="960" height="610" aria-label="ECHO/12 oyun sahnesi"></canvas>
+ <div class="overlay" id="overlay"><div class="dialog"><div class="kicker" id="kicker">SAAT SIFIRLANACAK</div><h2 id="dialog-title">Geçmişin seninle kalır.</h2><p id="dialog-text">Her <strong>12 saniyede</strong> zaman başa sarar. Ama önceki hareketlerini tekrar eden bir <strong>yankın</strong> geride kalır. Baskı plakalarını yankılarınla tut ve çıkışa ulaş.</p><button class="primary" id="start">SİSTEME GİR →</button></div></div>
+</div>
+<div class="help"><div class="helptext"><kbd>W A S D</kbd> veya <kbd>← ↑ ↓ →</kbd> yürü &nbsp; <kbd>Boşluk</kbd> döngüyü kaydet &nbsp; <kbd>R</kbd> odayı sıfırla &nbsp; <kbd>P</kbd> duraklat</div>
+<div class="controls"><button class="secondary" id="commit">↺ Yankıyı kaydet</button><button class="secondary" id="restart">↻ Odayı sıfırla</button><button class="sound" id="sound">♪ Ses: açık</button></div></div>
+<div class="mobilepad" aria-label="Dokunmatik yön tuşları"><button data-dir="ArrowLeft">←</button><button data-dir="ArrowUp">↑</button><button data-dir="ArrowDown">↓</button><button data-dir="ArrowRight">→</button></div>
+<div class="log"><div class="indicator"></div><div><div class="logtitle" id="mission">PROTOKOL 01 · İLK İZ</div><div class="logdesc" id="hint">Yeşil plakaya bas, SPACE ile yankını kaydet. Sonraki döngüde kapı açılınca çıkışa git.</div></div></div>
+<footer>NO ASSETS · NO ACCOUNTS · TEK DOSYALIK OYNANABİLİR PROTOTİP</footer>
+</div>
+<script>
+(()=>{
+'use strict';
+const canvas=document.getElementById('scene'),ctx=canvas.getContext('2d');
+const $=id=>document.getElementById(id);
+const W=18,H=11,T=48,OX=48,OY=40,LOOP=12,DT=1/60,SPEED=4.05,MAX_CLONES=6;
+const LVLS=[
+ {title:'İLK İZ',tag:'Önce orada olmalıydın.',hint:'Sol taraftaki yeşil plakaya basıp BOŞLUK ile yankını kaydet. Tekrar başlarken yankın kapıyı senin için açık tutacak.',start:[2,5],exit:[15,5],barriers:[{x:9,gate:[9,5],key:'A'}],plates:[{x:6,y:3,key:'A'}],guards:[],block:[]},
+ {title:'İKİ SES',tag:'Bir beden. İki geçmiş.',hint:'Önce A plakasında bir yankı bırak. Açılan ilk kapıdan geç, B plakasında ikinci yankıyı kaydet. Üçüncü döngüde iki kapıyı da aş.',start:[2,3],exit:[15,7],barriers:[{x:6,gate:[6,3],key:'A'},{x:12,gate:[12,7],key:'B'}],plates:[{x:3,y:7,key:'A'},{x:9,y:8,key:'B'}],guards:[],block:[]},
+ {title:'KÖR NOKTA',tag:'Geçmişin seni koruyamaz.',hint:'İki plakayı ayrı yankılarla etkinleştir. Sağ bölmedeki kırmızı güvenlik küresine yakalanmadan çıkışa ulaş. Yakalanırsan yalnızca geçerli kayıt kaybolur.',start:[2,7],exit:[15,3],barriers:[{x:6,gate:[6,6],key:'A'},{x:12,gate:[12,4],key:'B'}],plates:[{x:3,y:2,key:'A'},{x:10,y:8,key:'B'}],guards:[{x:14,y1:2,y2:8,speed:1.65,offset:0}],block:[{x:8,y:5},{x:9,y:5},{x:10,y:5}]}
+];
+let levelIndex=0,level,player,clones=[],record=[],elapsed=0,mode='menu',keys=new Set(),msg='',msgUntil=0,wallClock=0,particles=[],soundOn=true,audio=null,lastFrame=0,accum=0,wonAll=false;
+function audioBeep(freq=540,dur=.07,type='sine',volume=.042){if(!soundOn)return;try{audio??=new(window.AudioContext||window.webkitAudioContext)();let o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(volume,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+dur);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+dur)}catch(e){/* audio optional */}}
+function loadLevel(idx){levelIndex=idx;level=LVLS[levelIndex];player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;particles=[];mode='playing';wonAll=false;msg='';$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=level.hint;updateHUD();}
+function showOverlay(kicker,title,body,button){$('kicker').textContent=kicker;$('dialog-title').textContent=title;$('dialog-text').innerHTML=body;$('start').textContent=button;$('overlay').classList.remove('hidden')}
+function hideOverlay(){$('overlay').classList.add('hidden')}
+function startGame(){if(wonAll){loadLevel(0)}else if(mode==='menu'){let unlocked=0;try{unlocked=+localStorage.getItem('echo12-unlocked')||0}catch(e){}loadLevel(Math.min(unlocked,LVLS.length-1))}else if(mode==='leveldone'){loadLevel(Math.min(levelIndex+1,LVLS.length-1))}else if(mode==='allwon'){loadLevel(0)}else if(mode==='paused'){mode='playing'}hideOverlay();audioBeep(700)}
+function resetPlayer(){player={x:level.start[0]+.5,y:level.start[1]+.5};elapsed=0;record=[{...player}];}
+function cycleCommit(manual=true){if(mode!=='playing')return;if(clones.length>=MAX_CLONES){flash('Yankı sınırı doldu. R ile odayı sıfırla.');audioBeep(190,.2,'sawtooth');return}const samples=record.map(p=>({...p})),last=samples[samples.length-1];while(samples.length<Math.round(LOOP/DT)+1)samples.push({...last});clones.push({samples,color:clones.length});for(let j=0;j<17;j++)spawnParticle(player.x,player.y,'#ba9dff');audioBeep(870,.12,'triangle');resetPlayer();flash(manual?'Yankın kaydedildi. Yeni döngü başladı.':'12 saniye doldu. Geçmişin kaydedildi.');updateHUD()}
+function flash(s){msg=s;msgUntil=wallClock+2.3}
+function restart(){if(!level)return;loadLevel(levelIndex);hideOverlay();audioBeep(400,.1)}
+function pause(){if(mode==='playing'){mode='paused';showOverlay('SİSTEM DURAKLATILDI','Zaman bekliyor.','Hazır olduğunda devam et. Kayıtların korunuyor.','DEVAM ET →')}else if(mode==='paused'){mode='playing';hideOverlay()}updateHUD()}
+function onKeyDown(e){if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.repeat&&['Space','KeyP','KeyR','Enter'].includes(e.code))return;keys.add(e.code);if(e.code==='Enter'&&mode!=='playing')startGame();if(e.code==='Space'){if(mode==='playing')cycleCommit();else if(mode==='menu'||mode==='leveldone'||mode==='allwon')startGame()}if(e.code==='KeyR'&&(mode==='playing'||mode==='paused'))restart();if(e.code==='KeyP'&&(mode==='playing'||mode==='paused'))pause()}
+window.addEventListener('keydown',onKeyDown);window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>keys.clear());
+$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('restart').onclick=restart;$('sound').onclick=()=>{soundOn=!soundOn;$('sound').textContent=`♪ Ses: ${soundOn?'açık':'kapalı'}`;if(soundOn)audioBeep()};
+for(const btn of document.querySelectorAll('[data-dir]')){let code=btn.dataset.dir;btn.addEventListener('pointerdown',e=>{e.preventDefault();keys.add(code);btn.setPointerCapture(e.pointerId)});for(let evt of ['pointerup','pointercancel','lostpointercapture'])btn.addEventListener(evt,()=>keys.delete(code))}
+function ghostAt(c,t=elapsed){const index=Math.max(0,Math.min(c.samples.length-1,Math.round(t/DT)));return c.samples[index]}
+function platePressed(p){let x=p.x+.5,y=p.y+.5;if(Math.hypot(player.x-x,player.y-y)<.46)return true;return clones.some(c=>{let g=ghostAt(c);return Math.hypot(g.x-x,g.y-y)<.46})}
+function gateOpen(key){return level.plates.some(p=>p.key===key&&platePressed(p))}
+function tileType(x,y){if(x<1||x>=W-1||y<1||y>=H-1)return 'wall';if(level.block.some(p=>p.x===x&&p.y===y))return 'wall';for(const b of level.barriers){if(b.x===x){if(b.gate[0]===x&&b.gate[1]===y)return gateOpen(b.key)?'gateopen':'gate';return 'wall'}}return 'floor'}
+function collides(x,y){const r=.27;for(let tx=Math.floor(x-r);tx<=Math.floor(x+r);tx++)for(let ty=Math.floor(y-r);ty<=Math.floor(y+r);ty++){const tp=tileType(tx,ty);if(tp==='wall'||tp==='gate'){let nx=Math.max(tx,Math.min(x,tx+1)),ny=Math.max(ty,Math.min(y,ty+1));if((x-nx)**2+(y-ny)**2<r*r)return true}}return false}
+function spawnParticle(x,y,color){particles.push({x,y,vx:(Math.random()-.5)*2.4,vy:(Math.random()-.5)*2.4,life:.4+Math.random()*.6,color})}
+function guardPos(g){const travel=g.y2-g.y1,p=((elapsed*g.speed+g.offset)%(2*travel));return{x:g.x+.5,y:(p<travel?g.y1+p:g.y2-(p-travel))+.5}}
+function victory(){mode='leveldone';audioBeep(850,.13);setTimeout(()=>audioBeep(1180,.2),110);let n=levelIndex+1;try{localStorage.setItem('echo12-unlocked',String(Math.min(n,LVLS.length-1)))}catch(e){};for(let i=0;i<40;i++)spawnParticle(player.x,player.y,i%2?'#53f3d0':'#ba9dff');if(n===LVLS.length){wonAll=true;mode='allwon';showOverlay('İLK PROTOKOL TAMAMLANDI','Zamanı alt ettin.','Üç odayı da temizledin. Bu <strong>Build 001</strong> prototipinin sonu; hikâyenin değil.','YENİDEN OYNA ↺')}else showOverlay('GEÇİŞ KİLİDİ AÇILDI',`ODA 0${n} TAMAMLANDI`,`${clones.length} yankıyla kapıyı aştın. Bir sonraki protokol seni bekliyor.`,'SONRAKİ ODA →');updateHUD()}
+function step(dt){wallClock+=dt;for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt}particles=particles.filter(p=>p.life>0);if(mode!=='playing')return;elapsed+=dt;if(elapsed>=LOOP){cycleCommit(false);return}
+ let dx=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0),dy=(keys.has('KeyS')||keys.has('ArrowDown')?1:0)-(keys.has('KeyW')||keys.has('ArrowUp')?1:0);let len=Math.hypot(dx,dy);if(len){dx=dx/len*SPEED*dt;dy=dy/len*SPEED*dt;if(!collides(player.x+dx,player.y))player.x+=dx;if(!collides(player.x,player.y+dy))player.y+=dy}record.push({...player});
+ for(const g of level.guards){const pos=guardPos(g);if(Math.hypot(player.x-pos.x,player.y-pos.y)<.46){for(let i=0;i<20;i++)spawnParticle(player.x,player.y,'#ff6a7c');audioBeep(140,.28,'sawtooth');resetPlayer();flash('Güvenlik sensörüne yakalandın. Mevcut döngü silindi.');break}}
+ if(Math.hypot(player.x-level.exit[0]-.5,player.y-level.exit[1]-.5)<.48)victory();if((Math.round(elapsed*10)!==Math.round((elapsed-dt)*10)))updateHUD()
+}
+function updateHUD(){$('room').textContent=`${String(levelIndex+1).padStart(2,'0')} / ${String(LVLS.length).padStart(2,'0')}`;$('time').textContent=`${Math.max(0,LOOP-elapsed).toFixed(1)} sn`;$('timefill').style.width=(100*elapsed/LOOP)+'%';$('clones').textContent=`${clones.length} / ${MAX_CLONES}`;$('mode').textContent={menu:'HAZIR',playing:'KAYIT',paused:'DURDU',leveldone:'BAŞARILI',allwon:'TAMAMLANDI'}[mode]||mode;}
+const round=(x,y,w,h,r)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r)};
+function glowCircle(x,y,r,col,blur=20){ctx.save();ctx.shadowColor=col;ctx.shadowBlur=blur;ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.restore()}
+function draw(){ctx.clearRect(0,0,960,610);ctx.fillStyle='#0c1523';ctx.fillRect(0,0,960,610);const t=wallClock;
+ const bg=ctx.createRadialGradient(480,310,60,480,310,570);bg.addColorStop(0,'#142538');bg.addColorStop(1,'#080f1a');ctx.fillStyle=bg;ctx.fillRect(0,0,960,610);
+ ctx.save();ctx.translate(OX,OY);
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){let px=x*T,py=y*T;ctx.fillStyle=(x+y)%2?'#152132':'#172537';ctx.fillRect(px+1,py+1,T-2,T-2);ctx.strokeStyle='#25364a';ctx.lineWidth=1;ctx.strokeRect(px+.5,py+.5,T-1,T-1);const tp=tileType(x,y);if(tp==='wall'){ctx.fillStyle='#293a50';round(px+2,py+2,T-4,T-4,5);ctx.fill();ctx.fillStyle='#32475d';ctx.fillRect(px+5,py+5,T-10,3);ctx.fillStyle='#203247';ctx.fillRect(px+5,py+T-9,T-10,3)}else if(tp==='gate'||tp==='gateopen'){let col=tp==='gate'?'#f1ae6c':'#53f3d0';ctx.fillStyle=tp==='gate'?'#51382f':'#1a453d';ctx.fillRect(px+4,py+3,T-8,T-6);ctx.strokeStyle=col;ctx.lineWidth=tp==='gate'?3:1.5;ctx.strokeRect(px+6,py+5,T-12,T-10);if(tp==='gate'){ctx.fillStyle=col;for(let q=0;q<4;q++)ctx.fillRect(px+12+q*7,py+9,3,T-18)}}}
+ // faint ghost trails
+ for(let j=0;j<clones.length;j++){let c=clones[j];ctx.beginPath();for(let i=0;i<c.samples.length;i+=12){let p=c.samples[i],x=p.x*T,y=p.y*T;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.strokeStyle=`rgba(183,148,255,${.19+j*.025})`;ctx.lineWidth=3;ctx.stroke()}
+ // plates
+ for(const p of level.plates){let px=(p.x+.5)*T,py=(p.y+.5)*T,active=platePressed(p);ctx.save();ctx.translate(px,py);ctx.rotate(Math.PI/4);ctx.fillStyle=active?'#1b685b':'#254b50';ctx.strokeStyle=active?'#5cfde1':'#579f9b';ctx.lineWidth=3;ctx.shadowColor=active?'#53f3d0':'transparent';ctx.shadowBlur=active?22:0;round(-14,-14,28,28,5);ctx.fill();ctx.stroke();ctx.restore();ctx.fillStyle=active?'#d4fff5':'#a0d6d1';ctx.font='bold 13px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(p.key,px,py+5)}
+ // exit
+ {let x=(level.exit[0]+.5)*T,y=(level.exit[1]+.5)*T;ctx.save();ctx.translate(x,y);ctx.rotate(t*.6);ctx.strokeStyle='#53f3d0';ctx.lineWidth=3;ctx.shadowBlur=20;ctx.shadowColor='#53f3d0';ctx.strokeRect(-15,-15,30,30);ctx.rotate(Math.PI/4);ctx.strokeRect(-10,-10,20,20);ctx.restore();ctx.textAlign='center';ctx.font='bold 9px ui-monospace,monospace';ctx.fillStyle='#b0ffe8';ctx.fillText('EXIT',x,y+33)}
+ // guards
+ for(const g of level.guards){const p=guardPos(g),x=p.x*T,y=p.y*T;ctx.fillStyle='#ff6a7c10';ctx.beginPath();ctx.arc(x,y,33,0,Math.PI*2);ctx.fill();glowCircle(x,y,13,'#ff6075',24);ctx.fillStyle='#35151c';ctx.beginPath();ctx.arc(x,y,6,0,Math.PI*2);ctx.fill()}
+ // echoes
+ for(let j=0;j<clones.length;j++){let p=ghostAt(clones[j]),x=p.x*T,y=p.y*T;ctx.save();ctx.globalAlpha=.63+Math.sin(t*5+j)*.13;ctx.translate(x,y);ctx.rotate(Math.PI/4);ctx.fillStyle='#8865db';ctx.strokeStyle='#e3d4ff';ctx.lineWidth=2;ctx.shadowBlur=18;ctx.shadowColor='#bd8aff';round(-11,-11,22,22,3);ctx.fill();ctx.stroke();ctx.restore()}
+ // live player
+ {let x=player.x*T,y=player.y*T;ctx.save();ctx.translate(x,y);ctx.rotate(Math.PI/4);ctx.shadowColor='#53f3d0';ctx.shadowBlur=22;ctx.fillStyle='#54f3d3';round(-13,-13,26,26,4);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#133a3f';round(-6,-6,12,12,2);ctx.fill();ctx.restore();ctx.beginPath();ctx.arc(x,y,23+Math.sin(t*3)*1,0,Math.PI*2);ctx.strokeStyle='#53f3d040';ctx.lineWidth=1;ctx.stroke()}
+ for(const p of particles){ctx.globalAlpha=Math.min(1,p.life*1.9);ctx.fillStyle=p.color;ctx.fillRect(p.x*T-2,p.y*T-2,4,4)}ctx.globalAlpha=1;ctx.restore();
+ // world overlay heads
+ ctx.textAlign='left';ctx.font='bold 12px ui-monospace,Consolas,monospace';ctx.fillStyle='#9caec5';ctx.fillText(`SECTOR 0${levelIndex+1}  /  ${level.title}`,52,591);ctx.textAlign='right';ctx.fillStyle='#7c95ad';ctx.fillText('CAPTURE WINDOW · 12.00s',909,591);
+ if(msg&&wallClock<msgUntil){ctx.save();let a=Math.min(1,(msgUntil-wallClock)*2);ctx.globalAlpha=a;ctx.fillStyle='#091624dd';round(210,515,540,39,8);ctx.fill();ctx.strokeStyle='#526e83';ctx.stroke();ctx.fillStyle='#dcf8f5';ctx.textAlign='center';ctx.font='bold 13px ui-monospace,monospace';ctx.fillText(msg,480,540);ctx.restore()}
+ if(mode==='playing'){ctx.fillStyle='#53f3d0';ctx.beginPath();ctx.arc(916,30,5,0,Math.PI*2);ctx.fill();ctx.textAlign='right';ctx.font='11px ui-monospace,monospace';ctx.fillStyle='#8ba8b9';ctx.fillText('REC',904,34)}
+}
+function frame(now){if(!lastFrame)lastFrame=now;accum+=Math.min((now-lastFrame)/1000,.08);lastFrame=now;let c=0;while(accum>=DT&&c++<5){step(DT);accum-=DT}draw();requestAnimationFrame(frame)}
+try{let u=+localStorage.getItem('echo12-unlocked')||0;levelIndex=Math.min(u,LVLS.length-1)}catch(e){}level=LVLS[levelIndex];player={x:level.start[0]+.5,y:level.start[1]+.5};record=[{...player}];updateHUD();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
