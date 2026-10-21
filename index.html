@@ -313,6 +313,7 @@ let hintStage=0,selectorBefore='menu',selectorPreviousFocus=null;
 function resetHints(){hintStage=0;$('hint-assist').classList.add('hidden');$('hint-step').textContent='';$('hint-body').textContent=''}
 function showHint(){
  if(mode!=='playing'&&mode!=='paused')return;
+ runHintCount=Math.max(runHintCount,hintStage+1);
  hintStage=Math.min(3,hintStage+1);
  $('hint-assist').classList.remove('hidden');
  $('hint-step').textContent='İPUCU '+hintStage+'/3 · '+level.title;
@@ -327,7 +328,7 @@ function renderRoomSelector(){
   const room=LVLS[i],btn=document.createElement('button');btn.type='button';btn.className='room-tile'+(i===levelIndex?' current':'');btn.dataset.room=String(i);
   const accessible=i<=max;btn.disabled=!accessible;btn.setAttribute('aria-label',String(i+1)+'. oda: '+room.title+(accessible?'':' (kilitli)'));
   const heading=document.createElement('strong');heading.textContent=String(i+1).padStart(2,'0')+' · '+room.title;
-  const sub=document.createElement('small');sub.textContent=accessible?(i===levelIndex?'ŞU ANKİ ODA · ':'AÇIK · ')+(i<=5?'BÖLÜM I':i<=7?'BÖLÜM II':'BÖLÜM III'):'KİLİTLİ · Önceki odaları tamamla';
+  const sub=document.createElement('small');const best=readBestRun(i);sub.textContent=accessible?(i===levelIndex?'ŞU ANKİ ODA · ':'AÇIK · ')+(i<=5?'BÖLÜM I':i<=7?'BÖLÜM II':'BÖLÜM III')+(best?' · EN İYİ '+best.echoes+' YANKI':''):'KİLİTLİ · Önceki odaları tamamla';
   btn.append(heading,sub);btn.addEventListener('click',()=>selectRoom(i));grid.append(btn);
  }
 }
@@ -347,7 +348,80 @@ function selectRoom(index){
  closeRoomSelectorPanel();loadLevel(index);hideOverlay();keys.clear();
  if(document.activeElement&&typeof document.activeElement.blur==='function')document.activeElement.blur();
 }
-function loadLevel(idx){closeRoomSelectorPanel();resetHints();levelIndex=idx;level=LVLS[levelIndex];scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=level.hint;updateHUD();}
+
+const CHAPTER_INFO=[
+ {from:0,to:5,label:'BÖLÜM I · HAFIZA',theme:'Hatırlanan hareket, kapıyı açar.',intro:'Eski hareketlerini kullan. Bu tesisten kimin çıkacağını sen belirleyeceksin.'},
+ {from:6,to:7,label:'BÖLÜM II · KARŞI SİNYAL',theme:'İki ayrı iz, tek ortak zaman.',intro:'Kayıtlar birbirini bekliyor. Çekirdek hakkındaki kararın sonuçları burada başlıyor.'},
+ {from:8,to:10,label:'BÖLÜM III · KANIT',theme:'Görünmek, orada olmak demek değildir.',intro:'Sahte görüntüyü gerçek kayıttan ayır. Sonuca varsayımla değil, kanıtla ulaş.'}
+];
+const ROOM_BRIEFS=[
+ 'Yeşil A plakasını kullanarak tek kilitli geçidi aç ve çıkışa ulaş.',
+ 'İki farklı bariyerin koşulunu kaydedilmiş hareketlerle sırayla karşıla.',
+ 'İki geçidi açarken kırmızı güvenlik devriyesinden uzak dur.',
+ 'Kısa süre açık kalan iki röleyi doğru zamanda kullan.',
+ 'Yalnızca kayıtlı yankıların açabildiği bir geçidi çöz.',
+ 'İki konsoldan birini bilinçli olarak seç; sonuçları farklı.',
+ 'İki yankıyı aynı anda gerektiren geçidi çöz.',
+ 'İki yankıyla geçidi tut; canlı karakterle kısa süreli röleyi etkinleştir.',
+ 'Sahte görüntüleri gerçek kayıtlarla karıştırmadan ilerle.',
+ 'Ters ve ileri kayıtlara ayrı ayrı tepki veren geçitleri aç.',
+ 'Kamera, basınç ve kayıt defterinin birbiriyle uyuşmayan verilerini araştır.'
+];
+let roomActiveSeconds=0,runHintCount=0,lastGateSignature='',bestRuns={};
+try{const saved=JSON.parse(localStorage.getItem('echo12-best-runs')||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))bestRuns=saved}catch(e){}
+function chapterFor(index){return CHAPTER_INFO.find(c=>index>=c.from&&index<=c.to)||CHAPTER_INFO[0]}
+function updateCampaignUI(){
+ const c=chapterFor(levelIndex);$('chapter-label').textContent=c.label;
+ $('campaign-counter').textContent=String(levelIndex+1).padStart(2,'0')+' / '+String(LVLS.length).padStart(2,'0');
+ const grid=$('campaign-segments'),signature=levelIndex+':'+getUnlocked();
+ if(grid.dataset.signature===signature)return;
+ grid.dataset.signature=signature;grid.replaceChildren();const max=getUnlocked();
+ for(let i=0;i<LVLS.length;i++){const cell=document.createElement('span');cell.className='campaign-cell'+(i<max?' finished':'')+(i===levelIndex?' active':'')+([6,8].includes(i)?' chapter-break':'');grid.append(cell)}
+}
+function gateCondition(barrier){
+ const key=barrier.key,open=gateOpen(key),p=level.plates.find(x=>x.key===key);
+ if(open)return {open:true,reason:key==='OUT'?'Karar onaylandı':key==='AUDIT'?'Kanıt karşılaştırıldı':'Etkin'};
+ if(key==='OUT')return {open:false,reason:'Konsolda karar ver'};
+ if(key==='AUDIT')return {open:false,reason:'Kanıt '+auditEvidence.size+'/3'+(auditEvidence.size===3?' · hüküm bekleniyor':'')};
+ if(!p)return {open:false,reason:'Kayıt bekleniyor'};
+ if(p.echoCount)return {open:false,reason:'Yankı '+Math.min(p.echoCount,plateOccupancy(p).echoes)+'/'+p.echoCount};
+ if(p.needsScan)return {open:false,reason:scannerOn?'Doğrulanmış yankı gerekli':'F · doğrulayıcı kapalı'};
+ if(p.reverseOnly)return {open:false,reason:'Ters kayıt gerekli'};
+ if(p.forwardOnly)return {open:false,reason:'İleri kayıt gerekli'};
+ if(p.selfOnly)return {open:false,reason:'Canlı karakter gerekli'};
+ if(p.echoOnly)return {open:false,reason:'Kaydedilmiş yankı gerekli'};
+ if(p.pulse)return {open:false,reason:'Süreli röle · '+p.pulse.toFixed(1)+' sn'};
+ return {open:false,reason:'Plaka henüz basılı değil'};
+}
+function updateProtocolStatus(){
+ const states=level.barriers.map(b=>({key:b.key,...gateCondition(b)}));
+ const opened=states.filter(x=>x.open).length;
+ $('gate-counter').textContent=opened+' / '+states.length+' açık';
+ const signature=states.map(x=>x.key+':'+x.open+':'+x.reason).join('|');
+ if(signature===lastGateSignature)return;lastGateSignature=signature;
+ const grid=$('gate-status');grid.replaceChildren();
+ for(const state of states){const chip=document.createElement('div');chip.className='gate-chip';chip.dataset.open=String(state.open);const label=document.createElement('strong');label.textContent=state.key==='OUT'?'ÇIKIŞ':state.key==='AUDIT'?'DENETİM':'KAPI '+state.key;const description=document.createElement('span');description.textContent=state.reason;chip.append(label,description);grid.append(chip)}
+}
+function currentObjective(){
+ if(levelIndex!==0)return ROOM_BRIEFS[levelIndex];
+ if(clones.length===0){const p=level.plates[0],onPlate=Math.hypot(player.x-p.x-.5,player.y-p.y-.5)<.46;return onPlate?'A plakasındasın. BOŞLUK tuşuyla ilk yankını kaydet.':'Önce WASD / yön tuşlarıyla yeşil A plakasına yürü.'}
+ return gateOpen('A')?'İlk yankın A geçidini açtı. Sağdaki çıkışa ilerle.':'Yankı hareketi yeniden oynanıyor. A kapısının açılmasını bekle.';
+}
+function readBestRun(index){const b=bestRuns[index];return b&&Number.isInteger(b.echoes)&&Number.isFinite(b.seconds)&&b.seconds>=0?b:null}
+function recordVictoryRun(){
+ const result={echoes:clones.length,seconds:Math.round(roomActiveSeconds*10)/10,hints:runHintCount};
+ const before=readBestRun(levelIndex);
+ const improved=!before||result.echoes<before.echoes||(result.echoes===before.echoes&&result.seconds<before.seconds);
+ if(improved){bestRuns[levelIndex]=result;try{localStorage.setItem('echo12-best-runs',JSON.stringify(bestRuns))}catch(e){}}
+ return improved;
+}
+function showDebrief(improved){
+ const d=$('debrief');d.replaceChildren();if(mode!=='leveldone'&&mode!=='allwon')return;
+ const tokens=[['Yankı',String(clones.length)],['Toplam aktif süre',roomActiveSeconds.toFixed(1)+' sn'],['Kullanılan ipucu',String(runHintCount)]];
+ if(improved)tokens.push(['Yeni kişisel rekor','★']);
+ for(const [label,value] of tokens){const tag=document.createElement('span');tag.className='debrief-stat'+(label==='Yeni kişisel rekor'?' best':'');tag.textContent=label+': '+value;d.append(tag)}
+}
+function loadLevel(idx){closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
 
 function closeAuditPanel(){$('audit').classList.add('hidden');$('audit').setAttribute('aria-hidden','true')}
 function nearestSensor(){return (level.sensors||[]).find(v=>Math.hypot(player.x-v.x-.5,player.y-v.y-.5)<.72)||null}
