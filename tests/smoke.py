@@ -29,6 +29,15 @@ def load(browser, level):
     })();'''
     assert needle in html
     html=html.replace(needle,injected)
+    # Browser tests run in about:blank; simulate local storage without affecting shipped code.
+    storage_stub="""<script>
+    window.__echo12Store ??= {};
+    Object.defineProperty(window, 'localStorage', {configurable:true,value:{
+      getItem(key){return Object.hasOwn(window.__echo12Store,key)?window.__echo12Store[key]:null},
+      setItem(key,value){window.__echo12Store[key]=String(value)}
+    }});
+    </script>"""
+    html=html.replace('<script>\n(()=>{',storage_stub+'<script>\n(()=>{')
     page = browser.new_page(viewport={"width": 1280, "height": 900})
     errors = []
     page.on("pageerror", lambda err: errors.append(str(err)))
@@ -96,7 +105,7 @@ def main():
             page.keyboard.press("e")
             assert page.locator("#mode").inner_text() == "ARŞİV"
             assert "PERSONEL NO. 12" in page.locator("#archive-body").inner_text()
-            assert page.locator("#archive-count").inner_text() == "1/3"
+            assert page.locator("#archive-count").inner_text() == "1/6"
             saved = page.locator("#time").inner_text()
             page.evaluate("window.__echo12Test.tick(1.5)")
             assert page.locator("#time").inner_text() == saved, "Archive must pause simulation"
@@ -104,9 +113,59 @@ def main():
             assert page.locator("#mode").inner_text() == "KAYIT"
             move(page, "d", .247); move(page, "w", .493); commit(page)
             move(page, "d", 3.26)
-            verify(page, errors, "TAMAMLANDI")
+            verify(page, errors, "BAŞARILI")
             page.close()
-            print("PASS 5/5: echo-only plate, terminal, archive pause, ending")
+            print("PASS 5/6: echo-only plate, terminal and archive pause")
+            # Room 6: solve two echo locks, confirm one decision, then replay the alternative.
+            page, errors = load(browser, 5)
+            move(page,'d',.493); move(page,'w',.493)
+            assert not page.evaluate("window.__echo12Test.gate('F')"), "Live player must not activate F"
+            commit(page)
+            move(page,'d',1.74); move(page,'s',.493); commit(page)
+            move(page,'d',2.97); move(page,'d',.12)
+            assert page.evaluate("window.__echo12Test.gate('F')")
+            assert page.evaluate("window.__echo12Test.gate('G')")
+            assert not page.evaluate("window.__echo12Test.gate('OUT')")
+            move(page,'w',.74)
+            page.keyboard.press('e')
+            assert page.locator('#mode').inner_text()=='KARAR'
+            assert page.locator('#decision-title').inner_text()=='TANIKLARI KORU'
+            snapshot=page.locator('#time').inner_text()
+            page.evaluate('window.__echo12Test.tick(1)')
+            assert page.locator('#time').inner_text()==snapshot
+            page.locator('#decision-cancel').click()
+            assert not page.evaluate("window.__echo12Test.gate('OUT')")
+            page.keyboard.press('e')
+            page.locator('#decision-confirm').click()
+            assert page.evaluate("window.__echo12Test.gate('OUT')")
+            move(page,'s',.74); move(page,'d',.48)
+            verify(page,errors,'TAMAMLANDI')
+            assert 'Yalnız da değilsin' in page.locator('#dialog-title').inner_text()
+            assert page.evaluate("JSON.parse(localStorage.getItem('echo12-endings'))")==['keep']
+            print('PASS 6/6: keep-ending and cancellation checks')
+
+            page.locator('#replay-choice').click()
+            move(page,'d',.493); move(page,'w',.493); commit(page)
+            move(page,'d',1.74); move(page,'s',.493); commit(page)
+            move(page,'d',2.97); move(page,'d',.12); move(page,'s',.74)
+            page.keyboard.press('e')
+            assert page.locator('#decision-title').inner_text()=='ÇEKİRDEĞİ SUSTUR'
+            page.locator('#decision-confirm').click()
+            move(page,'w',.74); move(page,'d',.48)
+            verify(page,errors,'TAMAMLANDI')
+            assert 'Kimse cevap vermedi' in page.locator('#dialog-title').inner_text()
+            assert set(page.evaluate("JSON.parse(localStorage.getItem('echo12-endings'))"))=={'cut','keep'}
+            assert page.locator('#archive-count').inner_text()=='2/6'
+            saved=page.evaluate('JSON.stringify(window.__echo12Store)')
+            html=page.evaluate('document.documentElement.outerHTML')
+            html=html.replace('window.__echo12Store ??= {};','window.__echo12Store = '+saved+';')
+            page.set_content(html,wait_until='load')
+            page.locator('#logbook').click()
+            assert '2 / 6' in page.locator('#archive-status').inner_text()
+            verify(page,errors,'ARŞİV')
+            page.close()
+            print('PASS persisted endings: both results recoverable from storage')
+
         finally:
             browser.close()
 
