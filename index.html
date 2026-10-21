@@ -347,13 +347,16 @@ function victory(){
      kept?'Kayıtlar birbirini bekledi.':'Kapatılan sistemden bir ses geldi.',
      kept?'İki ayrı yankı aynı anda yanıt verdi. Fakat aralarına karışan üçüncü siluetin kaydı bulunamıyor. <strong>Bölüm III: Hayalet İmza</strong> başlıyor.':'Dış alıcı iki imzayı tespit etti. Bir de kaynağı olmayan üçüncü bir görüntü var. <strong>Bölüm III: Hayalet İmza</strong> başlıyor.',
      'BÖLÜM III →');
- }else if(n===LVLS.length){
-   wonAll=true;mode='allwon';const kept=chapterPath!=='cut';archiveRead.add(kept?'A11_KEEP':'A11_CUT');
+ }else if(levelIndex===9){
+   const kept=chapterPath!=='cut';archiveRead.add(kept?'A11_KEEP':'A11_CUT');
    try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
-   showOverlay('BÖLÜM III / GÜVENİLMEZ KAYIT',
-     kept?'Kayıtların arasında biri var.':'Susturulan hat yeniden konuştu.',
-     kept?'Çekirdekte kalan kayıtların hepsi aynı kaynağa ait değil. Ters oynatılan son izde yeni bir kimlik görüyorsun: <strong>OPERATÖR 00</strong>. Onun kim olduğunu hâlâ bilmiyorsun.':'Sinyal çekirdek dışından da üretilebiliyor. Ters oynatılan son izde <strong>OPERATÖR 00</strong> kodu belirdi. Tesisin dışında hangi kapıların açıldığını henüz bilmiyorsun.',
-     'BAŞTAN OYNA ↺');
+   showOverlay('BÖLÜM III / TERS İZ',kept?'Kayıtların arasında biri var.':'Susturulan hat yeniden konuştu.',
+   'Görüntülere karışan OPERATÖR 00 kodu yeni bir kapıya yönlendiriyor. <strong>Görüntü, basınç ve imza</strong> bu kez birbiriyle uyuşmuyor.','KANIT DENETİMİNE GEÇ →');
+ }else if(n===LVLS.length){
+   wonAll=true;mode='allwon';archiveRead.add('A12');
+   try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
+   showOverlay('BÖLÜM III / ÜÇ TANIK','OPERATÖR 00 bir kişi olmayabilir.',
+    'Görüntü vardı; fakat onu doğrulayan hiçbir fiziksel veya imzalı kayıt bulunamadı. <strong>00</strong>, kişiden çok sisteme görüntü enjekte eden bir yönetici yetkisi olabilir. Kora bu erişimin kime verildiğini söylememiş. Arşive yeni tutanak eklendi.','BAŞTAN OYNA ↺');
  }else{
    showOverlay('GEÇİŞ KİLİDİ AÇILDI','ODA '+String(n).padStart(2,'0')+' TAMAMLANDI',
       clones.length+' yankıyla kapıyı aştın. Bir sonraki protokol seni bekliyor.','SONRAKİ ODA →');
@@ -387,6 +390,9 @@ function draw(){ctx.clearRect(0,0,960,610);ctx.fillStyle='#0c1523';ctx.fillRect(
  for(const c of (levelIndex===5?CHOICES:[])){const x=(c.x+.5)*T,y=(c.y+.5)*T,chosen=endingChoice===c.id;ctx.save();ctx.translate(x,y);ctx.shadowColor=c.color;ctx.shadowBlur=chosen?25:11;ctx.fillStyle=chosen?c.color+'70':'#15334a';ctx.strokeStyle=c.color;ctx.lineWidth=3;round(-18,-18,36,36,5);ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.textAlign='center';ctx.font='bold 11px ui-monospace,monospace';ctx.fillStyle='#f3fcff';ctx.fillText(c.id==='keep'?'T':'S',0,4);ctx.restore();ctx.fillStyle=c.color;ctx.textAlign='center';ctx.font='bold 9px ui-monospace,monospace';ctx.fillText(c.id==='keep'?'KORU':'SUSTUR',x,y+33)}
  // archive terminals: visually distinct from pressure plates
  for(const terminal of TERMINALS.filter(t=>t.level===levelIndex)){const x=(terminal.x+.5)*T,y=(terminal.y+.5)*T,found=archiveRead.has(terminal.entry);ctx.save();ctx.translate(x,y);ctx.fillStyle=found?'#1b4850':'#163658';ctx.strokeStyle=found?'#62deca':'#79bfff';ctx.lineWidth=2;ctx.shadowColor=found?'#54e8ca':'#5ca9ff';ctx.shadowBlur=14;round(-15,-18,30,35,5);ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.fillStyle=found?'#69c5b5':'#c2eaff';ctx.fillRect(-10,-11,20,11);ctx.font='bold 9px ui-monospace,monospace';ctx.fillStyle='#e6fffa';ctx.textAlign='center';ctx.fillText('LOG',0,13);ctx.restore()}
+ // Independent evidence terminals and an audit console.
+ for(const station of (level.sensors||[])){const x=(station.x+.5)*T,y=(station.y+.5)*T,done=auditEvidence.has(station.id);ctx.save();ctx.translate(x,y);ctx.strokeStyle=done?'#55f1cf':'#a5b9c9';ctx.fillStyle=done?'#1d544c':'#22394c';ctx.lineWidth=2;round(-15,-17,30,34,5);ctx.fill();ctx.stroke();ctx.textAlign='center';ctx.fillStyle='#e4fcfa';ctx.font='bold 9px ui-monospace,monospace';ctx.fillText(station.id==='optic'?'CAM':station.id==='mass'?'KG':'ID',0,4);ctx.restore();ctx.fillStyle='#b4cbe0';ctx.textAlign='center';ctx.font='9px ui-monospace,monospace';ctx.fillText(done?'OK':station.label,x,y+29)}
+ if(level.auditConsole){const x=(level.auditConsole[0]+.5)*T,y=(level.auditConsole[1]+.5)*T;ctx.save();ctx.translate(x,y);ctx.fillStyle=auditUnlocked?'#205d48':'#213b57';ctx.strokeStyle=auditUnlocked?'#6df6c4':'#f6d296';ctx.lineWidth=3;round(-17,-17,34,34,6);ctx.fill();ctx.stroke();ctx.fillStyle='#f4fffa';ctx.font='bold 10px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText('CHK',0,4);ctx.restore();ctx.fillStyle='#c9e2d6';ctx.font='9px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(auditUnlocked?'GEÇTİ':'KANIT',x,y+31)}
  // exit
  {let x=(level.exit[0]+.5)*T,y=(level.exit[1]+.5)*T;ctx.save();ctx.translate(x,y);ctx.rotate(t*.6);ctx.strokeStyle='#53f3d0';ctx.lineWidth=3;ctx.shadowBlur=20;ctx.shadowColor='#53f3d0';ctx.strokeRect(-15,-15,30,30);ctx.rotate(Math.PI/4);ctx.strokeRect(-10,-10,20,20);ctx.restore();ctx.textAlign='center';ctx.font='bold 9px ui-monospace,monospace';ctx.fillStyle='#b0ffe8';ctx.fillText(levelIndex===5?(endingChoice==='keep'?'ÇEKİRDEK':endingChoice==='cut'?'DIŞARI':'KİLİTLİ'):'EXIT',x,y+33)}
  // guards
@@ -401,7 +407,7 @@ function draw(){ctx.clearRect(0,0,960,610);ctx.fillStyle='#0c1523';ctx.fillRect(
  // world overlay heads
  ctx.textAlign='left';ctx.font='bold 12px ui-monospace,Consolas,monospace';ctx.fillStyle='#9caec5';ctx.fillText(`SECTOR 0${levelIndex+1}  /  ${level.title}`,52,591);ctx.textAlign='right';ctx.fillStyle='#7c95ad';ctx.fillText('CAPTURE WINDOW · 12.00s',909,591);
  if(msg&&wallClock<msgUntil){ctx.save();let a=Math.min(1,(msgUntil-wallClock)*2);ctx.globalAlpha=a;ctx.fillStyle='#091624dd';round(210,515,540,39,8);ctx.fill();ctx.strokeStyle='#526e83';ctx.stroke();ctx.fillStyle='#dcf8f5';ctx.textAlign='center';ctx.font='bold 13px ui-monospace,monospace';ctx.fillText(msg,480,540);ctx.restore()}
- if(mode==='playing'&&(nearestTerminal()||nearestChoice())){ctx.save();ctx.fillStyle='#0d293be8';round(300,506,360,37,8);ctx.fill();ctx.strokeStyle='#67c5e5';ctx.stroke();ctx.fillStyle='#d9f9ff';ctx.textAlign='center';ctx.font='bold 13px ui-monospace,monospace';ctx.fillText(nearestChoice()?'E  ·  ÇEKİRDEK KARARI':'E  ·  TERMİNAL KAYDINI OKU',480,531);ctx.restore()}
+ if(mode==='playing'&&(nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice())){ctx.save();ctx.fillStyle='#0d293be8';round(300,506,360,37,8);ctx.fill();ctx.strokeStyle='#67c5e5';ctx.stroke();ctx.fillStyle='#d9f9ff';ctx.textAlign='center';ctx.font='bold 13px ui-monospace,monospace';ctx.fillText(nearestSensor()?'E  ·  ÖLÇÜM AL':nearestAuditConsole()?'E  ·  KANITLARI KARŞILAŞTIR':nearestChoice()?'E  ·  ÇEKİRDEK KARARI':'E  ·  TERMİNAL KAYDINI OKU',480,531);ctx.restore()}
  if(endingChoice){ctx.fillStyle=endingChoice==='keep'?'#6bead0':'#ff8693';ctx.textAlign='right';ctx.font='bold 12px ui-monospace,monospace';ctx.fillText(endingChoice==='keep'?'TANIKLAR KORUNUYOR':'ÇEKİRDEK KAPATILIYOR',905,566)}
  if(mode==='playing'){ctx.fillStyle='#53f3d0';ctx.beginPath();ctx.arc(916,30,5,0,Math.PI*2);ctx.fill();ctx.textAlign='right';ctx.font='11px ui-monospace,monospace';ctx.fillStyle='#8ba8b9';ctx.fillText('REC',904,34)}
  // Visual-only interference; collision rules and recorded movement remain untouched.
