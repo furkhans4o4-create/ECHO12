@@ -647,7 +647,7 @@ function validateSave(raw){
  let restoredClears;
  if(p.clearedRooms===undefined){
   restoredClears=Array.from({length:p.unlocked},(_,i)=>i);
-  if(p.finalVerdict)restoredClears.push(LVLS.length-1);
+  if(p.finalVerdict&&p.unlocked===LVLS.length-1)restoredClears.push(LVLS.length-1);
  }else if(Array.isArray(p.clearedRooms)&&p.clearedRooms.length<=LVLS.length&&p.clearedRooms.every(i=>Number.isInteger(i)&&i>=0&&i<LVLS.length&&i<=p.unlocked)){
   restoredClears=[...new Set(p.clearedRooms)].sort((a,b)=>a-b);
  }else throw Error('Tamamlanan oda kayıtları geçersiz.');
