@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 021 — Yankı Laboratuvarı / Zamanın İçini Gör
+
+**19 oda, 7 bölüm, 35 arşiv kaydı** aynı kalır. Son karmaşık odaların zamanlama bulmacalarında, oyuncunun geçmişte ne kaydettiğini görebilmesi için tüm kayıtlar üzerinde çalışan **oyun dışı bir inceleme ekranı** eklenmiştir.
+
+- **Yankı Laboratuvarı (I):** Oyun sırasında veya duraklatılmışken açılır, tüm simülasyonu dondurur. 18×11 odanın şematik planı üzerinde duvarlar, çıkış, kapılar, plakalar, A/B ile I/II sensörleri ve kaydedilmiş izler çizilir. **Kapılar şematik gösterilir:** Bu önizleme gelecekteki geçitlerin gerçek zamanlı durumu gibi sunulmaz.
+- **12 saniye tarama:** 0–12 saniyelik kaydırıcı veya ±0,5 sn düğmeleri, sahneyi oyunu ilerletmeden istediğin zamana taşır. Fare, dokunmatik giriş ve kaydırıcı odaklanmışken klavye ok tuşları desteklenir.
+- **Yankı seçimi:** Tüm gerçek yankılar, seçilen tek yankı veya o anki canlı hareket izi ayrı görülebilir. Ters kayıtlar **TERS** etiketiyle gösterilir. Kanıtlanan A→B/B→A sırası ve zaman penceresi varsa ölçülen geçiş süresi de yazılır.
+- **Yan etkisiz analiz:** Kaydırıcı ve görünüm seçimi gerçek oyunun `elapsed`, hareket dizileri, oyuncu konumu, yankı sayısı ve kayıtlarını değiştirmez. Laboratuvardan Esc/I ile çıktığında o anki oyun veya duraklatma durumuna geri dönülür.
+- **Uyumluluk:** Kaydedilen ilerleme biçimi değişmez ve harici hizmet gerekmez. Tüm tarama işlemleri oyun HTML dosyası içinde gerçekleşir.
+- **Otomatik test:** Gerçek bir yankı oluşturma, incelemede saat ve oyuncu durumunun değişmemesi, 12 saniye içinde zaman seçimi, klavyeyle kaydırma, duraklatma durumuna geri dönme ve ters bir yankının incelenmesi denetlenir.
+
 ## Build 020 — Gerçek Oda Tamamlama ve Güvenli Geri Yükleme
 
 **19 oda / 7 bölüm / 35 arşiv** değişmedi. Oyuncu açısından ana iyileştirme, açılmış odalarla gerçekten tamamlanan odaları ayıran güvenilir bir kampanya kaydı; kayıt güvenliği açısından ise yarıda kesilen geri yüklemelerde eski verilerin korunmasıdır.

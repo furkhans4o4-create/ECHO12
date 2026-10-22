@@ -24,7 +24,7 @@ def load(browser, level):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -882,6 +882,62 @@ def main():
             assert not errors,errors
             page.close()
             print('PASS Build 019: offline backup, corrupt JSON rejection, save normalization and discovered finales')
+
+            # Build 021: echo inspector pauses physical simulation while allowing deterministic
+            # seeking into any recorded ghost, including a selected reverse echo.
+            page, errors = load(browser, 0)
+            page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.12)")
+            commit(page)
+            page.evaluate("window.__echo12Test.tick(.24)")
+            base=page.evaluate("window.__echo12Test.inspect()")
+            assert base['echoes']==1
+            page.keyboard.press('i')
+            verify(page,errors,'YANKI İNCELEME')
+            assert page.locator('#inspector').is_visible()
+            assert page.locator('#inspector-echo option').count()==3
+            assert '1 / 6 yankı' in page.locator('#inspector-count').inner_text()
+            assert page.locator('#inspector-map').get_attribute('width')=='864'
+            assert page.locator('#inspector-map').evaluate("(e)=>e.getContext('2d').getImageData(0,0,1,1).data[3]")==255
+            page.locator('#inspector-echo').select_option('0')
+            assert 'E01' in page.locator('#inspector-status').inner_text()
+            page.locator('#inspector-forward').click()
+            time1=page.evaluate("window.__echo12Test.inspect().time")
+            assert time1>base['elapsed']
+            page.locator('#inspector-scrub').evaluate("""e => {e.value='10.5';e.dispatchEvent(new Event('input',{bubbles:true}))}""")
+            assert abs(page.evaluate("window.__echo12Test.inspect().time")-10.5)<.001
+            assert '10,5 / 12,0 sn' in page.locator('#inspector-clock').inner_text()
+            page.locator('#inspector-scrub').focus()
+            page.keyboard.press('ArrowRight')
+            assert page.evaluate("window.__echo12Test.inspect().time")>10.5,'Keyboard scrubber must receive arrow keys'
+            page.evaluate("window.__echo12Test.tick(.7)")
+            after=page.evaluate("window.__echo12Test.inspect()")
+            assert {k:v for k,v in base.items() if k!='time'}=={k:v for k,v in after.items() if k!='time'},(base,after)
+            page.keyboard.press('Escape')
+            verify(page,errors,'KAYIT')
+            assert page.locator('#inspector').is_hidden()
+            page.keyboard.press('p')
+            verify(page,errors,'DURDU')
+            page.keyboard.press('i')
+            verify(page,errors,'YANKI İNCELEME')
+            page.keyboard.press('Escape')
+            verify(page,errors,'DURDU')
+            page.keyboard.press('p')
+            verify(page,errors,'KAYIT')
+            assert not errors,errors
+            page.close()
+
+            page, errors = load(browser, 9)
+            page.keyboard.press('f')
+            page.evaluate("window.__echo12Test.tick(.3)")
+            commit(page)
+            page.keyboard.press('i')
+            assert 'TERS' in page.locator('#inspector-echo option').all_inner_texts()[1]
+            page.locator('#inspector-echo').select_option('0')
+            assert 'TERS' in page.locator('#inspector-status').inner_text()
+            assert not errors,errors
+            page.close()
+            print('PASS Build 021: modal pause, selectable and reversed echo paths, nonmutating 12s scrubbing and keyboard')
 
             # Verify display and audio feedback without changing a real puzzle solution.
             page, errors = load(browser, 0)
