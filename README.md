@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 017 — Delil Panosu / Bağımsız Çıkarımlar
+
+**17 oda, 6 bölüm ve 30 arşiv kaydı.** Bu sürümde amaç daha fazla aynı tip kapı açmak değil: oyuncunun keşfettiği kayıtları kendi mantığıyla karşılaştırıp, kesin delil ile varsayımı ayırabildiği tekrar kullanılabilir bir **soruşturma arayüzü** kurmak.
+
+- **K tuşu / Delil Panosu:** Oyun sırasında ya da menüde erişilebilen ayrı bir ekran. Açıkken zaman döngüsü durur ve yanlış hareket kaydedilmez. Telefon ekranında tek sütun olur, klavye odağı ve Esc ile kapatma desteği vardır.
+- **Üç soruşturma:** Görüntünün fiziksel izden farkı (A09 + A12), OPERATÖR 00'ın kişi değil yetki etiketi olması (A14 + A17), eşzamanlı yankıların bilinç kanıtı olup olmadığı (A19 + A20).
+- **Kaynağa bağlı erişim:** Gerekli arşiv belgelerinin ikisi de oyuncu tarafından bulunmadıkça açıklama seçenekleri kilitli kalır. Yanlış yorum ilerlemeyi silmez veya yeni belgeyi açmaz. Doğru yorum **D01–D03** yeni bağımsız çıkarım tutanaklarını arşive ekler.
+- **Kalıcı kayıt:** Başarılı çıkarımlar `echo12-case-deductions` anahtarında tutulur; açılan belgeler önceki `echo12-archive` arşiv listesine eklenir. Oda ilerlemesi, seçimler, altı yankı sınırı ve rekorlar değişmez.
+- **Bilgi doğruluğu:** Kayıtlar haklı çıkarılabilir fiziksel bulgularla belirsiz kimlik/öznel bilinç iddialarını birbirinden ayırır. 00 etiketinin kesin sahibini veya yankıların bilinç taşıdığını uydurmaz.
+- **Tarayıcı testleri:** 17 odanın önceki oynanışı korunurken kaynak sayısı, kilitli seçenekler, yanlış cevabın reddi, 3 doğru değerlendirme, dosyaların kalıcılığı, durdurulan zaman ve arşiv görünürlüğü test edilir.
+
 ## Build 016 — Bölüm VI: Ayrı Tanıklar
 
 **17 oynanabilir oda, 6 hikâye bölümü ve 27 arşiv girdisi.** Bu sürüm yalnızca daha fazla baskı plakası eklemez: iki ayrı kaydedilmiş kişinin hareketinin **aynı saniyede iki farklı sensörde doğrulanmasını** ve bunun bilinçli bir tanıklığa dönüşmesini sağlar.
