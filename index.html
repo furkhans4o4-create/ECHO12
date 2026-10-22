@@ -385,7 +385,9 @@ const LEVEL_HINTS=[
  ['Mor S yalnızca iki yankıyı sayar, turuncu P yalnızca canlı oyuncuyu tanır.','İki yankıyı S üzerine kaydet; P geçici rölesini kendin tetikle.','P üzerindeyken kapı yaklaşık 2,8 saniye açık kalır. Doğuya hemen ilerle.'],
  ['Görünen her hayalet gerçek kayıt değildir.','F ile doğrulamayı aç. T ve U üzerinde gerçek hareket kaydı oluştur.','Sahte gölgeleri değil kendi kaydettiğin iki gerçek yankıyı kullanarak bariyerleri aç.'],
  ['Bir kayıt, son konumundan başlayarak geriye oynatılabilir.','F ile TERS moddayken V üzerine hareket kaydet; sonra NORMAL modu seç.','Y üzerine normal yankı kaydet. V yalnızca ters, Y yalnızca normal kayıt kabul eder.'],
- ['Üç istasyon üç farklı ölçüm tutuyor; tek görüntü yetmez.','B plakasını bir yankıyla aç, F ile doğrulamayı etkinleştir; kamera, basınç ve kayıt istasyonlarında E kullan.','AUDIT konsolunda üç kaydı karşılaştır: Görünen 00 için fiziksel temas ve imzalı kayıt bulunmuyor.']
+ ['Üç istasyon üç farklı ölçüm tutuyor; tek görüntü yetmez.','B plakasını bir yankıyla aç, F ile doğrulamayı etkinleştir; kamera, basınç ve kayıt istasyonlarında E kullan.','AUDIT konsolunda üç kaydı karşılaştır: Görünen 00 için fiziksel temas ve imzalı kayıt bulunmuyor.'],
+ ['A ve B noktalarından aynı döngü içinde geçiş sırası doğrulanıyor.','Önce M plakasını yankıyla aç, sonraki döngüde A sonra B istasyonlarına yürü ve kaydet.','Yankıyı kaydettikten sonra F ile tarayıcıyı aç. Kapıda A→B 1/1 gördüğünde geç.'],
+ ['İki ayrı gerçek yankının aynı iki noktadan farklı sırayla geçmesi gerekli.','M için bir yankı bırak; ikinci kayıtta A→B, üçüncüde B→A rotasını izle.','İki farklı kayıt ayrı tutulur. F tarayıcısını açıp 2/2 olduğunu gördüğünde iki karar konsolundan birine git.']
 ];
 let hintStage=0,selectorBefore='menu',selectorPreviousFocus=null;
 function resetHints(){hintStage=0;$('hint-assist').classList.add('hidden');$('hint-step').textContent='';$('hint-body').textContent=''}
@@ -406,7 +408,7 @@ function renderRoomSelector(){
   const room=LVLS[i],btn=document.createElement('button');btn.type='button';btn.className='room-tile'+(i===levelIndex?' current':'');btn.dataset.room=String(i);
   const accessible=i<=max;btn.disabled=!accessible;btn.setAttribute('aria-label',String(i+1)+'. oda: '+room.title+(accessible?'':' (kilitli)'));
   const heading=document.createElement('strong');heading.textContent=String(i+1).padStart(2,'0')+' · '+room.title;
-  const sub=document.createElement('small');const best=readBestRun(i);sub.textContent=accessible?(i===levelIndex?'ŞU ANKİ ODA · ':'AÇIK · ')+(i<=5?'BÖLÜM I':i<=7?'BÖLÜM II':'BÖLÜM III')+(best?' · EN İYİ '+best.echoes+' YANKI':''):'KİLİTLİ · Önceki odaları tamamla';
+  const sub=document.createElement('small');const best=readBestRun(i);sub.textContent=accessible?(i===levelIndex?'ŞU ANKİ ODA · ':'AÇIK · ')+(i<=5?'BÖLÜM I':i<=7?'BÖLÜM II':i<=10?'BÖLÜM III':'BÖLÜM IV')+(best?' · EN İYİ '+best.echoes+' YANKI':''):'KİLİTLİ · Önceki odaları tamamla';
   btn.append(heading,sub);btn.addEventListener('click',()=>selectRoom(i));grid.append(btn);
  }
 }
@@ -430,7 +432,8 @@ function selectRoom(index){
 const CHAPTER_INFO=[
  {from:0,to:5,label:'BÖLÜM I · HAFIZA',theme:'Hatırlanan hareket, kapıyı açar.',intro:'Eski hareketlerini kullan. Bu tesisten kimin çıkacağını sen belirleyeceksin.'},
  {from:6,to:7,label:'BÖLÜM II · KARŞI SİNYAL',theme:'İki ayrı iz, tek ortak zaman.',intro:'Kayıtlar birbirini bekliyor. Çekirdek hakkındaki kararın sonuçları burada başlıyor.'},
- {from:8,to:10,label:'BÖLÜM III · KANIT',theme:'Görünmek, orada olmak demek değildir.',intro:'Sahte görüntüyü gerçek kayıttan ayır. Sonuca varsayımla değil, kanıtla ulaş.'}
+ {from:8,to:10,label:'BÖLÜM III · KANIT',theme:'Görünmek, orada olmak demek değildir.',intro:'Sahte görüntüyü gerçek kayıttan ayır. Sonuca varsayımla değil, kanıtla ulaş.'},
+ {from:11,to:12,label:'BÖLÜM IV · KÖKEN',theme:'Sıralama gerçek, kimlik belirsiz.',intro:'OPERATÖR 00 bir kişi değilse, hangi iz gerçektir? Aynı iki kapının iki farklı zaman sırasını kaydet.'}
 ];
 const ROOM_BRIEFS=[
  'Yeşil A plakasını kullanarak tek kilitli geçidi aç ve çıkışa ulaş.',
@@ -443,7 +446,9 @@ const ROOM_BRIEFS=[
  'İki yankıyla geçidi tut; canlı karakterle kısa süreli röleyi etkinleştir.',
  'Sahte görüntüleri gerçek kayıtlarla karıştırmadan ilerle.',
  'Ters ve ileri kayıtlara ayrı ayrı tepki veren geçitleri aç.',
- 'Kamera, basınç ve kayıt defterinin birbiriyle uyuşmayan verilerini araştır.'
+ 'Kamera, basınç ve kayıt defterinin birbiriyle uyuşmayan verilerini araştır.',
+ 'A ardından B okuma noktasından geçtiğini gösteren gerçek bir yankı kaydı üret.',
+ 'A→B ve B→A olarak iki farklı izi kanıtla; ardından hangi hattın dışarı açılacağına karar ver.'
 ];
 let roomActiveSeconds=0,runHintCount=0,lastGateSignature='',bestRuns={};
 try{const saved=JSON.parse(localStorage.getItem('echo12-best-runs')||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))bestRuns=saved}catch(e){}
@@ -454,14 +459,14 @@ function updateCampaignUI(){
  const grid=$('campaign-segments'),signature=levelIndex+':'+getUnlocked();
  if(grid.dataset.signature===signature)return;
  grid.dataset.signature=signature;grid.replaceChildren();const max=getUnlocked();
- for(let i=0;i<LVLS.length;i++){const cell=document.createElement('span');cell.className='campaign-cell'+(i<max?' finished':'')+(i===levelIndex?' active':'')+([6,8].includes(i)?' chapter-break':'');grid.append(cell)}
+ for(let i=0;i<LVLS.length;i++){const cell=document.createElement('span');cell.className='campaign-cell'+(i<max?' finished':'')+(i===levelIndex?' active':'')+([6,8,11].includes(i)?' chapter-break':'');grid.append(cell)}
 }
 function gateCondition(barrier){
  const key=barrier.key,open=gateOpen(key),p=level.plates.find(x=>x.key===key);
  if(open)return {open:true,reason:key==='OUT'?'Karar onaylandı':key==='AUDIT'?'Kanıt karşılaştırıldı':'Etkin'};
  if(key==='OUT')return {open:false,reason:'Konsolda karar ver'};
  if(key==='AUDIT')return {open:false,reason:'Kanıt '+auditEvidence.size+'/3'+(auditEvidence.size===3?' · hüküm bekleniyor':'')};
- if(key==='PROOF'){const q=verifiedTraceCounts();return {open:false,reason:!scannerOn?'F · doğrulayıcı kapalı':level.dualProof?'A→B '+Math.min(1,q.forward)+'/1 · B→A '+Math.min(1,q.backward)+'/1':'A→B '+Math.min(1,q.forward)+'/1 kayıt'};}
+ if(key==='PROOF'){const q=verifiedTraceCounts();return {open:false,reason:level.dualProof?'A→B '+Math.min(1,q.forward)+'/1 · B→A '+Math.min(1,q.backward)+'/1'+(!scannerOn?' · F kapalı':''):!scannerOn?'F · doğrulayıcı kapalı':'A→B '+Math.min(1,q.forward)+'/1 kayıt'};}
  if(!p)return {open:false,reason:'Kayıt bekleniyor'};
  if(p.echoCount)return {open:false,reason:'Yankı '+Math.min(p.echoCount,plateOccupancy(p).echoes)+'/'+p.echoCount};
  if(p.needsScan)return {open:false,reason:scannerOn?'Doğrulanmış yankı gerekli':'F · doğrulayıcı kapalı'};
@@ -500,7 +505,7 @@ function showDebrief(improved){
  if(improved)tokens.push(['Yeni kişisel rekor','★']);
  for(const [label,value] of tokens){const tag=document.createElement('span');tag.className='debrief-stat'+(label==='Yeni kişisel rekor'?' best':'');tag.textContent=label+': '+value;d.append(tag)}
 }
-function loadLevel(idx){motionTrail=[];needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
+function loadLevel(idx){motionTrail=[];needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=11?'BÖLÜM IV / ':idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8,11].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8,11].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
 
 function closeAuditPanel(){$('audit').classList.add('hidden');$('audit').setAttribute('aria-hidden','true')}
 function nearestSensor(){return (level.sensors||[]).find(v=>Math.hypot(player.x-v.x-.5,player.y-v.y-.5)<.72)||null}
@@ -581,7 +586,7 @@ function releaseTouchDirection(code,id,btn){
 }
 function onKeyDown(e){const focusedButton=e.target?.closest?.('button');if(e.code==='Space'&&focusedButton&&!focusedButton.disabled&&!focusedButton.closest('.hidden'))return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.repeat&&['Space','KeyO','KeyH','KeyF','KeyP','KeyR','KeyZ','Enter','KeyE','KeyL','Escape'].includes(e.code))return;if(mode==='selecting'){if(e.code==='Escape')closeRoomSelector();return}if(mode==='playing'&&['KeyW','KeyA','KeyS','KeyD','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.code)){keys.add(e.code);keyboardHeld.add(e.code)}if(mode==='auditing'){if(e.code==='Escape')exitAuditPanel();return}if(mode==='reading'){if(['Escape','KeyE','KeyL'].includes(e.code))closeArchive();return}if(mode==='decision'){if(e.code==='Escape')cancelDecision();else if(e.code==='Enter')confirmDecision();return}if(e.code==='KeyO'){openRoomSelector();return}if(e.code==='KeyH'){showHint();return}if(e.code==='KeyF'){toggleFrequency();return}if(e.code==='KeyM'){toggleSound();return}if(e.code==='KeyL'){openArchive();return}if(e.code==='KeyE'){interactTerminal();return}if(e.code==='Enter'&&mode!=='playing')startGame();if(e.code==='Space'){if(mode==='playing')cycleCommit();else if(mode==='menu'||mode==='leveldone'||mode==='allwon')startGame()}if(e.code==='KeyR'&&(mode==='playing'||mode==='paused'))restart();if(e.code==='KeyZ'&&mode==='playing')undoEcho();if(e.code==='KeyP'&&(mode==='playing'||mode==='paused'))pause()}
 window.addEventListener('keydown',onKeyDown);window.addEventListener('keyup',e=>{keyboardHeld.delete(e.code);if(!touchHeld.has(e.code))keys.delete(e.code)});window.addEventListener('blur',()=>{clearInputs();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)});document.addEventListener('visibilitychange',()=>{if(document.hidden){clearInputs();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)}});
-$('audit-close').onclick=exitAuditPanel;for(const btn of $('audit-options').querySelectorAll('button'))btn.onclick=()=>submitVerdict(btn.dataset.verdict);$('decision-cancel').onclick=cancelDecision;$('decision-confirm').onclick=confirmDecision;$('replay-choice').onclick=()=>{loadLevel(5);hideOverlay()};$('archive-close').onclick=closeArchive;$('logbook').onclick=()=>mode==='reading'?closeArchive():openArchive();$('interact').onclick=interactTerminal;$('room-select').onclick=openRoomSelector;$('room-picker-close').onclick=closeRoomSelector;$('help-button').onclick=showHint;$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('undo').onclick=undoEcho;$('restart').onclick=restart;$('sound').onclick=toggleSound;$('frequency').onclick=toggleFrequency;
+$('audit-close').onclick=exitAuditPanel;for(const btn of $('audit-options').querySelectorAll('button'))btn.onclick=()=>submitVerdict(btn.dataset.verdict);$('decision-cancel').onclick=cancelDecision;$('decision-confirm').onclick=confirmDecision;$('replay-choice').onclick=()=>{loadLevel(levelIndex===12?12:5);hideOverlay()};$('archive-close').onclick=closeArchive;$('logbook').onclick=()=>mode==='reading'?closeArchive():openArchive();$('interact').onclick=interactTerminal;$('room-select').onclick=openRoomSelector;$('room-picker-close').onclick=closeRoomSelector;$('help-button').onclick=showHint;$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('undo').onclick=undoEcho;$('restart').onclick=restart;$('sound').onclick=toggleSound;$('frequency').onclick=toggleFrequency;
 for(const btn of document.querySelectorAll('.mobilepad [data-dir]')){
  const code=btn.dataset.dir;
  btn.addEventListener('pointerdown',e=>{e.preventDefault();if(mode!=='playing')return;holdTouchDirection(code,e.pointerId,btn);try{btn.setPointerCapture(e.pointerId)}catch(err){}});
@@ -640,6 +645,7 @@ function chapterRecapForRoom(){
   proven:internal?'İç hatta iki bağımsız yankı aynı anda kapıyı tuttu.':'Dış hatta da iki farklı yankı izi aynı ana denk geldi.',
   question:'Kaydı bulunmayan üçüncü silueti kim, neden sisteme ekledi?'
  };
+ if(levelIndex===12)return {proven:'A→B ve B→A gerçek kayıtlarla ayrı ayrı doğrulandı. 00 imzası tek bir kişinin kimliği olarak kabul edilemez.',question:sourceVerdict==='publish'?'Dış hat, tanıkların yerini kimlere gösterecek?':'Kanıt dışarıya kapalıyken yönetimin iddiasını kim sorgulayacak?'};
  if(levelIndex===10)return {
   proven:'Kamerada 00 işaretli siluet var; basınç ve yakalama kaydında aynı imzanın karşılığı yok. Görüntü enjekte edilebiliyor.',
   question:'OPERATÖR 00 bir yetki koduysa, bu erişim kimin elinde ve Kora neden açıklamıyor?'
@@ -751,7 +757,7 @@ function drawMinimap(){
    miniCtx.fillStyle=type==='wall'?'#3b5064':type==='gate'?'#ebac74':'#51e2c3';miniCtx.fillRect(x*k,y*k,k,k);
   }else{miniCtx.fillStyle=(x+y)%2?'#1e3045':'#18293a';miniCtx.fillRect(x*k+.5,y*k+.5,k-1,k-1)}
  }
- for(const plate of level.plates){miniCtx.fillStyle=platePressed(plate)?'#79edcc':'#bc8eff';miniCtx.fillRect((plate.x+.5)*k-3,(plate.y+.5)*k-3,6,6)}
+ for(const plate of level.plates){miniCtx.fillStyle=platePressed(plate)?'#79edcc':'#bc8eff';miniCtx.fillRect((plate.x+.5)*k-3,(plate.y+.5)*k-3,6,6)}for(const p of (level.probes||[])){miniCtx.fillStyle=p.id==='A'?'#67d7ff':'#e4abff';miniCtx.beginPath();miniCtx.arc((p.x+.5)*k,(p.y+.5)*k,4,0,Math.PI*2);miniCtx.fill()}
  for(const c of clones){const g=ghostAt(c);miniCtx.fillStyle='#e0bdff';miniCtx.beginPath();miniCtx.arc(g.x*k,g.y*k,3,0,Math.PI*2);miniCtx.fill()}
  const goal=level.exit;miniCtx.save();miniCtx.translate((goal[0]+.5)*k,(goal[1]+.5)*k);miniCtx.rotate(Math.PI/4);miniCtx.strokeStyle='#a5ffe7';miniCtx.lineWidth=1.6;miniCtx.strokeRect(-4,-4,8,8);miniCtx.restore();
  miniCtx.fillStyle='#70ffe1';miniCtx.strokeStyle='#072329';miniCtx.lineWidth=1.5;miniCtx.beginPath();miniCtx.arc(player.x*k,player.y*k,5,0,Math.PI*2);miniCtx.fill();miniCtx.stroke();
@@ -770,6 +776,12 @@ function draw(){if(cameraMode==='focus')cameraFocusOrigin();ctx.clearRect(0,0,96
  for(const terminal of TERMINALS.filter(t=>t.level===levelIndex)){const x=(terminal.x+.5)*T,y=(terminal.y+.5)*T,found=archiveRead.has(terminal.entry);ctx.save();ctx.translate(x,y);ctx.fillStyle=found?'#1b4850':'#163658';ctx.strokeStyle=found?'#62deca':'#79bfff';ctx.lineWidth=2;ctx.shadowColor=found?'#54e8ca':'#5ca9ff';ctx.shadowBlur=14;round(-15,-18,30,35,5);ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.fillStyle=found?'#69c5b5':'#c2eaff';ctx.fillRect(-10,-11,20,11);ctx.font='bold 9px ui-monospace,monospace';ctx.fillStyle='#e6fffa';ctx.textAlign='center';ctx.fillText('LOG',0,13);ctx.restore()}
  // Independent evidence terminals and an audit console.
  for(const station of (level.sensors||[])){const x=(station.x+.5)*T,y=(station.y+.5)*T,done=auditEvidence.has(station.id);ctx.save();ctx.translate(x,y);ctx.strokeStyle=done?'#55f1cf':'#a5b9c9';ctx.fillStyle=done?'#1d544c':'#22394c';ctx.lineWidth=2;round(-15,-17,30,34,5);ctx.fill();ctx.stroke();ctx.textAlign='center';ctx.fillStyle='#e4fcfa';ctx.font='bold 9px ui-monospace,monospace';ctx.fillText(station.id==='optic'?'CAM':station.id==='mass'?'KG':'ID',0,4);ctx.restore();ctx.fillStyle='#b4cbe0';ctx.textAlign='center';ctx.font='9px ui-monospace,monospace';ctx.fillText(done?'OK':station.label,x,y+29)}
+ for(const probe of (level.probes||[])){
+  const x=(probe.x+.5)*T,y=(probe.y+.5)*T;
+  ctx.save();ctx.translate(x,y);ctx.lineWidth=2.5;ctx.strokeStyle=probe.id==='A'?'#6edff9':'#e4bbff';ctx.fillStyle=probe.id==='A'?'#1b415a':'#42325d';ctx.beginPath();ctx.arc(0,0,17,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.textAlign='center';ctx.font='bold 13px ui-monospace,monospace';ctx.fillStyle='#fff';ctx.fillText(probe.id,0,5);ctx.restore();
+  ctx.fillStyle='#cedaea';ctx.textAlign='center';ctx.font='9px ui-monospace,monospace';ctx.fillText('İZ / '+probe.id,x,y+29)
+ }
  if(level.auditConsole){const x=(level.auditConsole[0]+.5)*T,y=(level.auditConsole[1]+.5)*T;ctx.save();ctx.translate(x,y);ctx.fillStyle=auditUnlocked?'#205d48':'#213b57';ctx.strokeStyle=auditUnlocked?'#6df6c4':'#f6d296';ctx.lineWidth=3;round(-17,-17,34,34,6);ctx.fill();ctx.stroke();ctx.fillStyle='#f4fffa';ctx.font='bold 10px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText('CHK',0,4);ctx.restore();ctx.fillStyle='#c9e2d6';ctx.font='9px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(auditUnlocked?'GEÇTİ':'KANIT',x,y+31)}
  // exit
  {let x=(level.exit[0]+.5)*T,y=(level.exit[1]+.5)*T;ctx.save();ctx.translate(x,y);ctx.rotate(t*.6);ctx.strokeStyle='#53f3d0';ctx.lineWidth=3;ctx.shadowBlur=20;ctx.shadowColor='#53f3d0';ctx.strokeRect(-15,-15,30,30);ctx.rotate(Math.PI/4);ctx.strokeRect(-10,-10,20,20);ctx.restore();ctx.textAlign='center';ctx.font='bold 9px ui-monospace,monospace';ctx.fillStyle='#b0ffe8';ctx.fillText(levelIndex===5?(endingChoice==='keep'?'ÇEKİRDEK':endingChoice==='cut'?'DIŞARI':'KİLİTLİ'):'EXIT',x,y+33)}
