@@ -24,7 +24,7 @@ def load(browser, level):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -890,7 +890,7 @@ def main():
             page.evaluate("window.__echo12Test.tick(.12)")
             commit(page)
             page.evaluate("window.__echo12Test.tick(.24)")
-            base=page.evaluate("""() => ({elapsed,position:{...player},record:record.length,echoes:clones.length})""")
+            base=page.evaluate("window.__echo12Test.inspect()")
             assert base['echoes']==1
             page.keyboard.press('i')
             verify(page,errors,'YANKI İNCELEME')
@@ -902,17 +902,17 @@ def main():
             page.locator('#inspector-echo').select_option('0')
             assert 'E01' in page.locator('#inspector-status').inner_text()
             page.locator('#inspector-forward').click()
-            time1=page.evaluate("inspectorTime")
+            time1=page.evaluate("window.__echo12Test.inspect().time")
             assert time1>base['elapsed']
             page.locator('#inspector-scrub').evaluate("""e => {e.value='10.5';e.dispatchEvent(new Event('input',{bubbles:true}))}""")
-            assert abs(page.evaluate("inspectorTime")-10.5)<.001
+            assert abs(page.evaluate("window.__echo12Test.inspect().time")-10.5)<.001
             assert '10,5 / 12,0 sn' in page.locator('#inspector-clock').inner_text()
             page.locator('#inspector-scrub').focus()
             page.keyboard.press('ArrowRight')
-            assert page.evaluate("inspectorTime")>10.5,'Keyboard scrubber must receive arrow keys'
+            assert page.evaluate("window.__echo12Test.inspect().time")>10.5,'Keyboard scrubber must receive arrow keys'
             page.evaluate("window.__echo12Test.tick(.7)")
-            after=page.evaluate("""() => ({elapsed,position:{...player},record:record.length,echoes:clones.length})""")
-            assert base==after,(base,after)
+            after=page.evaluate("window.__echo12Test.inspect()")
+            assert {k:v for k,v in base.items() if k!='time'}=={k:v for k,v in after.items() if k!='time'},(base,after)
             page.keyboard.press('Escape')
             verify(page,errors,'KAYIT')
             assert page.locator('#inspector').is_hidden()
