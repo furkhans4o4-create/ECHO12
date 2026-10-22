@@ -133,7 +133,7 @@ def main():
             page.keyboard.press("e")
             assert page.locator("#mode").inner_text() == "ARŞİV"
             assert "PERSONEL NO. 12" in page.locator("#archive-body").inner_text()
-            assert page.locator("#archive-count").inner_text() == "1/15"
+            assert page.locator("#archive-count").inner_text() == "1/19"
             saved = page.locator("#time").inner_text()
             page.evaluate("window.__echo12Test.tick(1.5)")
             assert page.locator("#time").inner_text() == saved, "Archive must pause simulation"
@@ -187,7 +187,7 @@ def main():
             assert 'Kimse cevap vermedi' in page.locator('#dialog-title').inner_text()
             assert set(page.evaluate("JSON.parse(localStorage.getItem('echo12-endings'))"))=={'cut','keep'}
             assert 'çekirdeği susturdun' in page.locator('#chapter-recap').inner_text().lower()
-            assert page.locator('#archive-count').inner_text()=='2/15'
+            assert page.locator('#archive-count').inner_text()=='2/19'
             saved=page.evaluate('JSON.stringify(window.__echo12Store)')
             html=page.evaluate('document.documentElement.outerHTML')
             html=html.replace('window.__echo12Store ??= {};','window.__echo12Store = '+saved+';')
@@ -235,7 +235,7 @@ def main():
             assert page.evaluate("window.__echo12Test.gate('P')")
             move(page,'d',1.6)
             verify(page,errors,'BAŞARILI')
-            assert page.locator('#archive-count').inner_text().endswith('/15')
+            assert page.locator('#archive-count').inner_text().endswith('/19')
             assert 'BÖLÜM II' in page.locator('#kicker').inner_text()
             assert 'üçüncü silueti' in page.locator('#chapter-recap').inner_text().lower()
             page.close()
@@ -281,7 +281,7 @@ def main():
             move(page,'d',3.5)
             verify(page,errors,'BAŞARILI')
             assert 'OPERATÖR 00' in page.locator('#dialog-text').inner_text()
-            assert page.locator('#archive-count').inner_text().endswith('/15')
+            assert page.locator('#archive-count').inner_text().endswith('/19')
             page.close()
             print('PASS room 10: reverse replay, forward-only gate, chapter III handoff')
 
@@ -322,12 +322,84 @@ def main():
             page.keyboard.press('Escape')
             page.evaluate("window.__echo12Test.teleport(11.5,5.5)")
             move(page,'d',1.11)
-            verify(page,errors,'TAMAMLANDI')
-            assert 'yönetici yetkisi' in page.locator('#dialog-text').inner_text()
+            verify(page,errors,'BAŞARILI')
+            assert 'yetki başlığı' in page.locator('#dialog-text').inner_text()
             assert 'OPERATÖR 00' in page.locator('#chapter-recap').inner_text()
-            assert page.locator('#archive-count').inner_text().endswith('/15')
+            assert page.locator('#archive-count').inner_text().endswith('/19')
             page.close()
-            print('PASS room 11: evidence triage, wrong verdict, correct verdict, final gate and chapter ending')
+            print('PASS room 11: evidence triage and chapter IV transition')
+
+            # Build 013: a forged silhouette and a wrong-order trace cannot certify identity.
+            page, errors = load(browser, 11)
+            assert page.locator('#room').inner_text()=='12 / 13'
+            assert 'BÖLÜM IV' in page.locator('#chapter-label').inner_text()
+            assert page.locator('#frequency').is_enabled()
+            assert not page.evaluate("window.__echo12Test.gate('PROOF')")
+            page.keyboard.press('f')
+            page.evaluate("window.__echo12Test.tick(.3)")
+            assert not page.evaluate("window.__echo12Test.gate('PROOF')"),'A rendered phantom is never signed proof'
+            page.keyboard.press('r')
+            move(page,'d',.493);move(page,'w',.493);commit(page)
+            # First real attempt uses B before A: deliberately invalid.
+            move(page,'d',1.976);move(page,'s',.493);move(page,'w',.986);move(page,'a',.247);commit(page)
+            page.keyboard.press('f')
+            assert not page.evaluate("window.__echo12Test.gate('PROOF')"),'B to A must not satisfy A to B'
+            assert 'A→B 0/1' in page.locator('#gate-status').inner_text()
+            # A different real trace goes A then B.
+            move(page,'d',1.729);move(page,'w',.493);move(page,'d',.247);move(page,'s',.986);commit(page)
+            assert page.evaluate("window.__echo12Test.gate('PROOF')"),'Recorded A to B unlocks proof when scanner is on'
+            assert page.locator('#gate-counter').inner_text()=='1 / 2 açık' or page.locator('#gate-counter').inner_text()=='2 / 2 açık'
+            move(page,'d',3.45)
+            verify(page,errors,'BAŞARILI')
+            assert page.locator('#archive-count').inner_text().endswith('/19')
+            page.close()
+            print('PASS room 12: real ordered provenance, rejected inversion and scanner verification')
+
+            # Build 013: two independently recorded opposite directions, then a lasting choice.
+            page, errors = load(browser, 12)
+            assert page.locator('#room').inner_text()=='13 / 13'
+            assert not page.evaluate("window.__echo12Test.gate('PROOF')")
+            move(page,'d',.493);move(page,'w',.493);commit(page)
+            move(page,'d',1.73);move(page,'w',.493);move(page,'d',.247);move(page,'s',.986);commit(page)
+            page.keyboard.press('f')
+            assert not page.evaluate("window.__echo12Test.gate('PROOF')"),'Only forward trace is insufficient in final chamber'
+            assert 'A→B 1/1' in page.locator('#gate-status').inner_text()
+            move(page,'d',1.976);move(page,'s',.493);move(page,'w',.986);move(page,'a',.247);commit(page)
+            assert page.evaluate("window.__echo12Test.gate('PROOF')")
+            assert page.locator('#gate-counter').inner_text() in ('1 / 3 açık','2 / 3 açık')
+            page.evaluate("window.__echo12Test.teleport(14.5,2.5)")
+            page.keyboard.press('e')
+            assert page.locator('#decision-title').inner_text()=='KANITI YAYINLA'
+            page.locator('#decision-cancel').click()
+            assert not page.evaluate("window.__echo12Test.gate('OUT')")
+            page.keyboard.press('e')
+            page.locator('#decision-confirm').click()
+            assert page.evaluate("window.__echo12Test.gate('OUT')")
+            page.evaluate("window.__echo12Test.teleport(16.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.03)")
+            verify(page,errors,'TAMAMLANDI')
+            assert page.evaluate("localStorage.getItem('echo12-source-verdict')")=='publish'
+            assert 'KANITI' not in page.locator('#dialog-title').inner_text()
+            assert 'AÇIK KALAN SORU' in page.locator('#chapter-recap').inner_text()
+            assert 'yerini' in page.locator('#chapter-recap').inner_text().lower()
+            assert page.locator('#archive-count').inner_text().endswith('/19')
+            page.locator('#replay-choice').click()
+            verify(page,errors,'KAYIT')
+            assert page.locator('#room').inner_text()=='13 / 13'
+            page.evaluate("window.__echo12Test.teleport(14.5,8.5)")
+            page.keyboard.press('e')
+            assert page.locator('#decision-title').inner_text()=='İZLERİ KARANTİNAYA AL'
+            page.locator('#decision-confirm').click()
+            page.evaluate("window.__echo12Test.teleport(16.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.03)")
+            verify(page,errors,'TAMAMLANDI')
+            assert page.evaluate("localStorage.getItem('echo12-source-verdict')")=='seal'
+            assert 'A15_SEAL' in page.evaluate("localStorage.getItem('echo12-archive')")
+            assert 'A15_PUBLISH' in page.evaluate("localStorage.getItem('echo12-archive')")
+            assert 'yönetimin' in page.locator('#chapter-recap').inner_text().lower()
+            assert not errors,errors
+            page.close()
+            print('PASS room 13: dual ordered proofs, irreversible routing choice and replayable outcomes')
 
             # Build 009: room selection pauses simulation, enforces unlocks and keeps saved progress.
             page, errors = load(browser, 0)
