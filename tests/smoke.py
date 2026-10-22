@@ -405,7 +405,8 @@ def main():
             move(page,'d',1.729);move(page,'w',.493);move(page,'d',.247);move(page,'s',.986);commit(page)
             page.keyboard.press('f')
             assert not page.evaluate("window.__echo12Test.gate('STAMP')")
-            assert '1.2 sn' in page.locator('#proof-records').inner_text()
+            assert 'A→B' in page.locator('#proof-records').inner_text()
+            assert page.evaluate('window.__echo12Test.proof().gap') < 1.6
             assert '1,6–3,6 sn' in page.locator('#proof-evidence').inner_text()
             assert not page.locator('#proof-evidence').evaluate("(e)=>e.classList.contains('valid')")
             move(page,'d',1.729);move(page,'w',.493)
