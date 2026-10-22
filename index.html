@@ -637,7 +637,7 @@ function releaseTouchDirection(code,id,btn){
 }
 function onKeyDown(e){const focusedButton=e.target?.closest?.('button');if(e.code==='Space'&&focusedButton&&!focusedButton.disabled&&!focusedButton.closest('.hidden'))return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.repeat&&['Space','KeyO','KeyH','KeyF','KeyP','KeyR','KeyZ','Enter','KeyE','KeyL','Escape'].includes(e.code))return;if(mode==='selecting'){if(e.code==='Escape')closeRoomSelector();return}if(mode==='playing'&&['KeyW','KeyA','KeyS','KeyD','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.code)){keys.add(e.code);keyboardHeld.add(e.code)}if(mode==='auditing'){if(e.code==='Escape')exitAuditPanel();return}if(mode==='reading'){if(['Escape','KeyE','KeyL'].includes(e.code))closeArchive();return}if(mode==='decision'){if(e.code==='Escape')cancelDecision();else if(e.code==='Enter')confirmDecision();return}if(e.code==='KeyO'){openRoomSelector();return}if(e.code==='KeyH'){showHint();return}if(e.code==='KeyF'){toggleFrequency();return}if(e.code==='KeyM'){toggleSound();return}if(e.code==='KeyL'){openArchive();return}if(e.code==='KeyE'){interactTerminal();return}if(e.code==='Enter'&&mode!=='playing')startGame();if(e.code==='Space'){if(mode==='playing')cycleCommit();else if(mode==='menu'||mode==='leveldone'||mode==='allwon')startGame()}if(e.code==='KeyR'&&(mode==='playing'||mode==='paused'))restart();if(e.code==='KeyZ'&&mode==='playing')undoEcho();if(e.code==='KeyP'&&(mode==='playing'||mode==='paused'))pause()}
 window.addEventListener('keydown',onKeyDown);window.addEventListener('keyup',e=>{keyboardHeld.delete(e.code);if(!touchHeld.has(e.code))keys.delete(e.code)});window.addEventListener('blur',()=>{clearInputs();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)});document.addEventListener('visibilitychange',()=>{if(document.hidden){clearInputs();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)}});
-$('audit-close').onclick=exitAuditPanel;for(const btn of $('audit-options').querySelectorAll('button'))btn.onclick=()=>submitVerdict(btn.dataset.verdict);$('decision-cancel').onclick=cancelDecision;$('decision-confirm').onclick=confirmDecision;$('replay-choice').onclick=()=>{loadLevel(levelIndex===12?12:5);hideOverlay()};$('archive-close').onclick=closeArchive;$('logbook').onclick=()=>mode==='reading'?closeArchive():openArchive();$('interact').onclick=interactTerminal;$('room-select').onclick=openRoomSelector;$('room-picker-close').onclick=closeRoomSelector;$('help-button').onclick=showHint;$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('undo').onclick=undoEcho;$('restart').onclick=restart;$('sound').onclick=toggleSound;$('frequency').onclick=toggleFrequency;
+$('audit-close').onclick=exitAuditPanel;for(const btn of $('audit-options').querySelectorAll('button'))btn.onclick=()=>submitVerdict(btn.dataset.verdict);$('decision-cancel').onclick=cancelDecision;$('decision-confirm').onclick=confirmDecision;$('replay-choice').onclick=()=>{loadLevel(levelIndex===14?14:levelIndex===12?12:5);hideOverlay()};$('archive-close').onclick=closeArchive;$('logbook').onclick=()=>mode==='reading'?closeArchive():openArchive();$('interact').onclick=interactTerminal;$('room-select').onclick=openRoomSelector;$('room-picker-close').onclick=closeRoomSelector;$('help-button').onclick=showHint;$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('undo').onclick=undoEcho;$('restart').onclick=restart;$('sound').onclick=toggleSound;$('frequency').onclick=toggleFrequency;
 for(const btn of document.querySelectorAll('.mobilepad [data-dir]')){
  const code=btn.dataset.dir;
  btn.addEventListener('pointerdown',e=>{e.preventDefault();if(mode!=='playing')return;holdTouchDirection(code,e.pointerId,btn);try{btn.setPointerCapture(e.pointerId)}catch(err){}});
@@ -680,7 +680,7 @@ function updateProofPanel(){
  const live=traceEvents(record,level.probes);
  const counts=verifiedTraceCounts();
  const found=clones.map((c,i)=>({i,order:c.proofOrder,events:c.proofEvents||[],gap:c.proofGap,valid:!!c.timeProof}));
- const liveSequence=live.length?live.map(x=>x.id+' '+x.second.toFixed(1)+'s').join(' → ')+:'Henüz A/B noktasına temas yok';
+ const liveSequence=live.length?live.map(x=>x.id+' '+x.second.toFixed(1)+'s').join(' → '):'Henüz A/B noktasına temas yok';
  const pending=timeAttestation(live,level.timeWindow);
  const stage=live.length===0?'İlk okuma noktasını bul':live.length===1?live[0].id+' kaydediliyor · karşı noktaya git':level.timeWindow?(pending.valid?'Zaman damgası hazır · BOŞLUK':pending.gap===null?'Önce A sonra B':'Aralık '+pending.gap.toFixed(1)+' sn · '+level.timeWindow.join('–')+' sn gerekli'):traceOrder(record,level.probes)?'Kayıt hazır · BOŞLUK ile kaydet':'Okuma sırası devam ediyor';
  const signature=[levelIndex,scannerOn,liveSequence,clones.length,counts.forward,counts.backward,found.map(x=>x.order+':'+x.gap+':'+x.valid).join('|')].join('~');
@@ -730,7 +730,7 @@ function guardPos(g){const travel=g.y2-g.y1,p=((elapsed*g.speed+g.offset)%(2*tra
 
 function renderAuthorityChain(){
  const el=$('authority-chain');el.replaceChildren();
- if(levelIndex!==12||!['publish','seal'].includes(sourceVerdict))return;
+ if(![12,14].includes(levelIndex)||!['publish','seal'].includes(sourceVerdict))return;
  const route=sourceVerdict==='publish';
  const nodes=[
   ['01 / GÖRÜNTÜ','00 etiketi kamera hattında görünüyor.',''],
@@ -753,6 +753,7 @@ function chapterRecapForRoom(){
   proven:internal?'İç hatta iki bağımsız yankı aynı anda kapıyı tuttu.':'Dış hatta da iki farklı yankı izi aynı ana denk geldi.',
   question:'Kaydı bulunmayan üçüncü silueti kim, neden sisteme ekledi?'
  };
+ if(levelIndex===14)return {proven:'A→B hareketi doğrulanmış zaman farkıyla kaydedildi. Önceden seçtiğin kanalın son rölesi de gerçekten açıldı.',question:sourceVerdict==='publish'?'Açığa çıkan tanık konumları kimlerin eline geçecek?':'Gizlenen kanıtın dışarıya güvenle aktarılması mümkün mü?'};
  if(levelIndex===12)return {proven:'A→B ve B→A gerçek kayıtlarla ayrı ayrı doğrulandı. 00 imzası tek bir kişinin kimliği olarak kabul edilemez.',question:sourceVerdict==='publish'?'Dış hat, tanıkların yerini kimlere gösterecek?':'Kanıt dışarıya kapalıyken yönetimin iddiasını kim sorgulayacak?'};
  if(levelIndex===10)return {
   proven:'Kamerada 00 işaretli siluet var; basınç ve yakalama kaydında aynı imzanın karşılığı yok. Görüntü enjekte edilebiliyor.',
@@ -800,16 +801,21 @@ function victory(){
    try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
    showOverlay('BÖLÜM III / ÜÇ TANIK','OPERATÖR 00 bir kişi olmayabilir.',
     'Kameradaki görüntüyü doğrulayan bir fiziksel iz yok. <strong>00</strong> bir yetki başlığı olabilir; şimdi farklı zaman sıralarında kaydedilmiş gerçek hareketlerle bunun izini süreceğiz. <strong>BÖLÜM IV: İZİN SIRASI</strong>','BÖLÜM IV →');
- }else if(n===LVLS.length){
-   sourceVerdict=endingChoice;wonAll=true;mode='allwon';
-   archiveRead.add(sourceVerdict==='publish'?'A15_PUBLISH':'A15_SEAL');
+ }else if(levelIndex===12){
+   sourceVerdict=endingChoice;archiveRead.add(sourceVerdict==='publish'?'A15_PUBLISH':'A15_SEAL');
    try{localStorage.setItem('echo12-source-verdict',sourceVerdict);localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
-   const isPublic=sourceVerdict==='publish',fromInside=chapterPath!=='cut';
-   showOverlay('BÖLÜM IV / İKİ İMZA',isPublic?'Kanıt artık gizli değil.':'Tanıkların izi korunuyor.',
-     isPublic?
-     (fromInside?'Çekirdekte koruduğun yankıların iki ayrı, gerçek rotası dış incelemeye açıldı. Sahte 00 sinyalinin tek bir kişiye ait olduğu iddiası artık sorgulanabilir. <strong>Ancak yankıların yerini de ortaya çıkardın.</strong>':'Dış hatta ulaştırdığın iki gerçek rotanın kaynağı doğrulandı; 00 kodunun kimlik olmadığına dair kanıt yayımlandı. <strong>İçeride kalan kayıtların yerleri de açığa çıkmış olabilir.</strong>'):
-     (fromInside?'İçeride tuttuğun gerçek kayıtları karantinaya aldın. Tanıkların izi korunuyor; <strong>ama dışarıdaki gözlemciler yönetimin 00 açıklamasına itiraz edemiyor.</strong>':'Dış hat üzerinden iki doğrulanmış kaydı korumalı arşive kilitledin. Bu bir kaçış sağlamadı; <strong>kanıt henüz kamuya çıkmadığı için yönetimin anlatısı sürüyor.</strong>'),
-     'YENİDEN BAŞLA ↺');
+   const published=sourceVerdict==='publish';
+   showOverlay('BÖLÜM IV / İKİ İMZA',published?'Kanıt artık gizli değil.':'Tanıkların izi korunuyor.',
+    published?'İki ayrı gerçek iz dış gözlemcilere iletildi. Yayın protokolü son kapıda <strong>iki eşzamanlı yankı</strong> isteyecek.':'Kayıtların konumları karantinada saklanıyor. Son kapı <strong>yalnızca canlı taşıyıcıya</strong> açılacak.',
+    'BÖLÜM V →');
+ }else if(n===LVLS.length){
+   wonAll=true;mode='allwon';const published=sourceVerdict==='publish';
+   archiveRead.add(published?'A18_PUBLIC':'A18_SEALED');
+   try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
+   showOverlay('BÖLÜM V / YETKİ KAPISI',
+    published?'İki yankı son anahtarı birlikte çevirdi.':'Kapı yalnızca sana açıldı.',
+    published?'Zamanı doğrulanmış gerçek kayıtlar ve eşzamanlı iki tanık dış hattı açtı. <strong>00 etiketinin bir kişiye ait olmadığı artık açık.</strong> Fakat tanıkların konumu korunamadı.':'Kopyalanmış 00 yetkisi doğrulandı. Sona kalan geçidi yalnızca canlı dokunuşun açtı. <strong>Tanıkların izi şimdilik gizli, dış incelemenin yoluysa kapalı.</strong>',
+    'YENİDEN BAŞLA ↺');
  }else{
    showOverlay('GEÇİŞ KİLİDİ AÇILDI','ODA '+String(n).padStart(2,'0')+' TAMAMLANDI',
       clones.length+' yankıyla kapıyı aştın. Bir sonraki protokol seni bekliyor.','SONRAKİ ODA →');
@@ -887,7 +893,7 @@ function draw(){if(cameraMode==='focus')cameraFocusOrigin();ctx.clearRect(0,0,96
  // faint ghost trails
  for(let j=0;j<clones.length;j++){let c=clones[j];ctx.beginPath();for(let i=0;i<c.samples.length;i+=12){let p=c.samples[i],x=p.x*T,y=p.y*T;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.strokeStyle=c.reverse?'rgba(252,183,110,.40)':`rgba(183,148,255,${.19+j*.025})`;ctx.lineWidth=3;ctx.stroke()}
  // plates
- for(const p of level.plates){let px=(p.x+.5)*T,py=(p.y+.5)*T,active=p.pulse?gateOpen(p.key):platePressed(p);ctx.save();ctx.translate(px,py);ctx.rotate(Math.PI/4);ctx.fillStyle=p.echoCount?(active?'#53335b':'#302344'):p.selfOnly?(active?'#655023':'#564025'):p.echoOnly?(active?'#273d71':'#182d55'):(p.pulse?(active?'#655023':'#564025'):(active?'#1b685b':'#254b50'));ctx.strokeStyle=p.echoCount?'#dfacff':p.selfOnly?'#ffcf71':p.echoOnly?'#7cb9ff':(p.pulse?'#ffcf71':(active?'#5cfde1':'#579f9b'));ctx.lineWidth=3;ctx.shadowColor=active?'#53f3d0':'transparent';ctx.shadowBlur=active?22:0;round(-14,-14,28,28,5);ctx.fill();ctx.stroke();ctx.restore();ctx.fillStyle=active?'#d4fff5':'#a0d6d1';ctx.font='bold 13px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(p.key,px,py+5);if(p.needsScan||p.reverseOnly||p.forwardOnly){ctx.font='bold 9px ui-monospace,monospace';ctx.fillStyle=p.reverseOnly?'#ffc895':p.forwardOnly?'#b9adff':scannerOn?'#91f9ce':'#f6adad';ctx.fillText(p.reverseOnly?'TERS':p.forwardOnly?'İLERİ':scannerOn?'ONAYLI':'TARAMA',px,py+33)}if(p.echoCount){ctx.fillStyle=active?'#ead0ff':'#c8a0ed';ctx.font='bold 10px ui-monospace,monospace';ctx.fillText(Math.min(p.echoCount,plateOccupancy(p).echoes)+'/'+p.echoCount,px,py+32)}if(p.selfOnly){ctx.fillStyle='#ffd595';ctx.font='bold 9px ui-monospace,monospace';ctx.fillText('CANLI',px,py+34)}if(p.pulse){const remaining=Math.max(0,(relayUntil[p.key]||0)-elapsed);ctx.beginPath();ctx.strokeStyle='#ffd77f';ctx.lineWidth=3;ctx.arc(px,py,20,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.min(1,remaining/p.pulse));ctx.stroke()}}
+ for(const p of level.plates){let px=(p.x+.5)*T,py=(p.y+.5)*T,active=p.pulse?gateOpen(p.key):platePressed(p);ctx.save();ctx.translate(px,py);ctx.rotate(Math.PI/4);ctx.fillStyle=p.routeMode?(active?'#386a60':'#2b3f59'):p.echoCount?(active?'#53335b':'#302344'):p.selfOnly?(active?'#655023':'#564025'):p.echoOnly?(active?'#273d71':'#182d55'):(p.pulse?(active?'#655023':'#564025'):(active?'#1b685b':'#254b50'));ctx.strokeStyle=p.routeMode?'#f9d38b':p.echoCount?'#dfacff':p.selfOnly?'#ffcf71':p.echoOnly?'#7cb9ff':(p.pulse?'#ffcf71':(active?'#5cfde1':'#579f9b'));ctx.lineWidth=3;ctx.shadowColor=active?'#53f3d0':'transparent';ctx.shadowBlur=active?22:0;round(-14,-14,28,28,5);ctx.fill();ctx.stroke();ctx.restore();ctx.fillStyle=active?'#d4fff5':'#a0d6d1';ctx.font='bold 13px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(p.key,px,py+5);if(p.needsScan||p.reverseOnly||p.forwardOnly){ctx.font='bold 9px ui-monospace,monospace';ctx.fillStyle=p.reverseOnly?'#ffc895':p.forwardOnly?'#b9adff':scannerOn?'#91f9ce':'#f6adad';ctx.fillText(p.reverseOnly?'TERS':p.forwardOnly?'İLERİ':scannerOn?'ONAYLI':'TARAMA',px,py+33)}if(p.routeMode){ctx.font='bold 10px ui-monospace,monospace';ctx.fillStyle='#ffe2a9';ctx.fillText(sourceVerdict==='publish'?Math.min(2,liveRelayCount(p))+'/2':'CANLI',px,py+33)}if(p.echoCount){ctx.fillStyle=active?'#ead0ff':'#c8a0ed';ctx.font='bold 10px ui-monospace,monospace';ctx.fillText(Math.min(p.echoCount,plateOccupancy(p).echoes)+'/'+p.echoCount,px,py+32)}if(p.selfOnly){ctx.fillStyle='#ffd595';ctx.font='bold 9px ui-monospace,monospace';ctx.fillText('CANLI',px,py+34)}if(p.pulse){const remaining=Math.max(0,(relayUntil[p.key]||0)-elapsed);ctx.beginPath();ctx.strokeStyle='#ffd77f';ctx.lineWidth=3;ctx.arc(px,py,20,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.min(1,remaining/p.pulse));ctx.stroke()}}
  // choice nodes behind last barriers; both routes are legible before committing
  for(const c of (levelIndex===5?CHOICES:levelIndex===12?SOURCE_CHOICES:[])){const x=(c.x+.5)*T,y=(c.y+.5)*T,chosen=endingChoice===c.id;ctx.save();ctx.translate(x,y);ctx.shadowColor=c.color;ctx.shadowBlur=chosen?25:11;ctx.fillStyle=chosen?c.color+'70':'#15334a';ctx.strokeStyle=c.color;ctx.lineWidth=3;round(-18,-18,36,36,5);ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.textAlign='center';ctx.font='bold 11px ui-monospace,monospace';ctx.fillStyle='#f3fcff';ctx.fillText(c.id==='keep'?'T':c.id==='cut'?'S':c.id==='publish'?'Y':'K',0,4);ctx.restore();ctx.fillStyle=c.color;ctx.textAlign='center';ctx.font='bold 9px ui-monospace,monospace';ctx.fillText(c.id==='keep'?'KORU':c.id==='cut'?'SUSTUR':c.id==='publish'?'YAYIN':'KARANTİNA',x,y+33)}
  // archive terminals: visually distinct from pressure plates
