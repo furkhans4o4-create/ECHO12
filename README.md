@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 019 — Kayıt Kasası ve Final Arşivi
+
+**19 oynanabilir oda, 7 hikâye bölümü, 35 arşiv girdisi** değişmeden kalır. Bu aşama oyunun bitiş sonrası kullanılabilirliğine, ilerlemenin taşınabilirliğine ve veri güvenilirliğine odaklanır.
+
+- **Kayıt Kasası (B):** Oyun sırasında, duraklatıldığında veya ana menüden açılabilen ayrı ekran. Kasa açıkken döngü ilerlemez. Mobil arayüzde menü düğmesi, masaüstünde B kısayolu bulunur.
+- **Dışarı aktarma:** `ECHO12_Kayit_Yedegi.json` adlı tamamen yerel JSON dosyasını üretir. Oda ilerlemesi, ilk bölüm ve kaynak yayın/karantina kararları, son final tercihi, keşfedilen arşivler, üç bağımsız çıkarım, oda rekorları, ses ve kamera tercihleri saklanır. **O an oynanan 12 saniyelik döngü ve geçici yankılar dosyaya dahil edilmez.**
+- **Geri yükleme:** Dosya içeriği hiçbir sunucuya gönderilmez. `ECHO12_SAVE_V1` sürüm etiketi, oda sınırları, bilinen arşiv kimlikleri, son kararlar, kayıt dizileri, performans sayıları ve delil dosyasının kaynakları denetlenir. Hatalı veri kayıtları değiştirmeden reddedilir. Geçerli kayıt, üzerine yazma onayından sonra yüklenir ve ilgili odanın başından devam edilir.
+- **Final galerisi:** Oyunun üç sonu keşfedildikçe kasadaki kilitli kartlar açılır. Önceden ulaşılan farklı bitişler arşivden tekrar tespit edilir; yalnızca son tercih görüntülenmez.
+- **Uyumluluk:** Eski Build 018 kayıtları otomatik olarak çalışır, yedek alma için mevcut oyunu sıfırlamak gerekmez. Tarayıcıların özel/gizli modlarında yerel saklama kalıcı olmayabilir; bu nedenle JSON yedeği önerilir.
+- **Tarayıcı testleri:** Kasanın zamanı durdurması, sürüm biçimi, geçersiz JSON'un reddi, bozulmuş rekorların kabul edilmemesi, bütün kayıt ve tercih alanlarının yeniden yüklenmesi, farklı final arşivinin algılanması ve masaüstü kısayolları sınanır.
+
 ## Build 018 — Bölüm VII: Son On İki Saniye / Hikâyenin Finali
 
 **19 oynanabilir oda · 7 hikâye bölümü · 35 arşiv girdisi.** Bu sürüm, ana kampanyaya yeni bir bölüm daha eklemek yerine hikâyenin ana soruşturmasını **üç farklı sonla tamamlar**. Bundan sonraki geliştirme önceliği oynanışın dengesi, görsel kalite, ses ve üretim kararlılığıdır.
