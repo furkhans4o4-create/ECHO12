@@ -668,7 +668,7 @@ function releaseTouchDirection(code,id,btn){
 }
 function onKeyDown(e){const focusedButton=e.target?.closest?.('button');if(e.code==='Space'&&focusedButton&&!focusedButton.disabled&&!focusedButton.closest('.hidden'))return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.repeat&&['Space','KeyO','KeyH','KeyF','KeyP','KeyR','KeyZ','Enter','KeyE','KeyL','Escape'].includes(e.code))return;if(mode==='selecting'){if(e.code==='Escape')closeRoomSelector();return}if(mode==='playing'&&['KeyW','KeyA','KeyS','KeyD','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.code)){keys.add(e.code);keyboardHeld.add(e.code)}if(mode==='auditing'){if(e.code==='Escape')exitAuditPanel();return}if(mode==='reading'){if(['Escape','KeyE','KeyL'].includes(e.code))closeArchive();return}if(mode==='decision'){if(e.code==='Escape')cancelDecision();else if(e.code==='Enter')confirmDecision();return}if(e.code==='KeyO'){openRoomSelector();return}if(e.code==='KeyH'){showHint();return}if(e.code==='KeyF'){toggleFrequency();return}if(e.code==='KeyM'){toggleSound();return}if(e.code==='KeyL'){openArchive();return}if(e.code==='KeyE'){interactTerminal();return}if(e.code==='Enter'&&mode!=='playing')startGame();if(e.code==='Space'){if(mode==='playing')cycleCommit();else if(mode==='menu'||mode==='leveldone'||mode==='allwon')startGame()}if(e.code==='KeyR'&&(mode==='playing'||mode==='paused'))restart();if(e.code==='KeyZ'&&mode==='playing')undoEcho();if(e.code==='KeyP'&&(mode==='playing'||mode==='paused'))pause()}
 window.addEventListener('keydown',onKeyDown);window.addEventListener('keyup',e=>{keyboardHeld.delete(e.code);if(!touchHeld.has(e.code))keys.delete(e.code)});window.addEventListener('blur',()=>{clearInputs();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)});document.addEventListener('visibilitychange',()=>{if(document.hidden){clearInputs();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)}});
-$('audit-close').onclick=exitAuditPanel;for(const btn of $('audit-options').querySelectorAll('button'))btn.onclick=()=>submitVerdict(btn.dataset.verdict);$('decision-cancel').onclick=cancelDecision;$('decision-confirm').onclick=confirmDecision;$('replay-choice').onclick=()=>{loadLevel(levelIndex===14?14:levelIndex===12?12:5);hideOverlay()};$('archive-close').onclick=closeArchive;$('logbook').onclick=()=>mode==='reading'?closeArchive():openArchive();$('interact').onclick=interactTerminal;$('room-select').onclick=openRoomSelector;$('room-picker-close').onclick=closeRoomSelector;$('help-button').onclick=showHint;$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('undo').onclick=undoEcho;$('restart').onclick=restart;$('sound').onclick=toggleSound;$('frequency').onclick=toggleFrequency;
+$('audit-close').onclick=exitAuditPanel;for(const btn of $('audit-options').querySelectorAll('button'))btn.onclick=()=>submitVerdict(btn.dataset.verdict);$('decision-cancel').onclick=cancelDecision;$('decision-confirm').onclick=confirmDecision;$('replay-choice').onclick=()=>{loadLevel(levelIndex===16?16:levelIndex===14?14:levelIndex===12?12:5);hideOverlay()};$('archive-close').onclick=closeArchive;$('logbook').onclick=()=>mode==='reading'?closeArchive():openArchive();$('interact').onclick=interactTerminal;$('room-select').onclick=openRoomSelector;$('room-picker-close').onclick=closeRoomSelector;$('help-button').onclick=showHint;$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('undo').onclick=undoEcho;$('restart').onclick=restart;$('sound').onclick=toggleSound;$('frequency').onclick=toggleFrequency;
 for(const btn of document.querySelectorAll('.mobilepad [data-dir]')){
  const code=btn.dataset.dir;
  btn.addEventListener('pointerdown',e=>{e.preventDefault();if(mode!=='playing')return;holdTouchDirection(code,e.pointerId,btn);try{btn.setPointerCapture(e.pointerId)}catch(err){}});
@@ -791,7 +791,7 @@ function guardPos(g){const travel=g.y2-g.y1,p=((elapsed*g.speed+g.offset)%(2*tra
 
 function renderAuthorityChain(){
  const el=$('authority-chain');el.replaceChildren();
- if(![12,14].includes(levelIndex)||!['publish','seal'].includes(sourceVerdict))return;
+ if(![12,14,16].includes(levelIndex)||!['publish','seal'].includes(sourceVerdict))return;
  const route=sourceVerdict==='publish';
  const nodes=[
   ['01 / GÖRÜNTÜ','00 etiketi kamera hattında görünüyor.',''],
@@ -870,13 +870,21 @@ function victory(){
    showOverlay('BÖLÜM IV / İKİ İMZA',published?'Kanıt artık gizli değil.':'Tanıkların izi korunuyor.',
     published?'İki ayrı gerçek iz dış gözlemcilere iletildi. Yayın protokolü son kapıda <strong>iki eşzamanlı yankı</strong> isteyecek.':'Kayıtların konumları karantinada saklanıyor. Son kapı <strong>yalnızca canlı taşıyıcıya</strong> açılacak.',
     'BÖLÜM V →');
- }else if(n===LVLS.length){
-   wonAll=true;mode='allwon';const published=sourceVerdict==='publish';
+ }else if(levelIndex===14){
+   const published=sourceVerdict==='publish';
    archiveRead.add(published?'A18_PUBLIC':'A18_SEALED');
    try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
    showOverlay('BÖLÜM V / YETKİ KAPISI',
     published?'İki yankı son anahtarı birlikte çevirdi.':'Kapı yalnızca sana açıldı.',
-    published?'Zamanı doğrulanmış gerçek kayıtlar ve eşzamanlı iki tanık dış hattı açtı. <strong>00 etiketinin bir kişiye ait olmadığı artık açık.</strong> Fakat tanıkların konumu korunamadı.':'Kopyalanmış 00 yetkisi doğrulandı. Sona kalan geçidi yalnızca canlı dokunuşun açtı. <strong>Tanıkların izi şimdilik gizli, dış incelemenin yoluysa kapalı.</strong>',
+    published?'Zamanı doğrulanmış gerçek kayıtlar dış hatta ulaştı. <strong>Bölüm VI: Ayrı Tanıklar</strong>, birbirinden uzaktaki iki gerçek kaydın eşzamanlılığını inceleyecek.':'Kopya yetki doğrulandı ve izler gizli tutuldu. <strong>Bölüm VI: Ayrı Tanıklar</strong>, birbirinden uzaktaki iki gerçek kaydın eşzamanlılığını inceleyecek.',
+    'BÖLÜM VI →');
+ }else if(n===LVLS.length){
+   wonAll=true;mode='allwon';const published=sourceVerdict==='publish';
+   archiveRead.add(published?'A21_PUBLIC':'A21_SEALED');
+   try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
+   showOverlay('BÖLÜM VI / KORA PROTOKOLÜ',
+    published?'İki tanık doğrulandı; hat artık açık.':'İki tanık doğrulandı; hat mühürlendi.',
+    published?'Farklı odalardaki iki gerçek yankı aynı anda kayda geçti. <strong>Kora bu tanıklığı yayınladı.</strong> Ancak tanıkların yerleri korunamadı; 00 etiketinin sahibiyse hâlâ bilinmiyor.':'İki bağımsız kayıt eşzamanlılık testini geçti. <strong>Kora tanıklığı gizli arşive aktardı.</strong> Tanıklar korunuyor ama dış dünyaya henüz hiçbir düzeltme ulaşmadı.',
     'YENİDEN BAŞLA ↺');
  }else{
    showOverlay('GEÇİŞ KİLİDİ AÇILDI','ODA '+String(n).padStart(2,'0')+' TAMAMLANDI',
