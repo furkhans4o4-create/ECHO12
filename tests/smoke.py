@@ -170,6 +170,9 @@ def main():
             verify(page,errors,'BAŞARILI')
             assert 'Yalnız da değilsin' in page.locator('#dialog-title').inner_text()
             assert page.evaluate("JSON.parse(localStorage.getItem('echo12-endings'))")==['keep']
+            assert 'KESİNLEŞEN BULGU' in page.locator('#chapter-recap').inner_text()
+            assert 'AÇIK KALAN SORU' in page.locator('#chapter-recap').inner_text()
+            assert 'çekirdekte kaldı' in page.locator('#chapter-recap').inner_text()
             print('PASS 6/6: keep-ending and cancellation checks')
 
             page.locator('#replay-choice').click()
@@ -183,6 +186,7 @@ def main():
             verify(page,errors,'BAŞARILI')
             assert 'Kimse cevap vermedi' in page.locator('#dialog-title').inner_text()
             assert set(page.evaluate("JSON.parse(localStorage.getItem('echo12-endings'))"))=={'cut','keep'}
+            assert 'çekirdeği susturdun' in page.locator('#chapter-recap').inner_text().lower()
             assert page.locator('#archive-count').inner_text()=='2/15'
             saved=page.evaluate('JSON.stringify(window.__echo12Store)')
             html=page.evaluate('document.documentElement.outerHTML')
@@ -233,6 +237,7 @@ def main():
             verify(page,errors,'BAŞARILI')
             assert page.locator('#archive-count').inner_text().endswith('/15')
             assert 'BÖLÜM II' in page.locator('#kicker').inner_text()
+            assert 'üçüncü silueti' in page.locator('#chapter-recap').inner_text().lower()
             page.close()
             print('PASS room 8: dual echo gate, live-only pulse, chapter II handoff')
 
@@ -319,6 +324,7 @@ def main():
             move(page,'d',1.11)
             verify(page,errors,'TAMAMLANDI')
             assert 'yönetici yetkisi' in page.locator('#dialog-text').inner_text()
+            assert 'OPERATÖR 00' in page.locator('#chapter-recap').inner_text()
             assert page.locator('#archive-count').inner_text().endswith('/15')
             page.close()
             print('PASS room 11: evidence triage, wrong verdict, correct verdict, final gate and chapter ending')
@@ -429,6 +435,32 @@ def main():
             assert not errors, errors
             page.close()
             print('PASS Build 011: responsive D-pad, concurrent touch, cancellation, central record and mobile pause')
+
+            # Build 012: overview, optional follow-camera, minimap and stored preference.
+            page, errors = load(browser, 0)
+            assert page.locator('#camera-toggle').get_attribute('aria-pressed')=='false', 'Desktop defaults to overview'
+            assert page.locator('#minimap-box').is_hidden()
+            page.set_viewport_size({"width":390,"height":844})
+            page.locator('#camera-toggle').click()
+            assert page.locator('#camera-toggle').get_attribute('aria-pressed')=='true'
+            assert page.locator('.stage').evaluate("(e)=>e.classList.contains('focus-camera')")
+            assert page.locator('#minimap-box').is_visible()
+            assert page.evaluate("localStorage.getItem('echo12-camera-mode')")=='focus'
+            origin_before=page.locator('#scene').evaluate("(e)=>e.style.transformOrigin")
+            move(page,'d',.35)
+            origin_after=page.locator('#scene').evaluate("(e)=>e.style.transformOrigin")
+            assert origin_before!=origin_after, (origin_before,origin_after)
+            assert page.locator('#minimap').get_attribute('width')=='216'
+            # Static 11x18 map is rendered even as the main canvas follows the character.
+            px=page.locator('#minimap').evaluate("(e)=>[...e.getContext('2d').getImageData(0,0,1,1).data]")
+            assert px[3]==255, px
+            page.locator('#camera-toggle').click()
+            assert page.locator('#camera-toggle').get_attribute('aria-pressed')=='false'
+            assert page.locator('#minimap-box').is_hidden()
+            assert page.evaluate("localStorage.getItem('echo12-camera-mode')")=='overview'
+            assert not errors, errors
+            page.close()
+            print('PASS Build 012: focus camera, full-map minimap, follow origin, manual overview and preference')
 
             # Verify display and audio feedback without changing a real puzzle solution.
             page, errors = load(browser, 0)
