@@ -68,7 +68,7 @@ def main():
             print('PASS sound toggle, local setting and sector title')
             # Build 010: contextual onboarding and chapter pacing are visible from start.
             assert page.locator('#chapter-label').inner_text() == 'BÖLÜM I · HAFIZA'
-            assert page.locator('#campaign-segments .campaign-cell').count() == 11
+            assert page.locator('#campaign-segments .campaign-cell').count() == 13
             assert page.locator('#campaign-segments .campaign-cell.active').count() == 1
             assert page.locator('#gate-counter').inner_text() == '0 / 1 açık'
             assert 'WASD' in page.locator('#hint').inner_text()
@@ -415,7 +415,7 @@ def main():
             verify(page,errors,'ODA SEÇİMİ')
             assert page.locator('[data-room="0"]').is_enabled()
             assert page.locator('[data-room="1"]').is_disabled()
-            assert page.locator('#room-picker-grid button').count() == 11
+            assert page.locator('#room-picker-grid button').count() == 13
             page.evaluate("window.__echo12Test.tick(1.3)")
             frozen=page.locator('#time').inner_text()
             page.evaluate("window.__echo12Test.tick(2)")
@@ -431,7 +431,7 @@ def main():
             assert page.locator('[data-room="10"]').is_enabled()
             page.locator('[data-room="6"]').click()
             verify(page,errors,'KAYIT')
-            assert page.locator('#room').inner_text()=='07 / 11'
+            assert page.locator('#room').inner_text()=='07 / 13'
             assert page.locator('#hint-assist').is_hidden()
             assert page.evaluate("localStorage.getItem('echo12-unlocked')")=='10'
             page.keyboard.press('h')
@@ -439,7 +439,7 @@ def main():
             page.keyboard.press('o')
             page.locator('[data-room="0"]').click()
             verify(page,errors,'KAYIT')
-            assert page.locator('#room').inner_text()=='01 / 11'
+            assert page.locator('#room').inner_text()=='01 / 13'
             assert not errors, errors
             page.close()
             print('PASS Build 009: hints, room navigation, simulation pause, focus-safe Space and save integrity')
