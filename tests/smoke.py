@@ -24,7 +24,7 @@ def load(browser, level):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -68,7 +68,7 @@ def main():
             print('PASS sound toggle, local setting and sector title')
             # Build 010: contextual onboarding and chapter pacing are visible from start.
             assert page.locator('#chapter-label').inner_text() == 'BÖLÜM I · HAFIZA'
-            assert page.locator('#campaign-segments .campaign-cell').count() == 17
+            assert page.locator('#campaign-segments .campaign-cell').count() == 19
             assert page.locator('#campaign-segments .campaign-cell.active').count() == 1
             assert page.locator('#gate-counter').inner_text() == '0 / 1 açık'
             assert 'WASD' in page.locator('#hint').inner_text()
@@ -133,7 +133,7 @@ def main():
             page.keyboard.press("e")
             assert page.locator("#mode").inner_text() == "ARŞİV"
             assert "PERSONEL NO. 12" in page.locator("#archive-body").inner_text()
-            assert page.locator("#archive-count").inner_text() == "1/30"
+            assert page.locator("#archive-count").inner_text() == "1/35"
             saved = page.locator("#time").inner_text()
             page.evaluate("window.__echo12Test.tick(1.5)")
             assert page.locator("#time").inner_text() == saved, "Archive must pause simulation"
@@ -187,13 +187,13 @@ def main():
             assert 'Kimse cevap vermedi' in page.locator('#dialog-title').inner_text()
             assert set(page.evaluate("JSON.parse(localStorage.getItem('echo12-endings'))"))=={'cut','keep'}
             assert 'çekirdeği susturdun' in page.locator('#chapter-recap').inner_text().lower()
-            assert page.locator('#archive-count').inner_text()=='2/30'
+            assert page.locator('#archive-count').inner_text()=='2/35'
             saved=page.evaluate('JSON.stringify(window.__echo12Store)')
             html=page.evaluate('document.documentElement.outerHTML')
             html=html.replace('window.__echo12Store ??= {};','window.__echo12Store = '+saved+';')
             page.set_content(html,wait_until='load')
             page.locator('#logbook').click()
-            assert '2 / 30' in page.locator('#archive-status').inner_text()
+            assert '2 / 35' in page.locator('#archive-status').inner_text()
             verify(page,errors,'ARŞİV')
             page.close()
             print('PASS persisted endings: both results recoverable from storage')
@@ -235,7 +235,7 @@ def main():
             assert page.evaluate("window.__echo12Test.gate('P')")
             move(page,'d',1.6)
             verify(page,errors,'BAŞARILI')
-            assert page.locator('#archive-count').inner_text().endswith('/30')
+            assert page.locator('#archive-count').inner_text().endswith('/35')
             assert 'BÖLÜM II' in page.locator('#kicker').inner_text()
             assert 'üçüncü silueti' in page.locator('#chapter-recap').inner_text().lower()
             page.close()
@@ -281,7 +281,7 @@ def main():
             move(page,'d',3.5)
             verify(page,errors,'BAŞARILI')
             assert 'OPERATÖR 00' in page.locator('#dialog-text').inner_text()
-            assert page.locator('#archive-count').inner_text().endswith('/30')
+            assert page.locator('#archive-count').inner_text().endswith('/35')
             page.close()
             print('PASS room 10: reverse replay, forward-only gate, chapter III handoff')
 
@@ -325,13 +325,13 @@ def main():
             verify(page,errors,'BAŞARILI')
             assert 'yetki başlığı' in page.locator('#dialog-text').inner_text()
             assert 'OPERATÖR 00' in page.locator('#chapter-recap').inner_text()
-            assert page.locator('#archive-count').inner_text().endswith('/30')
+            assert page.locator('#archive-count').inner_text().endswith('/35')
             page.close()
             print('PASS room 11: evidence triage and chapter IV transition')
 
             # Build 013: a forged silhouette and a wrong-order trace cannot certify identity.
             page, errors = load(browser, 11)
-            assert page.locator('#room').inner_text()=='12 / 17'
+            assert page.locator('#room').inner_text()=='12 / 19'
             assert 'BÖLÜM IV' in page.locator('#chapter-label').inner_text()
             assert page.locator('#frequency').is_enabled()
             assert page.locator('#proof-panel').is_visible()
@@ -359,13 +359,13 @@ def main():
             assert page.locator('#gate-counter').inner_text()=='1 / 2 açık' or page.locator('#gate-counter').inner_text()=='2 / 2 açık'
             move(page,'d',3.45)
             verify(page,errors,'BAŞARILI')
-            assert page.locator('#archive-count').inner_text().endswith('/30')
+            assert page.locator('#archive-count').inner_text().endswith('/35')
             page.close()
             print('PASS room 12: real ordered provenance, rejected inversion and scanner verification')
 
             # Build 013: two independently recorded opposite directions, then a lasting choice.
             page, errors = load(browser, 12)
-            assert page.locator('#room').inner_text()=='13 / 17'
+            assert page.locator('#room').inner_text()=='13 / 19'
             assert not page.evaluate("window.__echo12Test.gate('PROOF')")
             move(page,'d',.493);move(page,'w',.493);commit(page)
             move(page,'d',1.73);move(page,'w',.493);move(page,'d',.247);move(page,'s',.986);commit(page)
@@ -393,13 +393,13 @@ def main():
             verify(page,errors,'BAŞARILI')
             assert page.evaluate("localStorage.getItem('echo12-source-verdict')")=='publish'
             assert 'BÖLÜM V' in page.locator('#start').inner_text()
-            assert page.locator('#archive-count').inner_text().endswith('/30')
+            assert page.locator('#archive-count').inner_text().endswith('/35')
             page.close()
             print('PASS room 13: dual real imprints and chapter V handoff')
 
             # Build 015: correct order with insufficient travel time cannot be signed.
             page, errors = load(browser, 13)
-            assert page.locator('#room').inner_text()=='14 / 17'
+            assert page.locator('#room').inner_text()=='14 / 19'
             assert 'BÖLÜM V' in page.locator('#chapter-label').inner_text()
             move(page,'d',.493);move(page,'w',.493);commit(page)
             move(page,'d',1.729);move(page,'w',.493);move(page,'d',.247);move(page,'s',.986);commit(page)
@@ -417,7 +417,7 @@ def main():
             assert page.locator('#proof-evidence').evaluate("(e)=>e.classList.contains('valid')")
             move(page,'d',3.45)
             verify(page,errors,'BAŞARILI')
-            assert page.locator('#archive-count').inner_text().endswith('/30')
+            assert page.locator('#archive-count').inner_text().endswith('/35')
             assert not errors,errors
             page.close()
             print('PASS room 14: attestation gap rejects fast spoof and accepts measured movement')
@@ -425,7 +425,7 @@ def main():
             # Build 015: previous publication vs quarantine creates genuinely distinct gate rules.
             page, errors = load(browser, 14)
             page.evaluate("window.__echo12Test.setRoute('publish')")
-            assert page.locator('#room').inner_text()=='15 / 17'
+            assert page.locator('#room').inner_text()=='15 / 19'
             assert 'Yankı 0/2' in page.locator('#gate-status').inner_text()
             assert not page.evaluate("window.__echo12Test.gate('ROUTE')")
             page.evaluate("window.__echo12Test.teleport(14.5,5.5)")
@@ -443,7 +443,7 @@ def main():
             verify(page,errors,'BAŞARILI')
             assert 'İki yankı' in page.locator('#dialog-title').inner_text()
             assert 'A18_PUBLIC' in page.evaluate("localStorage.getItem('echo12-archive')")
-            assert page.locator('#archive-count').inner_text().endswith('/30')
+            assert page.locator('#archive-count').inner_text().endswith('/35')
             assert page.locator('#authority-chain .authority-node').count()==4
             page.close()
             print('PASS room 15 public: synchronized two-echo route and chapter V result')
@@ -466,7 +466,7 @@ def main():
 
             # Build 016: two separate recorded witnesses, not one clone or a forged image.
             page, errors = load(browser, 15)
-            assert page.locator('#room').inner_text()=='16 / 17'
+            assert page.locator('#room').inner_text()=='16 / 19'
             assert 'BÖLÜM VI' in page.locator('#chapter-label').inner_text()
             assert page.locator('#sync-panel').is_visible()
             assert not page.evaluate("window.__echo12Test.gate('XSYNC')")
@@ -501,7 +501,7 @@ def main():
             for route in ['publish','seal']:
                 page, errors = load(browser, 16)
                 page.evaluate("window.__echo12Test.setRoute('"+route+"')")
-                assert page.locator('#room').inner_text()=='17 / 17'
+                assert page.locator('#room').inner_text()=='17 / 19'
                 page.keyboard.press('f')
                 page.evaluate("window.__echo12Test.teleport(9.5,3.5)")
                 page.evaluate("window.__echo12Test.tick(.1)")
@@ -522,14 +522,92 @@ def main():
                 assert 'ONAY' in page.locator('#sync-verdict').inner_text()
                 page.evaluate("window.__echo12Test.teleport(16.5,5.5)")
                 page.evaluate("window.__echo12Test.tick(.04)")
-                verify(page,errors,'TAMAMLANDI')
+                verify(page,errors,'BAŞARILI')
+                assert 'SON BÖLÜM' in page.locator('#start').inner_text()
                 assert ('A21_PUBLIC' if route=='publish' else 'A21_SEALED') in page.evaluate("localStorage.getItem('echo12-archive')")
-                assert page.locator('#archive-count').inner_text().endswith('/30')
+                assert page.locator('#archive-count').inner_text().endswith('/35')
                 assert 'KORA' in page.locator('#kicker').inner_text()
                 assert 'AÇIK KALAN SORU' in page.locator('#chapter-recap').inner_text()
                 assert not errors,errors
                 page.close()
             print('PASS room 17: Kora witness publication and privacy-controlled sealed route')
+
+            # Build 018: penultimate room combines an authenticated timestamp and two distinct
+            # simultaneous witnesses. A single real trace cannot stand in for both.
+            page, errors = load(browser, 17)
+            assert page.locator('#room').inner_text() == '18 / 19'
+            assert 'BÖLÜM VII' in page.locator('#chapter-label').inner_text()
+            page.keyboard.press('f')
+            page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.12)")
+            commit(page)
+            page.evaluate("window.__echo12Test.teleport(9.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.12)")
+            page.evaluate("window.__echo12Test.tick(2)")
+            page.evaluate("window.__echo12Test.teleport(10.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.12)")
+            commit(page)
+            assert page.evaluate("window.__echo12Test.gate('STAMP')")
+            assert not page.evaluate("window.__echo12Test.gate('XSYNC')")
+            page.evaluate("window.__echo12Test.teleport(9.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.12)")
+            commit(page)
+            page.evaluate("window.__echo12Test.tick(2.6)")
+            assert page.evaluate("window.__echo12Test.gate('STAMP')")
+            assert page.evaluate("window.__echo12Test.gate('XSYNC')"), page.evaluate("window.__echo12Test.sync()")
+            page.evaluate("window.__echo12Test.teleport(16.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.04)")
+            verify(page,errors,'BAŞARILI')
+            assert not errors,errors
+            page.close()
+            print('PASS room 18: authenticated time bridge and simultaneous distinct witnesses')
+
+            # Build 018: final choices respect the solved proof, are not substitutes for the
+            # earlier publish/seal outcome, and only grant independent review after 3 deductions.
+            for choice in ['revoke','preserve','review']:
+                page, errors = load(browser, 18)
+                assert page.locator('#room').inner_text()=='19 / 19'
+                assert not page.evaluate("window.__echo12Test.gate('FINAL')")
+                page.keyboard.press('f')
+                page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
+                page.evaluate("window.__echo12Test.tick(.12)")
+                commit(page)
+                page.evaluate("window.__echo12Test.teleport(9.5,3.5)")
+                page.evaluate("window.__echo12Test.tick(.12)")
+                page.evaluate("window.__echo12Test.teleport(10.5,7.5)")
+                page.evaluate("window.__echo12Test.tick(.12)")
+                commit(page)
+                page.evaluate("window.__echo12Test.teleport(10.5,7.5)")
+                page.evaluate("window.__echo12Test.tick(.12)")
+                page.evaluate("window.__echo12Test.teleport(9.5,3.5)")
+                page.evaluate("window.__echo12Test.tick(.12)")
+                commit(page)
+                assert page.evaluate("window.__echo12Test.gate('PROOF')")
+                assert not page.evaluate("window.__echo12Test.gate('FINAL')")
+                page.evaluate("window.__echo12Test.teleport(14.5,5.5)")
+                page.keyboard.press('e')
+                assert page.locator('#decision').is_hidden(), 'Independent review requires case files'
+                assert page.locator('#mode').inner_text()=='KAYIT'
+                if choice=='review':
+                    page.evaluate("window.__echo12Test.grantFinalFiles()")
+                coord={'revoke':(14.5,2.5),'preserve':(14.5,8.5),'review':(14.5,5.5)}[choice]
+                page.evaluate("window.__echo12Test.teleport(..."+str(list(coord))+")")
+                page.keyboard.press('e')
+                assert page.locator('#decision').is_visible()
+                page.locator('#decision-confirm').click()
+                assert page.evaluate("window.__echo12Test.choose()")==choice
+                assert page.evaluate("window.__echo12Test.gate('FINAL')")
+                page.evaluate("window.__echo12Test.teleport(16.5,5.5)")
+                page.evaluate("window.__echo12Test.tick(.04)")
+                verify(page,errors,'TAMAMLANDI')
+                assert page.evaluate("localStorage.getItem('echo12-final-verdict')")==choice
+                assert ('F01_'+{'revoke':'PURGE','preserve':'PRESERVE','review':'REVIEW'}[choice]) in page.evaluate("localStorage.getItem('echo12-archive')")
+                assert page.locator('#archive-count').inner_text().endswith('/35')
+                assert 'BÖLÜM VII' in page.locator('#kicker').inner_text()
+                assert 'AÇIK KALAN SORU' in page.locator('#chapter-recap').inner_text()
+                assert not errors,errors
+                page.close()
+            print('PASS room 19: three distinct endings, mandatory proof and independent case file prerequisite')
 
             # Build 009: room selection pauses simulation, enforces unlocks and keeps saved progress.
             page, errors = load(browser, 0)
@@ -545,7 +623,7 @@ def main():
             verify(page,errors,'ODA SEÇİMİ')
             assert page.locator('[data-room="0"]').is_enabled()
             assert page.locator('[data-room="1"]').is_disabled()
-            assert page.locator('#room-picker-grid button').count() == 17
+            assert page.locator('#room-picker-grid button').count() == 19
             page.evaluate("window.__echo12Test.tick(1.3)")
             frozen=page.locator('#time').inner_text()
             page.evaluate("window.__echo12Test.tick(2)")
@@ -561,7 +639,7 @@ def main():
             assert page.locator('[data-room="10"]').is_enabled()
             page.locator('[data-room="6"]').click()
             verify(page,errors,'KAYIT')
-            assert page.locator('#room').inner_text()=='07 / 17'
+            assert page.locator('#room').inner_text()=='07 / 19'
             assert page.locator('#hint-assist').is_hidden()
             assert page.evaluate("localStorage.getItem('echo12-unlocked')")=='10'
             page.keyboard.press('h')
@@ -569,7 +647,7 @@ def main():
             page.keyboard.press('o')
             page.locator('[data-room="0"]').click()
             verify(page,errors,'KAYIT')
-            assert page.locator('#room').inner_text()=='01 / 17'
+            assert page.locator('#room').inner_text()=='01 / 19'
             assert not errors, errors
             page.close()
             print('PASS Build 009: hints, room navigation, simulation pause, focus-safe Space and save integrity')
@@ -700,7 +778,7 @@ def main():
             page.locator('[data-case-id="C03"] .case-options button').nth(1).click()
             assert page.locator('#case-progress').inner_text().startswith('3 / 3')
             assert page.locator('#case-board-count').inner_text()=='3/3'
-            assert page.locator('#archive-count').inner_text().endswith('/30')
+            assert page.locator('#archive-count').inner_text().endswith('/35')
             for name in ['D01','D02','D03']:
                 assert name in page.evaluate("localStorage.getItem('echo12-archive')")
             page.keyboard.press('k')
@@ -708,7 +786,7 @@ def main():
             assert page.locator('#case-board').is_hidden()
             page.keyboard.press('l')
             verify(page,errors,'ARŞİV')
-            assert page.locator('#archive-list button').count()==30
+            assert page.locator('#archive-list button').count()==35
             assert page.locator('#archive-list button').filter(has_text='ÇIKARIM 03').count()==1
             assert not errors, errors
             page.close()
