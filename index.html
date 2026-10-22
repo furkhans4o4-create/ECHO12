@@ -519,7 +519,7 @@ function nearestChoice(){return levelIndex===5?CHOICES.find(c=>Math.hypot(player
 function openDecision(choice){if(mode!=='playing'||!choice||endingChoice)return;clearInputs();activeDecision=choice;mode='decision';$('decision-panel').dataset.choice=choice.id;$('decision-kicker').textContent=choice.kicker;$('decision-title').textContent=choice.title;$('decision-story').textContent=choice.story;$('decision-effect').textContent=choice.effect;$('decision').classList.remove('hidden');$('decision').setAttribute('aria-hidden','false');$('decision-cancel').focus();updateHUD()}
 function cancelDecision(){if(mode!=='decision')return;activeDecision=null;mode='playing';clearInputs();closeDecisionPanel();updateHUD()}
 function confirmDecision(){if(mode!=='decision'||!activeDecision)return;endingChoice=activeDecision.id;activeDecision=null;mode='playing';clearInputs();closeDecisionPanel();flash(endingChoice==='keep'?'Tanık kanalı etkin: çekirdeğe geçiş açık.':'Çekirdek susturuldu: dış çıkış açık.');pulseFX(player.x,player.y,endingChoice==='keep'?'#6bead0':'#ff8693',1.8);rewindWash=.45;playCue(endingChoice==='keep'?'keep':'cut');updateHUD()}
-function showOverlay(kicker,title,body,button){$('debrief').replaceChildren();$('kicker').textContent=kicker;$('dialog-title').textContent=title;$('dialog-text').innerHTML=body;$('start').textContent=button;$('replay-choice').classList.toggle('visible',mode==='allwon'||(mode==='leveldone'&&levelIndex===5));$('overlay').classList.remove('hidden')}
+function showOverlay(kicker,title,body,button){$('chapter-recap').replaceChildren();$('debrief').replaceChildren();$('kicker').textContent=kicker;$('dialog-title').textContent=title;$('dialog-text').innerHTML=body;$('start').textContent=button;$('replay-choice').classList.toggle('visible',mode==='allwon'||(mode==='leveldone'&&levelIndex===5));$('overlay').classList.remove('hidden')}
 function hideOverlay(){const overlay=$('overlay');overlay.classList.add('hidden');if(overlay.contains(document.activeElement)&&typeof document.activeElement.blur==='function')document.activeElement.blur()}
 function nearestTerminal(){return TERMINALS.find(t=>t.level===levelIndex&&Math.hypot(player.x-t.x-.5,player.y-t.y-.5)<1.13)||null}
 function refreshArchiveCount(){$('archive-count').textContent=archiveRead.size+'/'+ARCHIVE.length}
@@ -581,6 +581,32 @@ function collides(x,y){const r=.27;for(let tx=Math.floor(x-r);tx<=Math.floor(x+r
 function spawnParticle(x,y,color){particles.push({x,y,vx:(Math.random()-.5)*2.4,vy:(Math.random()-.5)*2.4,life:.4+Math.random()*.6,color})}
 function guardPos(g){const travel=g.y2-g.y1,p=((elapsed*g.speed+g.offset)%(2*travel));return{x:g.x+.5,y:(p<travel?g.y1+p:g.y2-(p-travel))+.5}}
 
+
+function chapterRecapForRoom(){
+ const internal=chapterPath!=='cut';
+ if(levelIndex===5)return {
+  proven:internal?'Yankıların çekirdekte kaldı. İki ayrı kayıt aynı zaman aralığında yanıt verdi.':'Çekirdeği susturdun ve dış hatta çıktın. Buna rağmen iki ayrı yankı izi alındı.',
+  question:internal?'Bu izler yalnızca oynatma mı, yoksa birbirlerini tanıyabiliyorlar mı?':'Çekirdek kapalıysa sinyali hangi taşıyıcı aktarıyor?'
+ };
+ if(levelIndex===7)return {
+  proven:internal?'İç hatta iki bağımsız yankı aynı anda kapıyı tuttu.':'Dış hatta da iki farklı yankı izi aynı ana denk geldi.',
+  question:'Kaydı bulunmayan üçüncü silueti kim, neden sisteme ekledi?'
+ };
+ if(levelIndex===10)return {
+  proven:'Kamerada 00 işaretli siluet var; basınç ve yakalama kaydında aynı imzanın karşılığı yok. Görüntü enjekte edilebiliyor.',
+  question:'OPERATÖR 00 bir yetki koduysa, bu erişim kimin elinde ve Kora neden açıklamıyor?'
+ };
+ return null;
+}
+function renderChapterRecap(){
+ const target=$('chapter-recap');target.replaceChildren();
+ const recap=chapterRecapForRoom();if(!recap)return;
+ for(const [label,value,unresolved] of [['KESİNLEŞEN BULGU',recap.proven,false],['AÇIK KALAN SORU',recap.question,true]]){
+  const panel=document.createElement('section');panel.className='recap-item'+(unresolved?' unresolved':'');
+  const heading=document.createElement('strong');heading.textContent=label;
+  const text=document.createElement('span');text.textContent=value;panel.append(heading,text);target.append(panel);
+ }
+}
 function victory(){
  if(levelIndex===5&&!endingChoice){flash('Çıkış mühürlü. Önce çekirdekte karar vermelisin.');return}
  const improved=recordVictoryRun();mode='leveldone';playCue('win');pulseFX(player.x,player.y,'#53f3d0',2.3);rewindWash=.4;
@@ -616,12 +642,16 @@ function victory(){
    showOverlay('GEÇİŞ KİLİDİ AÇILDI','ODA '+String(n).padStart(2,'0')+' TAMAMLANDI',
       clones.length+' yankıyla kapıyı aştın. Bir sonraki protokol seni bekliyor.','SONRAKİ ODA →');
  }
- showDebrief(improved);updateHUD();
+ renderChapterRecap();showDebrief(improved);updateHUD();
 }
 function step(dt){wallClock+=dt;for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt}particles=particles.filter(p=>p.life>0);
 for(const f of fxRings)f.life-=dt;fxRings=fxRings.filter(f=>f.life>0);rewindWash=Math.max(0,rewindWash-dt*1.6);
-if(sceneBannerUntil&&wallClock>sceneBannerUntil){$('scene-banner').classList.remove('visible');sceneBannerUntil=0}if(mode!=='playing')return;roomActiveSeconds+=dt;elapsed+=dt;if(elapsed>=LOOP){cycleCommit(false);return}
- let dx=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0),dy=(keys.has('KeyS')||keys.has('ArrowDown')?1:0)-(keys.has('KeyW')||keys.has('ArrowUp')?1:0);let len=Math.hypot(dx,dy);if(len){dx=dx/len*SPEED*dt;dy=dy/len*SPEED*dt;if(!collides(player.x+dx,player.y))player.x+=dx;if(!collides(player.x,player.y+dy))player.y+=dy}record.push({...player});updateRelays();updateGateFeedback();
+if(sceneBannerUntil&&wallClock>sceneBannerUntil){$('scene-banner').classList.remove('visible');sceneBannerUntil=0}
+for(const t of motionTrail)t.life-=dt;motionTrail=motionTrail.filter(t=>t.life>0);
+if(mode!=='playing')return;roomActiveSeconds+=dt;elapsed+=dt;if(elapsed>=LOOP){cycleCommit(false);return}
+ let dx=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0),dy=(keys.has('KeyS')||keys.has('ArrowDown')?1:0)-(keys.has('KeyW')||keys.has('ArrowUp')?1:0);let len=Math.hypot(dx,dy);if(len){dx=dx/len*SPEED*dt;dy=dy/len*SPEED*dt;if(!collides(player.x+dx,player.y))player.x+=dx;if(!collides(player.x,player.y+dy))player.y+=dy}record.push({...player});
+if(!reducedMotion&&len>0){const last=motionTrail[motionTrail.length-1];if(!last||Math.hypot(player.x-last.x,player.y-last.y)>.14){motionTrail.push({x:player.x,y:player.y,life:.25});if(motionTrail.length>14)motionTrail.shift()}}
+updateRelays();updateGateFeedback();
 const secondLeft=Math.ceil(LOOP-elapsed);
 if(secondLeft<=3&&secondLeft>0&&lastCountdownBeat!==secondLeft){lastCountdownBeat=secondLeft;playCue('critical');pulseFX(player.x,player.y,'#ff8693',.55)}
  for(const g of level.guards){const pos=guardPos(g);if(Math.hypot(player.x-pos.x,player.y-pos.y)<.46){for(let i=0;i<20;i++)spawnParticle(player.x,player.y,'#ff6a7c');audioBeep(140,.28,'sawtooth');resetPlayer();flash('Güvenlik sensörüne yakalandın. Mevcut döngü silindi.');break}}
@@ -701,6 +731,8 @@ function draw(){if(cameraMode==='focus')cameraFocusOrigin();ctx.clearRect(0,0,96
  for(let j=0;j<clones.length;j++){let p=ghostAt(clones[j]),x=p.x*T,y=p.y*T;ctx.save();ctx.globalAlpha=.63+Math.sin(t*5+j)*.13;ctx.translate(x,y);ctx.rotate(Math.PI/4);ctx.fillStyle=clones[j].reverse?'#a86d37':'#8865db';ctx.strokeStyle=clones[j].reverse?'#ffe2ac':'#e3d4ff';ctx.lineWidth=2;ctx.shadowBlur=18;ctx.shadowColor='#bd8aff';round(-11,-11,22,22,3);ctx.fill();ctx.stroke();ctx.restore()}
  // Unverified overlays never count as recorded ghosts or plate contacts.
  for(const phantom of (level.phantoms||[])){const x=(phantom.x+.5)*T,y=(phantom.y+.5)*T;ctx.save();ctx.translate(x,y);ctx.globalAlpha=scannerOn?.8:(.48+.14*Math.sin(t*4));ctx.rotate(Math.PI/4);ctx.setLineDash(scannerOn?[4,4]:[]);ctx.strokeStyle=scannerOn?'#ff7286':'#d5bdff';ctx.fillStyle=scannerOn?'#782b46':'#745bb5';ctx.lineWidth=2;round(-10,-10,20,20,3);ctx.fill();ctx.stroke();ctx.restore();if(scannerOn){ctx.font='bold 10px ui-monospace,monospace';ctx.fillStyle='#ff9ba8';ctx.textAlign='center';ctx.fillText('SAHTE / 00',x,y-28)}}
+ // brief motion trail makes character movement readable without changing gameplay positions.
+ if(!reducedMotion)for(const t of motionTrail){ctx.globalAlpha=Math.max(0,t.life/.25)*.35;ctx.fillStyle='#5cf4d0';ctx.beginPath();ctx.arc(t.x*T,t.y*T,4.5*(t.life/.25),0,Math.PI*2);ctx.fill();ctx.globalAlpha=1}
  // live player
  {let x=player.x*T,y=player.y*T;ctx.save();ctx.translate(x,y);ctx.rotate(Math.PI/4);ctx.shadowColor='#53f3d0';ctx.shadowBlur=22;ctx.fillStyle='#54f3d3';round(-13,-13,26,26,4);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#133a3f';round(-6,-6,12,12,2);ctx.fill();ctx.restore();ctx.beginPath();ctx.arc(x,y,23+Math.sin(t*3)*1,0,Math.PI*2);ctx.strokeStyle='#53f3d040';ctx.lineWidth=1;ctx.stroke()}
  for(const p of particles){ctx.globalAlpha=Math.min(1,p.life*1.9);ctx.fillStyle=p.color;ctx.fillRect(p.x*T-2,p.y*T-2,4,4)}ctx.globalAlpha=1;ctx.restore();
