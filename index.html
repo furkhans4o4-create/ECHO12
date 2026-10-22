@@ -1012,14 +1012,30 @@ function victory(){
     published?'İki yankı son anahtarı birlikte çevirdi.':'Kapı yalnızca sana açıldı.',
     published?'Zamanı doğrulanmış gerçek kayıtlar dış hatta ulaştı. <strong>Bölüm VI: Ayrı Tanıklar</strong>, birbirinden uzaktaki iki gerçek kaydın eşzamanlılığını inceleyecek.':'Kopya yetki doğrulandı ve izler gizli tutuldu. <strong>Bölüm VI: Ayrı Tanıklar</strong>, birbirinden uzaktaki iki gerçek kaydın eşzamanlılığını inceleyecek.',
     'BÖLÜM VI →');
- }else if(n===LVLS.length){
-   wonAll=true;mode='allwon';const published=sourceVerdict==='publish';
+ }else if(levelIndex===16){
+   const published=sourceVerdict==='publish';
    archiveRead.add(published?'A21_PUBLIC':'A21_SEALED');
    try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
    showOverlay('BÖLÜM VI / KORA PROTOKOLÜ',
     published?'İki tanık doğrulandı; hat artık açık.':'İki tanık doğrulandı; hat mühürlendi.',
-    published?'Farklı odalardaki iki gerçek yankı aynı anda kayda geçti. <strong>Kora bu tanıklığı yayınladı.</strong> Ancak tanıkların yerleri korunamadı; 00 etiketinin sahibiyse hâlâ bilinmiyor.':'İki bağımsız kayıt eşzamanlılık testini geçti. <strong>Kora tanıklığı gizli arşive aktardı.</strong> Tanıklar korunuyor ama dış dünyaya henüz hiçbir düzeltme ulaşmadı.',
-    'YENİDEN BAŞLA ↺');
+    published?'İki gerçek yankı aynı anda kayda geçti ve Kora tanıklığı yayınladı. Yetki zincirinin son sahibi hâlâ belirsiz. <strong>Bölüm VII</strong> anahtarı kapatacak.':'Eşzamanlı iki gerçek kayıt gizli arşive alındı. Kora kanıtları korudu; erişim yetkisinin ilk kopyasını yapan kişi bilinmiyor. <strong>Bölüm VII</strong> anahtarı kapatacak.',
+    'SON BÖLÜM →');
+ }else if(n===LVLS.length){
+   finalVerdict=endingChoice;wonAll=true;mode='allwon';
+   const entry=finalVerdict==='revoke'?'F01_PURGE':finalVerdict==='preserve'?'F01_PRESERVE':'F01_REVIEW';
+   archiveRead.add(entry);
+   try{localStorage.setItem('echo12-final-verdict',finalVerdict);localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
+   const legacy=chapterPath==='keep'?'Çekirdekte bırakmayı seçtiğin yankılar':'Çekirdeğin susturulmasından sonra kalan izler';
+   const outgoing=sourceVerdict==='publish'?'Tanıklığı daha önce dışarı yayınladığın için sonuçları geri alamazsın.':'Tanıklığı sakladığın için dışarıdakiler hâlâ her şeyi bilmiyor.';
+   const result=finalVerdict==='revoke'?
+      'OPERATÖR 00 anahtarı iptal edildi. Tesisin yeni yankı kayıtlarına erişimi kapandı. <strong>Bu özgürlük, kaydedilmiş geçmişin de bir daha geri dönmeme ihtimaliyle geldi.</strong>':
+     finalVerdict==='preserve'?
+      'Anahtar korumalı arşive kilitlendi. Kayıtlar yok edilmedi, fakat <strong>00 yetkisinin yeni bir kopyasının ortaya çıkma ihtimali</strong> hâlâ ortadan kalkmadı.':
+      'Üç bağımsız çıkarımınla kanıt zincirini dış incelemeye devrettin. <strong>Bu yol tanıkları otomatik olarak korumaz ve inceleyenlerin güvenilirliğini ispatlamaz.</strong>';
+   showOverlay('BÖLÜM VII / SON ON İKİ SANİYE',
+     finalVerdict==='revoke'?'Sessizlik, kayıtların yerini aldı.':finalVerdict==='preserve'?'Geçmiş artık kilitli.':'Hakikat artık tek elde değil.',
+     result+' '+legacy+' hakkında kesin bir hüküm yok. '+outgoing+' <strong>00 bir isim değildi. Onu kullanmak bir karardı.</strong>',
+     'OYUNU YENİDEN OYNA ↺');
  }else{
    showOverlay('GEÇİŞ KİLİDİ AÇILDI','ODA '+String(n).padStart(2,'0')+' TAMAMLANDI',
       clones.length+' yankıyla kapıyı aştın. Bir sonraki protokol seni bekliyor.','SONRAKİ ODA →');
