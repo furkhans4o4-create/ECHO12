@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 023 — Klavye Odağı ve Pencere Güvenliği
+
+**19 oda, 7 bölüm ve 35 arşiv kaydı** korunur. Geliştirme bu kez oyunun bütün büyük pencerelerinde tek ve tutarlı bir klavye sözleşmesi kurar.
+
+- **Sekmeyle güvenli gezinme:** Yankı Laboratuvarı, Kayıt Kasası, Delil Panosu, Oda Seçimi, arşiv ve karar/denetim pencerelerinde `Tab` veya `Shift+Tab` ile odak pencerenin dışına kaçmaz. Son düğmeden ilk düğmeye, ilk düğmeden son düğmeye gidilebilir. Kilitli/engelli düğmeler odak sırasına alınmaz.
+- **Kapatınca eski odağı geri getir:** Esc veya kapat düğmesiyle çıkışta pencereyi açan düğmeye dönülür. Arşivden, karar konsolundan ve delil denetiminden çıkan oyuncu da etkileşime kaldığı yerden devam edebilir.
+- **Klavye kısayolları:** Oyun yalnızca oynanırken ok tuşlarıyla hareket eder; farklı pencerelerde ok tuşları normal kaydırma ve form navigasyonu için kullanılabilir. Yankı Laboratuvarı zaman kaydırıcısının klavye kullanımına müdahale edilmez.
+- **Oynanış değişmedi:** Döngünün uzunluğu, yankı hareketleri, bölüm koşulları, kayıt kasası biçimi ve final şartları aynıdır.
+- **Tarayıcı testleri:** Altı farklı pencerenin ileri/geri sekme döngüleri, oyun/araç durumuna dönüş, karar penceresinden çıkış ve delil denetiminden sonra odak iadesi denetlenir.
+
 ## Build 022 — Erişilebilirlik: Yüksek Kontrast ve Azaltılmış Hareket
 
 **19 oda, 7 bölüm, 35 arşiv** aynı kalır. Oyun başlangıçtan finale kadar daha okunabilir ve hareket hassasiyeti olan kullanıcılar için daha konforlu hâle getirilmiştir.

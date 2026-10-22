@@ -24,7 +24,7 @@ def load(browser, level):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -990,6 +990,92 @@ def main():
             assert not errors,errors
             page.close()
             print('PASS Build 022: contrast, reduced motion, system preference cycling and portable accessibility backup')
+
+            # Build 023: all modal views keep keyboard Tab/Shift+Tab inside their
+            # accessible dialogs, then restore focus to the caller when closed.
+            page, errors=load(browser,0)
+            def active_id():
+                return page.evaluate("document.activeElement?.id || ''")
+            page.locator('#inspector-button').click()
+            verify(page,errors,'YANKI İNCELEME')
+            assert active_id()=='inspector-close'
+            page.keyboard.press('Shift+Tab')
+            assert active_id()=='inspector-scrub'
+            page.keyboard.press('Tab')
+            assert active_id()=='inspector-close'
+            page.keyboard.press('Escape')
+            assert active_id()=='inspector-button'
+            verify(page,errors,'KAYIT')
+
+            page.locator('#save-vault-button').click()
+            verify(page,errors,'KAYIT KASASI')
+            assert active_id()=='vault-close'
+            page.keyboard.press('Shift+Tab')
+            assert active_id()=='vault-export'
+            page.keyboard.press('Tab')
+            assert active_id()=='vault-close'
+            page.keyboard.press('Escape')
+            assert active_id()=='save-vault-button'
+
+            page.locator('#case-board-button').click()
+            verify(page,errors,'DELİL PANOSU')
+            assert active_id()=='case-close'
+            page.keyboard.press('Tab')
+            assert active_id()=='case-close'
+            page.keyboard.press('Shift+Tab')
+            assert active_id()=='case-close'
+            page.keyboard.press('Escape')
+            assert active_id()=='case-board-button'
+
+            page.locator('#room-select').click()
+            verify(page,errors,'ODA SEÇİMİ')
+            assert active_id()=='room-picker-close'
+            page.keyboard.press('Shift+Tab')
+            assert page.evaluate("document.activeElement?.dataset.room")=='0'
+            page.keyboard.press('Tab')
+            assert active_id()=='room-picker-close'
+            page.keyboard.press('Escape')
+            assert active_id()=='room-select'
+
+            page.locator('#logbook').click()
+            verify(page,errors,'ARŞİV')
+            assert active_id()=='archive-close'
+            page.keyboard.press('Tab')
+            assert active_id()=='archive-close'
+            page.keyboard.press('Escape')
+            assert active_id()=='logbook', 'Archive must return focus to origin'
+            verify(page,errors,'KAYIT')
+            assert not errors,errors
+            page.close()
+
+            page,errors=load(browser,5)
+            page.evaluate("window.__echo12Test.teleport(14.5,2.5)")
+            page.keyboard.press('e')
+            verify(page,errors,'KARAR')
+            assert page.evaluate("document.activeElement?.id")=='decision-cancel'
+            page.keyboard.press('Shift+Tab')
+            assert page.evaluate("document.activeElement?.id")=='decision-confirm'
+            page.keyboard.press('Tab')
+            assert page.evaluate("document.activeElement?.id")=='decision-cancel'
+            page.keyboard.press('Escape')
+            verify(page,errors,'KAYIT')
+            assert page.evaluate("document.activeElement?.id")=='interact'
+            assert not errors,errors
+            page.close()
+
+            page,errors=load(browser,10)
+            # Use the non-gameplay test hook for the audit dialog without
+            # depending on map traversal, and verify its focus return.
+            page.locator('#logbook').evaluate("(e)=>e.focus()")
+            page.evaluate("window.__echo12Test.openAudit()")
+            verify(page,errors,'KANIT')
+            assert page.evaluate("document.activeElement?.id")=='audit-close'
+            page.keyboard.press('Escape')
+            verify(page,errors,'KAYIT')
+            assert page.evaluate("document.activeElement?.id")=='logbook'
+            assert not errors,errors
+            page.close()
+            print('PASS Build 023: focus stays within six modal dialogs and returns to opening controls')
 
             # Verify display and audio feedback without changing a real puzzle solution.
             page, errors = load(browser, 0)
