@@ -12,6 +12,12 @@ Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman d
 - **Oynanış değişmedi:** Döngünün uzunluğu, yankı hareketleri, bölüm koşulları, kayıt kasası biçimi ve final şartları aynıdır.
 - **Tarayıcı testleri:** Altı farklı pencerenin ileri/geri sekme döngüleri, oyun/araç durumuna dönüş, karar penceresinden çıkış ve delil denetiminden sonra odak iadesi denetlenir.
 
+## Build 023 — Canlı Kapı Teşhisi
+
+19 odanın tümünde, kontroller altındaki **Kapılar neden kapalı?** bölmesi açılıp kapanabilir. Her kapının mevcut durumu oyuncunun gerçek kaydı, yankı sayısı, F doğrulayıcısı ve eşzamanlı sensörlere göre yeniden hesaplanır. Genel bir ipucundan farklı olarak sıradaki eksik koşulu belirtir: A→B, B→A, tarayıcı, I/II ayrı yankılar, Kora konsolu, canlı plaka veya zaman penceresi. Kapı açılınca durum **Açık · geçiş hazır** olarak değişir.
+
+Bu teşhis bulmacayı çözmez, zamanı durdurmaz, yankı kaydetmez; yalnızca gerçek koşulları okunabilir Türkçe olarak gösterir. Fare, klavye ve dokunmatik ekranla erişilir. Tarayıcı testleri plaka etkinleştirme, ters imza ve eşzamanlı tanık senaryolarını kapsar.
+
 ## Build 022 — Erişilebilirlik: Yüksek Kontrast ve Azaltılmış Hareket
 
 **19 oda, 7 bölüm, 35 arşiv** aynı kalır. Oyun başlangıçtan finale kadar daha okunabilir ve hareket hassasiyeti olan kullanıcılar için daha konforlu hâle getirilmiştir.
