@@ -1077,6 +1077,42 @@ def main():
             page.close()
             print('PASS Build 023: focus stays within six modal dialogs and returns to opening controls')
 
+            # Build 023: gate explanations follow live occupancy and actual proof state.
+            page, errors = load(browser, 0)
+            panel=page.locator('#diagnostics')
+            assert panel.count()==1
+            panel.locator('summary').click()
+            assert page.locator('#diagnostic-list .diagnostic-row').count()==1
+            assert 'plakaya' in page.locator('#diagnostic-list').inner_text().lower()
+            assert '1 kilitli' in page.locator('#diagnostic-count').inner_text()
+            page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.08)")
+            assert page.evaluate("window.__echo12Test.gate('A')")
+            assert page.locator('#diagnostic-list .diagnostic-row').first.get_attribute('data-open')=='true'
+            assert '0 kilitli' in page.locator('#diagnostic-count').inner_text()
+            assert not errors,errors
+            page.close()
+
+            page, errors = load(browser, 12)
+            assert page.locator('#diagnostic-list .diagnostic-row').count()==3
+            assert 'F ile gerçek kayıt' in page.locator('#diagnostic-list').inner_text()
+            page.keyboard.press('f')
+            assert 'A→B yolunu' in page.locator('#diagnostic-list').inner_text()
+            assert not errors,errors
+            page.close()
+
+            page, errors = load(browser, 15)
+            page.keyboard.press('f')
+            assert 'I sensörüne' in page.locator('#diagnostic-list').inner_text()
+            page.evaluate("window.__echo12Test.teleport(9.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            page.evaluate("window.__echo12Test.tick(.1)")
+            assert 'II sensörüne' in page.locator('#diagnostic-list').inner_text()
+            assert not errors,errors
+            page.close()
+            print('PASS Build 023: live gate diagnostics and evidence-dependent next-step suggestions')
+
             # Verify display and audio feedback without changing a real puzzle solution.
             page, errors = load(browser, 0)
             page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
