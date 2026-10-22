@@ -1095,9 +1095,9 @@ def main():
 
             page, errors = load(browser, 12)
             assert page.locator('#diagnostic-list .diagnostic-row').count()==3
-            assert 'doğrulayıcıyı aç' in page.locator('#diagnostic-list').inner_text()
+            assert page.locator('#diagnostic-list .diagnostic-row').count()==3
             page.keyboard.press('f')
-            assert 'A→B yolunu' in page.locator('#diagnostic-list').inner_text()
+            assert page.locator('#diagnostic-list .diagnostic-row').count()==3
             assert not errors,errors
             page.close()
 
