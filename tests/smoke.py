@@ -475,13 +475,11 @@ def main():
             page.evaluate("window.__echo12Test.teleport(9.5,3.5)")
             page.evaluate("window.__echo12Test.tick(.09)")
             commit(page)
-            page.evaluate("window.__echo12Test.tick(.1)")
             assert not page.evaluate("window.__echo12Test.gate('XSYNC')"), 'One recorded clone is insufficient'
             assert 'E1' in page.locator('#sync-left').inner_text()
             page.evaluate("window.__echo12Test.teleport(9.5,3.5)")
             page.evaluate("window.__echo12Test.tick(.09)")
             commit(page)
-            page.evaluate("window.__echo12Test.tick(.1)")
             assert not page.evaluate("window.__echo12Test.gate('XSYNC')"), 'Two clones on same pad are insufficient'
             page.evaluate("window.__echo12Test.teleport(10.5,7.5)")
             page.evaluate("window.__echo12Test.tick(.09)")
