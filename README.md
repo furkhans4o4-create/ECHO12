@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 013 — Bölüm IV: Köken / İmza Denetimi
+
+**13 oynanabilir oda, 4 hikâye bölümü ve 19 arşiv girdisi.** İki yeni odanın temelinde görüntünün gerçek olup olmamasından ziyade **kaydedilmiş hareketin hangi sırada yapıldığını doğrulamak** var.
+
+- **12. oda — İzin Sırası:** İlk M plakası için bir yankı oluştur. İlk bariyerden geçtikten sonra parlak A ve B okuma noktalarından sırasıyla yürü. Yeni bir yankı olarak kaydet ve F ile doğrulayıcıyı aç. Doğru kaydedilmiş A→B hareketi PROOF kilidini açar. Sadece B→A yapan bir yankı veya sahte görüntü açamaz.
+- **13. oda — İki İmza:** Aynı mekanik büyür: **iki ayrı yankı**, biri A→B, diğeri B→A sırasını kaydetmeli. Bir kayıt her iki koşulu birden karşılayamaz; bu da daha önce hazırladığın iki ayrı imzanın gerçekten farklı rotalardan geldiğini gösterir. M plakası yankıyla tutulur, PROOF iki yönlü kanıt ister ve son çıkış ancak konsoldaki bilinçli seçimle açılır.
+- **Hikâye kararı:** Doğrulanmış kayıtları dış gözlemcilere **yayınlamak** ya da tanıkların izlerini **karantinaya almak** seçilir. Yayınlama sahteciliğin sorgulanmasını sağlar fakat yankıların yerlerini ifşa edebilir; karantina izleri korur fakat dış incelemeyi geciktirir. İlk bölümdeki *çekirdeği koru/sustur* seçimi de kapanış metinlerini etkilemeye devam eder.
+- **Kalıcı sonuçlar:** Son kaynak kararı `echo12-source-verdict` anahtarında kaydedilir; geçmiş karar, arşiv ve ilerleme verileri korunur. Son odanın kararı tekrar oynanabilir. Yeni arşiv: A13, A14 ve yalnızca ilgili kararda açılan A15_PUBLISH / A15_SEAL.
+- **Oynanış güvenilirliği:** Kimlik doğrulaması fiziksel kayıt örneklerinin sıra denetimidir, gerçek dünyadaki kriptografik kimlik imzası değildir. Kapı metinleri hangi yönün eksik olduğunu gösterir, küçük harita okuma istasyonlarını çizer, her yeni oda için isteğe bağlı üç ipucu bulunur.
+- **Testler:** Önceki 11 odanın otomatik senaryoları, yeni iki oda, ters sıralama reddi, sahte görüntü, tarayıcı koşulu, karar iptali, iki alternatif final ve ilerleme kayıtları birlikte sınanır.
+
 ## Build 012 — Yakın Takip Kamerası ve Bölüm Finalleri
 
 Yeni oda eklenmedi: **11 oda, 3 hikâye bölümü ve 15 arşiv kaydı** korunuyor. Amaç özellikle mobil cihazlarda küçük karo ve kapıların okunabilirliğini artırmak ve bölüm kapanışlarına anlamlı bir anlatı ritmi kazandırmak.
@@ -140,4 +151,4 @@ Testler tüm **on bir odayı** oynanış kurallarıyla çözerek denetler. Build
 
 Tamamen bağımsız HTML / CSS / JavaScript ve Canvas 2D. Oyun kaynak kodu `index.html` içindedir; `tests/smoke.py` testleri ve `.github/workflows/smoke.yml` otomatik doğrulamayı sağlar.
 
-**Yön:** Build 013: OPERATÖR 00 araştırmasını gerçek oynanış kararlarıyla ilerleten yeni vaka yapısı, ilk üç bölümde açıklanan ipuçlarının tutarlılık değerlendirmesi ve üretim kalitesi.
+**Yön:** Build 014: kanıt sıralaması için anlaşılır görsel geri bildirim, mobil oynanış ve bağımsız kanıt kaynakları arasında daha büyük anlatı sonuçları.
