@@ -392,7 +392,7 @@ def main():
             page.evaluate("window.__echo12Test.tick(.03)")
             verify(page,errors,'BAŞARILI')
             assert page.evaluate("localStorage.getItem('echo12-source-verdict')")=='publish'
-            assert 'BÖLÜM V' in page.locator('#dialog-text').inner_text()
+            assert 'BÖLÜM V' in page.locator('#start').inner_text()
             assert page.locator('#archive-count').inner_text().endswith('/23')
             page.close()
             print('PASS room 13: dual real imprints and chapter V handoff')
