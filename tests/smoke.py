@@ -815,7 +815,7 @@ def main():
             page.locator('#vault-import').set_input_files({
                 "name":"broken.json","mimeType":"application/json","buffer":b'{{corrupt'
             })
-            assert 'Geri yüklenemedi' in page.locator('#vault-feedback').inner_text()
+            page.wait_for_function("document.querySelector('#vault-feedback').textContent.includes('Geri yüklenemedi')")
             assert page.locator('#mode').inner_text()=='KAYIT KASASI'
             # Restore a complete file, not just room progress; reject manipulated values first.
             backup=page.evaluate("window.__echo12Test.save()")
