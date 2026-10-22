@@ -682,14 +682,14 @@ function updateProofPanel(){
  const found=clones.map((c,i)=>({i,order:c.proofOrder,events:c.proofEvents||[],gap:c.proofGap,valid:!!c.timeProof}));
  const liveSequence=live.length?live.map(x=>x.id+' '+x.second.toFixed(1)+'s').join(' → '):'Henüz A/B noktasına temas yok';
  const pending=timeAttestation(live,level.timeWindow);
- const stage=live.length===0?'İlk okuma noktasını bul':live.length===1?live[0].id+' kaydediliyor · karşı noktaya git':level.timeWindow?(pending.valid?'Zaman damgası hazır · BOŞLUK':pending.gap===null?'Önce A sonra B':'Aralık '+pending.gap.toFixed(1)+' sn · '+level.timeWindow.join('–')+' sn gerekli'):traceOrder(record,level.probes)?'Kayıt hazır · BOŞLUK ile kaydet':'Okuma sırası devam ediyor';
+ const stage=live.length===0?'İlk okuma noktasını bul':live.length===1?live[0].id+' kaydediliyor · karşı noktaya git':level.timeWindow?(pending.valid?'Zaman damgası hazır · BOŞLUK':pending.gap===null?'Önce A sonra B':'Aralık '+pending.gap.toFixed(1)+' sn · '+level.timeWindow.map(x=>x.toFixed(1).replace('.',',')).join('–')+' sn gerekli'):traceOrder(record,level.probes)?'Kayıt hazır · BOŞLUK ile kaydet':'Okuma sırası devam ediyor';
  const signature=[levelIndex,scannerOn,liveSequence,clones.length,counts.forward,counts.backward,found.map(x=>x.order+':'+x.gap+':'+x.valid).join('|')].join('~');
  if(signature===lastProofSignature)return;lastProofSignature=signature;
  $('proof-live').textContent=liveSequence;
  const box=$('proof-records');box.replaceChildren();
  if(!found.length)box.textContent='Henüz kayıt yok';
  for(const item of found){const tag=document.createElement('span');tag.className='proof-record'+(level.timeWindow?(item.valid?' verified':' invalid'):(item.order==='AB'||item.order==='BA'?' verified':' invalid'));tag.textContent='E'+String(item.i+1).padStart(2,'0')+' · '+(item.order?item.order[0]+'→'+item.order[1]:'İMZA YOK')+(level.timeWindow&&item.gap!==null?' · '+item.gap.toFixed(1)+' sn':'');box.append(tag)}
- const required=level.timeWindow?'A→B aralığı '+level.timeWindow[0]+'–'+level.timeWindow[1]+' sn · '+Math.min(1,timedSignatureCount())+'/1':level.dualProof?'A→B '+Math.min(1,counts.forward)+'/1  ·  B→A '+Math.min(1,counts.backward)+'/1':'A→B '+Math.min(1,counts.forward)+'/1';
+ const required=level.timeWindow?'A→B aralığı '+level.timeWindow.map(x=>x.toFixed(1).replace('.',',')).join('–')+' sn · '+Math.min(1,timedSignatureCount())+'/1':level.dualProof?'A→B '+Math.min(1,counts.forward)+'/1  ·  B→A '+Math.min(1,counts.backward)+'/1':'A→B '+Math.min(1,counts.forward)+'/1';
  const isReady=sourceProofValid();$('proof-evidence').textContent=required+(scannerOn?'  ·  TARAMA AÇIK':'  ·  F İLE DOĞRULA');$('proof-evidence').classList.toggle('valid',isReady);
  $('proof-status').textContent=isReady?'GERÇEK İMZA ONAYLANDI':!scannerOn?'DOĞRULAYICI KAPALI':stage;
 }
