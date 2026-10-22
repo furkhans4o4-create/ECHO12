@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 014 — Kanıt Zaman Çizelgesi ve Yetki Zinciri
+
+Dört hikâye bölümü ve 13 oda korunur. Bu sürüm 12 ve 13. odaların doğrulama mekaniklerini **oyuncunun okuyabileceği, karşılaştırabileceği ve denetleyebileceği** hâle getirir.
+
+- **Canlı kanıt paneli:** A ve B okuma noktalarından yapılan geçişler gerçek zaman damgalarıyla gösterilir. Yanlış yönde kayıt, geçersiz kayıt veya doğru A→B/B→A imzaları kayıt başına ayrı görünür. Konsol sırasıyla gereken yönleri ve F tarayıcısının durumunu belirtir.
+- **Zaman çizelgesi işaretçileri:** Her kayıt satırında A ve B noktalarına girişler renkli/harfli işaretlerle, kaydedildiği gerçek saniyede gösterilir. Geçiş sırasını bir bakışta anlamak ve yankı rotalarını karşılaştırmak kolaylaşır. İmza sırası için sadece görüntüye değil gerçek pozisyon örneklerine bakılır.
+- **Dört aşamalı yetki zinciri:** Bölüm IV tamamlanınca kamera görüntüsü, fiziksel hareket kayıtları, kimliği bilinmeyen 00 yetki sahibi ve yayın/karantina seçiminin sonucu yan yana görünür. Gerçekten doğrulanan kanıtlarla **henüz bilinmeyen yetki sahibi** birbirinden ayrı işaretlenir.
+- **İki ayrı finale özgü görsellik:** Dış hatta yayınlama tanıkların yerinin açığa çıkması ihtimaliyle vurgulanır; karantina seçimi kanıtın dış incelemeden saklandığını gösterir. Önceki hikâye seçimleri ve yerel kayıtlar korunur.
+- **Teknik ayrım:** Geçiş sırasını ispat eden işaretler oyun içi konum/zaman örnekleridir; bunlar gerçek bir kriptografik kimlik doğrulaması değildir. Sahte 00 görüntüsü kayıt geçmişine eklenmez.
+- **Testler:** 13 odanın regresyonuna ek olarak, geçersiz ters kayıt, canlı A/B zaman sırası, iki doğrulanmış farklı yankı, tarayıcı kilidi ve iki finale özgü yetki zinciri kontrolleri.
+
 ## Build 013 — Bölüm IV: Köken / İmza Denetimi
 
 **13 oynanabilir oda, 4 hikâye bölümü ve 19 arşiv girdisi.** İki yeni odanın temelinde görüntünün gerçek olup olmamasından ziyade **kaydedilmiş hareketin hangi sırada yapıldığını doğrulamak** var.
