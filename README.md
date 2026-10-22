@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 022 — Erişilebilirlik: Yüksek Kontrast ve Azaltılmış Hareket
+
+**19 oda, 7 bölüm, 35 arşiv** aynı kalır. Oyun başlangıçtan finale kadar daha okunabilir ve hareket hassasiyeti olan kullanıcılar için daha konforlu hâle getirilmiştir.
+
+- **Görünüm ve Hareket:** Oyun kontrollerinin altındaki açılır ayarlar panelinden iki tercih yönetilir. Panel oyun alanını kaplamaz; klavye, fare veya dokunmatik kontrollerle erişilebilir. Seçimler ayrı düğmelerde görünür.
+- **Hareket:** Sistem (cihazın `prefers-reduced-motion` tercihini takip eder), Azaltılmış veya Normal. Azaltılmış seçeneği gereksiz parçacıkları, parlak yayılan halkaları, hareket izlerini ve ekrana yayılan geri-sarma yıkamasını kaldırır; CSS geçişlerini de kısaltır. **12 saniyelik fizik simülasyonu, oyuncu hızı, kapılar ve kayıtların zamanlaması değişmez.**
+- **Kontrast:** Yüksek kontrast modu metinleri ve panel çerçevelerini belirginleştirir, sahne ile zaman çizelgesinin görünürlüğünü artırır, odak işaretlerini kuvvetlendirir. Normal moda geri dönülebilir.
+- **Kalıcı ayarlar ve taşınabilir yedek:** `echo12-motion-setting` ve `echo12-contrast-setting` yerel olarak saklanır. İsteğe bağlı `motion` ve `contrast` alanları mevcut `ECHO12_SAVE_V1` kayıt kasası yedeklerine eklenir. Eski yedeklerde bu alanlar yoksa Sistem/Normal varsayılanlarıyla uyum korunur.
+- **Testler:** Üç hareket modu arasında geçiş, tarayıcının azaltılmış hareket sınıfı, efekt bastırma, yüksek kontrastta gerçek CSS değişikliği, oyun saatinin aynı hızda işlemesi, ayarların yedekten geri yüklenmesi ve geçersiz tercih değerlerinin reddedilmesi denetlenir.
+
 ## Build 021 — Yankı Laboratuvarı / Zamanın İçini Gör
 
 **19 oda, 7 bölüm, 35 arşiv kaydı** aynı kalır. Son karmaşık odaların zamanlama bulmacalarında, oyuncunun geçmişte ne kaydettiğini görebilmesi için tüm kayıtlar üzerinde çalışan **oyun dışı bir inceleme ekranı** eklenmiştir.
