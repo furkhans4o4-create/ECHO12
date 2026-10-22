@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 015 — Bölüm V: Kayıp Saniye
+
+**15 oda, 5 bölüm, 23 arşiv girdisi.** Yeni bölüm, OPERATÖR 00'ın tek bir kimlik olmadığı bulgusunu bu kez **doğrulanabilir zaman aralığı** ve eski seçimlerin yeni fiziksel kapılara etkisi üzerinden ilerletir.
+
+- **Oda 14 / Kayıp Saniye:** Önce yankıyla M kapısını aç, sonra gerçek bir A→B izi üret. Sıra doğru olsa bile iki sensörün arasındaki **1,6–3,6 saniyelik** pencereye uymayan kayıt STAMP geçidini açamaz. Oyuncu B'ye koşmak yerine ölçülmüş bekleme/movement temposu oluşturmalıdır. Gerçek kayıtların A→B zaman farkı, geçerli/geçersiz etiketiyle kanıt ekranına yansır.
+- **Oda 15 / Yetki Kapısı:** Aynı zaman damgasını doğrula; son rölenin mekanik koşulu Bölüm IV'ün kalıcı kararına göre değişir. **Yayınlama** yolunda iki ayrı yankı son plakaya *aynı anda* dokunmalıdır. **Karantina** yolunda ise yalnızca **canlı oyuncu** dokunabilir; kısa röle yaklaşık 3 saniye açık kalır. İki yol da aynı mekânda oynanabilir, fakat farklı strateji gerektirir.
+- **Hikâye:** Kopya yönetici anahtarı ile gerçek bir kişinin kimliği arasındaki ayrım sürer. Yeni arşiv A16, A17 ve karar temelli A18_PUBLIC/A18_SEALED kayıtları eklendi. İlk ve dördüncü bölüm kararları saklanır; ayrı son raporları üretilir.
+- **Kanıt paneli:** Doğru sıra fakat yanlış süre, geçersiz zaman damgası olarak gösterilir. Yakın kameranın haritası, ses efektleri, mevcut oda seçimi ve ipuçları önceki sürümlerle uyumludur.
+- **Testler:** 15 odanın tarayıcı regresyonuna ek olarak hızlı/yanlış aralık reddi, kabul edilen zaman damgası, iki yankıyla yayın geçidi, canlı röleyle karantina geçidi ve iki ayrı final yer alır.
+
 ## Build 014 — Kanıt Zaman Çizelgesi ve Yetki Zinciri
 
 Dört hikâye bölümü ve 13 oda korunur. Bu sürüm 12 ve 13. odaların doğrulama mekaniklerini **oyuncunun okuyabileceği, karşılaştırabileceği ve denetleyebileceği** hâle getirir.
