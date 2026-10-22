@@ -544,7 +544,7 @@ function renderCaseBoard(){
  $('case-progress').textContent=caseSolved.size+' / '+CASE_FILES.length+' TAMAMLANAN ÇIKARIM';
  for(const file of CASE_FILES){
   const done=caseSolved.has(file.id),sources=file.sources.filter(id=>archiveRead.has(id));
-  const card=document.createElement('article');card.className='case-item'+(done?' solved':'');
+  const card=document.createElement('article');card.className='case-item'+(done?' solved':'');card.dataset.caseId=file.id;
   const id=document.createElement('div');id.className='case-label';id.textContent=file.id+' / '+(done?'DOĞRULANDI':sources.length===file.sources.length?'İNCELENEBİLİR':'KAYNAK BEKLENİYOR');
   const heading=document.createElement('h3');heading.textContent=file.title;
   const content=document.createElement('p');content.textContent=sources.length===file.sources.length?file.context:'Bu dosyayı açmak için ilgili arşiv kayıtlarını bulmalısın.';
