@@ -620,6 +620,124 @@ function submitCaseAnswer(id,choice,feedback){
  try{localStorage.setItem('echo12-case-deductions',JSON.stringify([...caseSolved]));localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
  playCue('win');renderCaseBoard();refreshArchiveCount();return true;
 }
+
+const SAVE_FORMAT='ECHO12_SAVE_V1';
+let vaultBefore='playing',vaultPreviousFocus=null;
+function snapshotSave(){
+ return {
+  format:SAVE_FORMAT,version:1,exportedAt:new Date().toISOString(),
+  progress:{
+   unlocked:getUnlocked(),chapterPath,sourceVerdict,finalVerdict,
+   archive:[...archiveRead],endings:[...endingHistory],caseSolved:[...caseSolved],
+   bestRuns:JSON.parse(JSON.stringify(bestRuns)),muted:!soundOn,camera:cameraMode
+  }
+ };
+}
+function validateSave(raw){
+ if(!raw||typeof raw!=='object'||Array.isArray(raw)||raw.format!==SAVE_FORMAT||raw.version!==1)throw Error('ECHO/12 kayıt biçimi veya sürümü desteklenmiyor.');
+ const p=raw.progress;
+ if(!p||typeof p!=='object'||Array.isArray(p))throw Error('Kayıt dosyasında ilerleme bilgisi yok.');
+ if(!Number.isInteger(p.unlocked)||p.unlocked<0||p.unlocked>=LVLS.length)throw Error('Oda ilerlemesi geçersiz.');
+ const nullable=(val,values)=>val===null||values.includes(val);
+ if(!nullable(p.chapterPath,['keep','cut'])||!nullable(p.sourceVerdict,['publish','seal'])||!nullable(p.finalVerdict,['revoke','preserve','review']))throw Error('Hikâye kararları geçersiz.');
+ const validList=(a,allowed)=>Array.isArray(a)&&a.length<=allowed.length&&a.every(x=>typeof x==='string'&&allowed.includes(x));
+ const archiveIds=ARCHIVE.map(a=>a.id),caseIds=CASE_FILES.map(c=>c.id);
+ if(!validList(p.archive,archiveIds)||!validList(p.endings,['keep','cut'])||!validList(p.caseSolved,caseIds))throw Error('Arşiv veya delil kayıtları geçersiz.');
+ if(typeof p.muted!=='boolean'||!['focus','overview'].includes(p.camera))throw Error('Tercih bilgileri geçersiz.');
+ if(!p.bestRuns||typeof p.bestRuns!=='object'||Array.isArray(p.bestRuns))throw Error('Oda rekorları geçersiz.');
+ const cleanedRuns=Object.create(null);
+ for(const [key,v] of Object.entries(p.bestRuns)){
+  const i=Number(key);
+  if(!/^\d+$/.test(key)||!Number.isInteger(i)||i<0||i>=LVLS.length||!v||typeof v!=='object'||Array.isArray(v)||
+     !Number.isInteger(v.echoes)||v.echoes<0||v.echoes>MAX_CLONES||!Number.isFinite(v.seconds)||v.seconds<0||v.seconds>86400||
+     !Number.isInteger(v.hints)||v.hints<0||v.hints>3)throw Error('Geçersiz oda performansı kaydı.');
+  cleanedRuns[key]={echoes:v.echoes,seconds:v.seconds,hints:v.hints};
+ }
+ const deduced=[...new Set(p.caseSolved)];
+ const archive=[...new Set(p.archive)];
+ for(const c of CASE_FILES)if(deduced.includes(c.id)){
+  if(!c.sources.every(id=>archive.includes(id)))throw Error('Bir delil dosyasının kaynak belgeleri eksik.');
+  if(!archive.includes(c.archive))archive.push(c.archive);
+ }
+ return {
+  unlocked:p.unlocked,chapterPath:p.chapterPath,sourceVerdict:p.sourceVerdict,finalVerdict:p.finalVerdict,
+  archive,endings:[...new Set(p.endings)],caseSolved:deduced,
+  bestRuns:cleanedRuns,muted:p.muted,camera:p.camera
+ };
+}
+function applySave(raw){
+ const restored=validateSave(raw);
+ const values={
+  'echo12-unlocked':String(restored.unlocked),
+  'echo12-chapter-path':restored.chapterPath,
+  'echo12-source-verdict':restored.sourceVerdict,
+  'echo12-final-verdict':restored.finalVerdict,
+  'echo12-archive':JSON.stringify(restored.archive),
+  'echo12-endings':JSON.stringify(restored.endings),
+  'echo12-case-deductions':JSON.stringify(restored.caseSolved),
+  'echo12-best-runs':JSON.stringify(restored.bestRuns),
+  'echo12-muted':restored.muted?'1':'0',
+  'echo12-camera-mode':restored.camera
+ };
+ for(const [key,value] of Object.entries(values)){
+  if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);
+ }
+ archiveRead=new Set(restored.archive);endingHistory=new Set(restored.endings);caseSolved=new Set(restored.caseSolved);
+ chapterPath=restored.chapterPath;sourceVerdict=restored.sourceVerdict;finalVerdict=restored.finalVerdict;
+ bestRuns=restored.bestRuns;soundOn=!restored.muted;cameraMode=restored.camera;
+ $('sound').textContent='♪ Ses: '+(soundOn?'açık':'kapalı');
+ applyCameraMode();
+ if(mode==='vaulting')closeVault();
+ loadLevel(restored.unlocked);hideOverlay();refreshArchiveCount();
+ return restored;
+}
+function renderVault(){
+ $('vault-progress').textContent=(getUnlocked()+1)+' / '+LVLS.length+' ODA AÇIK · '+archiveRead.size+' / '+ARCHIVE.length+' ARŞİV · '+caseSolved.size+'/3 DELİL · '+Object.keys(bestRuns).length+' ODA REKORU';
+ const found=new Set([...archiveRead].filter(id=>id.startsWith('F01_')));
+ const endings=[['F01_PURGE','00 anahtarını iptal et'],['F01_PRESERVE','Kayıtları koru'],['F01_REVIEW','Bağımsız incelemeye aktar']];
+ const list=$('vault-endings');list.replaceChildren();
+ for(const [id,label] of endings){
+  const card=document.createElement('article');card.className='vault-ending'+(found.has(id)?' earned':'');
+  const a=document.createElement('strong'),b=document.createElement('span');
+  a.textContent=found.has(id)?label:'??? · Henüz keşfedilmedi';b.textContent=found.has(id)?'✓ '+id+' · arşivde':'KİLİTLİ · farklı final rotası';
+  card.append(a,b);list.append(card);
+ }
+}
+function openVault(){
+ if(!['menu','playing','paused','leveldone','allwon'].includes(mode))return;
+ vaultBefore=mode;vaultPreviousFocus=document.activeElement;clearInputs();mode='vaulting';
+ $('save-vault').classList.remove('hidden');$('save-vault').setAttribute('aria-hidden','false');
+ $('vault-feedback').textContent='Bu dosya yalnızca senin cihazında işlenir.';$('vault-feedback').className='vault-feedback';
+ renderVault();$('vault-close').focus();updateHUD();
+}
+function closeVault(){
+ if(mode!=='vaulting')return;
+ $('save-vault').classList.add('hidden');$('save-vault').setAttribute('aria-hidden','true');
+ $('vault-import').value='';mode=vaultBefore;clearInputs();updateHUD();
+ if(vaultPreviousFocus&&typeof vaultPreviousFocus.focus==='function')vaultPreviousFocus.focus();
+}
+function exportSave(){
+ const json=JSON.stringify(snapshotSave(),null,2);
+ const blob=new Blob([json],{type:'application/json'});
+ const url=URL.createObjectURL(blob),anchor=document.createElement('a');
+ anchor.href=url;anchor.download='ECHO12_Kayit_Yedegi.json';document.body.append(anchor);anchor.click();anchor.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),2000);
+ $('vault-feedback').textContent='Kayıt yedeği oluşturuldu.';$('vault-feedback').className='vault-feedback ok';
+}
+async function importSaveFile(event){
+ const file=event.target.files?.[0];if(!file)return;
+ const feedback=$('vault-feedback');feedback.className='vault-feedback';
+ try{
+  if(file.size>160000)throw Error('Dosya çok büyük. ECHO/12 kayıt yedekleri 160 KB sınırını aşamaz.');
+  const text=await file.text();
+  const parsed=JSON.parse(text);
+  validateSave(parsed);
+  if(!window.confirm('Mevcut yerel kaydın üzerine bu yedek yüklenecek. Devam etmek istiyor musun?')){
+   feedback.textContent='Geri yükleme iptal edildi.';event.target.value='';return;
+  }
+  applySave(parsed);
+ }catch(e){feedback.textContent='Geri yüklenemedi: '+(e instanceof SyntaxError?'Geçerli bir JSON dosyası değil.':e.message);feedback.className='vault-feedback error';event.target.value=''}
+}
 function openCaseBoard(){
  if(!['menu','playing','paused','leveldone','allwon'].includes(mode))return;
  caseBefore=mode;casePreviousFocus=document.activeElement;clearInputs();mode='investigating';
@@ -823,9 +941,9 @@ function releaseTouchDirection(code,id,btn){
  if(!touchHeld.has(code)&&!keyboardHeld.has(code))keys.delete(code);
  if(!touchHeld.has(code)){btn.classList.remove('is-held');btn.setAttribute('aria-pressed','false')}
 }
-function onKeyDown(e){const focusedButton=e.target?.closest?.('button');if(e.code==='Space'&&focusedButton&&!focusedButton.disabled&&!focusedButton.closest('.hidden'))return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.repeat&&['Space','KeyK','KeyO','KeyH','KeyF','KeyP','KeyR','KeyZ','Enter','KeyE','KeyL','Escape'].includes(e.code))return;if(mode==='investigating'){if(e.code==='Escape'||e.code==='KeyK')closeCaseBoard();return}if(mode==='selecting'){if(e.code==='Escape')closeRoomSelector();return}if(mode==='playing'&&['KeyW','KeyA','KeyS','KeyD','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.code)){keys.add(e.code);keyboardHeld.add(e.code)}if(mode==='auditing'){if(e.code==='Escape')exitAuditPanel();return}if(mode==='reading'){if(['Escape','KeyE','KeyL'].includes(e.code))closeArchive();return}if(mode==='decision'){if(e.code==='Escape')cancelDecision();else if(e.code==='Enter')confirmDecision();return}if(e.code==='KeyK'){openCaseBoard();return}if(e.code==='KeyO'){openRoomSelector();return}if(e.code==='KeyH'){showHint();return}if(e.code==='KeyF'){toggleFrequency();return}if(e.code==='KeyM'){toggleSound();return}if(e.code==='KeyL'){openArchive();return}if(e.code==='KeyE'){interactTerminal();return}if(e.code==='Enter'&&mode!=='playing')startGame();if(e.code==='Space'){if(mode==='playing')cycleCommit();else if(mode==='menu'||mode==='leveldone'||mode==='allwon')startGame()}if(e.code==='KeyR'&&(mode==='playing'||mode==='paused'))restart();if(e.code==='KeyZ'&&mode==='playing')undoEcho();if(e.code==='KeyP'&&(mode==='playing'||mode==='paused'))pause()}
+function onKeyDown(e){const focusedButton=e.target?.closest?.('button');if(e.code==='Space'&&focusedButton&&!focusedButton.disabled&&!focusedButton.closest('.hidden'))return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.repeat&&['Space','KeyB','KeyK','KeyO','KeyH','KeyF','KeyP','KeyR','KeyZ','Enter','KeyE','KeyL','Escape'].includes(e.code))return;if(mode==='vaulting'){if(e.code==='Escape'||e.code==='KeyB')closeVault();return}if(mode==='investigating'){if(e.code==='Escape'||e.code==='KeyK')closeCaseBoard();return}if(mode==='selecting'){if(e.code==='Escape')closeRoomSelector();return}if(mode==='playing'&&['KeyW','KeyA','KeyS','KeyD','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.code)){keys.add(e.code);keyboardHeld.add(e.code)}if(mode==='auditing'){if(e.code==='Escape')exitAuditPanel();return}if(mode==='reading'){if(['Escape','KeyE','KeyL'].includes(e.code))closeArchive();return}if(mode==='decision'){if(e.code==='Escape')cancelDecision();else if(e.code==='Enter')confirmDecision();return}if(e.code==='KeyB'){openVault();return}if(e.code==='KeyK'){openCaseBoard();return}if(e.code==='KeyO'){openRoomSelector();return}if(e.code==='KeyH'){showHint();return}if(e.code==='KeyF'){toggleFrequency();return}if(e.code==='KeyM'){toggleSound();return}if(e.code==='KeyL'){openArchive();return}if(e.code==='KeyE'){interactTerminal();return}if(e.code==='Enter'&&mode!=='playing')startGame();if(e.code==='Space'){if(mode==='playing')cycleCommit();else if(mode==='menu'||mode==='leveldone'||mode==='allwon')startGame()}if(e.code==='KeyR'&&(mode==='playing'||mode==='paused'))restart();if(e.code==='KeyZ'&&mode==='playing')undoEcho();if(e.code==='KeyP'&&(mode==='playing'||mode==='paused'))pause()}
 window.addEventListener('keydown',onKeyDown);window.addEventListener('keyup',e=>{keyboardHeld.delete(e.code);if(!touchHeld.has(e.code))keys.delete(e.code)});window.addEventListener('blur',()=>{clearInputs();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)});document.addEventListener('visibilitychange',()=>{if(document.hidden){clearInputs();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)}});
-$('audit-close').onclick=exitAuditPanel;for(const btn of $('audit-options').querySelectorAll('button'))btn.onclick=()=>submitVerdict(btn.dataset.verdict);$('decision-cancel').onclick=cancelDecision;$('decision-confirm').onclick=confirmDecision;$('replay-choice').onclick=()=>{loadLevel(levelIndex===18?18:levelIndex===16?16:levelIndex===14?14:levelIndex===12?12:5);hideOverlay()};$('archive-close').onclick=closeArchive;$('logbook').onclick=()=>mode==='reading'?closeArchive():openArchive();$('interact').onclick=interactTerminal;$('case-board-button').onclick=openCaseBoard;$('case-close').onclick=closeCaseBoard;$('room-select').onclick=openRoomSelector;$('room-picker-close').onclick=closeRoomSelector;$('help-button').onclick=showHint;$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('undo').onclick=undoEcho;$('restart').onclick=restart;$('sound').onclick=toggleSound;$('frequency').onclick=toggleFrequency;
+$('audit-close').onclick=exitAuditPanel;for(const btn of $('audit-options').querySelectorAll('button'))btn.onclick=()=>submitVerdict(btn.dataset.verdict);$('decision-cancel').onclick=cancelDecision;$('decision-confirm').onclick=confirmDecision;$('replay-choice').onclick=()=>{loadLevel(levelIndex===18?18:levelIndex===16?16:levelIndex===14?14:levelIndex===12?12:5);hideOverlay()};$('archive-close').onclick=closeArchive;$('logbook').onclick=()=>mode==='reading'?closeArchive():openArchive();$('interact').onclick=interactTerminal;$('save-vault-button').onclick=openVault;$('vault-close').onclick=closeVault;$('vault-export').onclick=exportSave;$('vault-import').addEventListener('change',importSaveFile);$('case-board-button').onclick=openCaseBoard;$('case-close').onclick=closeCaseBoard;$('room-select').onclick=openRoomSelector;$('room-picker-close').onclick=closeRoomSelector;$('help-button').onclick=showHint;$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('undo').onclick=undoEcho;$('restart').onclick=restart;$('sound').onclick=toggleSound;$('frequency').onclick=toggleFrequency;
 for(const btn of document.querySelectorAll('.mobilepad [data-dir]')){
  const code=btn.dataset.dir;
  btn.addEventListener('pointerdown',e=>{e.preventDefault();if(mode!=='playing')return;holdTouchDirection(code,e.pointerId,btn);try{btn.setPointerCapture(e.pointerId)}catch(err){}});
@@ -1086,7 +1204,7 @@ function updateHUD(){
  $('mobile-undo').disabled=!playing||clones.length===0;
  $('mobile-pause').disabled=!(playing||mode==='paused');
  $('mobile-pause').textContent=mode==='paused'?'▶ Devam':'Ⅱ Duraklat';
- updateCampaignUI();updateProtocolStatus();if(levelIndex===0)$('hint').textContent=currentObjective();$('frequency').disabled=mode!=='playing'||!(level.phantoms||level.reverseEnabled);$('frequency').textContent=level.phantoms?'F · DOĞRULA '+(scannerOn?'AÇIK':'KAPALI'):level.reverseEnabled?'F · '+(reverseMode?'TERS':'NORMAL'):'F · KAPALI';const canInteract=!!(nearWitnessConsole()||nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice());$('interact').disabled=mode!=='playing'||!canInteract;$('interact').textContent=nearWitnessConsole()?'⌁ Kora tanıklığını onayla':nearestSensor()?'⌁ Kanıt topla':nearestAuditConsole()?'⌁ Kanıtları karşılaştır':nearestChoice()?'⌁ Çekirdek kararı':'⌁ Terminali oku';refreshArchiveCount();$('room').textContent=`${String(levelIndex+1).padStart(2,'0')} / ${String(LVLS.length).padStart(2,'0')}`;$('time').textContent=`${Math.max(0,LOOP-elapsed).toFixed(1)} sn`;$('timefill').style.width=(100*elapsed/LOOP)+'%';$('clones').textContent=`${clones.length} / ${MAX_CLONES}`;$('mode').textContent={menu:'HAZIR',playing:'KAYIT',paused:'DURDU',leveldone:'BAŞARILI',allwon:'TAMAMLANDI',reading:'ARŞİV',decision:'KARAR',auditing:'KANIT',investigating:'DELİL PANOSU',selecting:'ODA SEÇİMİ'}[mode]||mode;
+ updateCampaignUI();updateProtocolStatus();if(levelIndex===0)$('hint').textContent=currentObjective();$('frequency').disabled=mode!=='playing'||!(level.phantoms||level.reverseEnabled);$('frequency').textContent=level.phantoms?'F · DOĞRULA '+(scannerOn?'AÇIK':'KAPALI'):level.reverseEnabled?'F · '+(reverseMode?'TERS':'NORMAL'):'F · KAPALI';const canInteract=!!(nearWitnessConsole()||nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice());$('interact').disabled=mode!=='playing'||!canInteract;$('interact').textContent=nearWitnessConsole()?'⌁ Kora tanıklığını onayla':nearestSensor()?'⌁ Kanıt topla':nearestAuditConsole()?'⌁ Kanıtları karşılaştır':nearestChoice()?'⌁ Çekirdek kararı':'⌁ Terminali oku';refreshArchiveCount();$('room').textContent=`${String(levelIndex+1).padStart(2,'0')} / ${String(LVLS.length).padStart(2,'0')}`;$('time').textContent=`${Math.max(0,LOOP-elapsed).toFixed(1)} sn`;$('timefill').style.width=(100*elapsed/LOOP)+'%';$('clones').textContent=`${clones.length} / ${MAX_CLONES}`;$('mode').textContent={menu:'HAZIR',playing:'KAYIT',paused:'DURDU',leveldone:'BAŞARILI',allwon:'TAMAMLANDI',reading:'ARŞİV',decision:'KARAR',auditing:'KANIT',vaulting:'KAYIT KASASI',investigating:'DELİL PANOSU',selecting:'ODA SEÇİMİ'}[mode]||mode;
 const rem=LOOP-elapsed,critical=mode==='playing'&&rem<=3,anyOpen=level.barriers.some(b=>gateOpen(b.key));
 $('signal-value').textContent=critical?'SON '+Math.ceil(rem)+' SANİYE':mode==='playing'?(level.phantoms&&!scannerOn?'SİNYAL DOĞRULANMADI':level.reverseEnabled&&reverseMode?'TERS KAYIT HAZIR':anyOpen?'GEÇİŞ AÇIK':'KAYIT ALINIYOR'):mode==='allwon'?'PROTOKOL TAMAMLANDI':mode==='decision'?'ONAY BEKLENİYOR':mode==='auditing'?'KANIT DENETİMİ':mode==='reading'?'ARŞİV OKUNUYOR':'SİSTEM BEKLEMEDE';
 $('signal-strip').classList.toggle('critical',critical);syncAtmos();}
