@@ -169,7 +169,7 @@ button:focus-visible{outline:3px solid #62f3d3;outline-offset:2px}
 </head>
 <body>
 <div class="wrap">
-<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 012</div></header>
+<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 013</div></header>
 <div class="topbar">
  <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 11</div></div>
  <div class="stat"><div class="label">Döngüye kalan</div><div class="value teal" id="time">12.0 sn</div><div class="meters"><div class="meter"><i id="timefill"></i></div></div></div>
@@ -192,7 +192,7 @@ button:focus-visible{outline:3px solid #62f3d3;outline-offset:2px}
 
 <div class="log"><div class="indicator"></div><div><div class="logtitle" id="mission">PROTOKOL 01 · İLK İZ</div><div class="logdesc" id="hint">Yeşil plakaya bas, SPACE ile yankını kaydet. Sonraki döngüde kapı açılınca çıkışa git.</div></div></div>
 <section class="protocol-status" aria-label="Geçit hedefleri"><div class="protocol-status-head"><strong>ANLIK GEÇİT DURUMU</strong><small id="gate-counter">0 / 0 açık</small></div><div class="gate-status-grid" id="gate-status"></div></section>
-<footer>BUILD 012 · TAKİP KAMERASI / BÖLÜM FİNALİ</footer>
+<footer>BUILD 013 · BÖLÜM IV: İMZA DENETİMİ</footer>
 </div>
 <script>
 (()=>{
@@ -216,7 +216,9 @@ const LVLS=[
  {title:'KARŞI SİNYAL',tag:'Geçmişteki iki ses ve şimdi verilen tek emir.',hint:'S mor plakasında AYNI ANDA iki yankı tut. İlk kapı açılınca P turuncu plakasına CANLI karakterle bas. P yalnızca 2,8 saniye açık kalır; hemen doğuya koş ve çık.',start:[2,5],exit:[15,5],barriers:[{x:7,gate:[7,5],key:'S'},{x:12,gate:[12,5],key:'P'}],plates:[{x:4,y:3,key:'S',echoCount:2},{x:9,y:5,key:'P',selfOnly:true,pulse:2.8}],guards:[],block:[{x:9,y:2},{x:9,y:3}]},
  {title:'HAYALET İMZA',tag:'Her gördüğün hareket, geriye bırakılmış bir hareket olmayabilir.',hint:'Sahte yankılar plakalara dokunuyormuş gibi görünür ama kapıları açamaz. F ile DOĞRULAYICIYI aç; iki gerçek yankıyı T ve U plakalarında bırak, sonra çık.',start:[2,5],exit:[15,5],barriers:[{x:7,gate:[7,5],key:'T'},{x:12,gate:[12,5],key:'U'}],plates:[{x:4,y:3,key:'T',needsScan:true},{x:10,y:7,key:'U',needsScan:true}],phantoms:[{x:4,y:3},{x:10,y:7}],guards:[],block:[{x:10,y:2},{x:10,y:3}]},
  {title:'TERS İZ',tag:'Son kare, ilk kareye dönüşüyor.',hint:'F ile kayıt yönünü TERS yap. V plakasına ters bir yankı bırak. F ile NORMAL moda dön, Y plakasına normal bir yankı kaydet. Önceki kayıtları silmeden iki kapıyı da aş.',start:[2,5],exit:[15,5],reverseEnabled:true,barriers:[{x:7,gate:[7,5],key:'V'},{x:12,gate:[12,5],key:'Y'}],plates:[{x:4,y:3,key:'V',reverseOnly:true},{x:10,y:7,key:'Y',forwardOnly:true}],guards:[],block:[{x:9,y:2},{x:9,y:3}]},
- {title:'ÜÇ TANIK',tag:'Kamera doğruyu söylüyor olabilir. Yalnızca eksik söylüyor.',hint:'Önce B plakasına bir yankı kaydet. İlk kapıyı geç. F ile tarayıcıyı açıp E ile üç ölçüm istasyonunu incele. AUDIT konsolunda kanıtları karşılaştırarak ikinci kapıyı aç.',start:[2,5],exit:[15,5],barriers:[{x:7,gate:[7,5],key:'B'},{x:12,gate:[12,5],key:'AUDIT'}],plates:[{x:4,y:3,key:'B',echoOnly:true}],phantoms:[{x:10,y:6}],sensors:[{id:'optic',x:9,y:2,label:'KAMERA'},{id:'mass',x:9,y:5,label:'BASINÇ'},{id:'ledger',x:9,y:8,label:'KAYIT'}],auditConsole:[11,5],guards:[],block:[{x:10,y:2},{x:10,y:3}]}
+ {title:'ÜÇ TANIK',tag:'Kamera doğruyu söylüyor olabilir. Yalnızca eksik söylüyor.',hint:'Önce B plakasına bir yankı kaydet. İlk kapıyı geç. F ile tarayıcıyı açıp E ile üç ölçüm istasyonunu incele. AUDIT konsolunda kanıtları karşılaştırarak ikinci kapıyı aç.',start:[2,5],exit:[15,5],barriers:[{x:7,gate:[7,5],key:'B'},{x:12,gate:[12,5],key:'AUDIT'}],plates:[{x:4,y:3,key:'B',echoOnly:true}],phantoms:[{x:10,y:6}],sensors:[{id:'optic',x:9,y:2,label:'KAMERA'},{id:'mass',x:9,y:5,label:'BASINÇ'},{id:'ledger',x:9,y:8,label:'KAYIT'}],auditConsole:[11,5],guards:[],block:[{x:10,y:2},{x:10,y:3}]},
+ {title:'İZİN SIRASI',tag:'Görüntü bir hareketi taklit eder. Ama iki ayrı anın sırasını bilmek başka şeydir.',hint:'Sol M plakasına bir yankı bırak. İlk kapıyı geç; A sonra B okuma noktalarına sırayla dokunup bu yolu bir YANKI olarak kaydet. F ile doğrulayıcıyı aç. Tamamlanan gerçek rota ikinci kilidi açar.',start:[2,5],exit:[15,5],barriers:[{x:7,gate:[7,5],key:'M'},{x:12,gate:[12,5],key:'PROOF'}],plates:[{x:4,y:3,key:'M',echoOnly:true}],probes:[{id:'A',x:9,y:3},{id:'B',x:10,y:7}],phantoms:[{x:10,y:5}],guards:[],block:[]},
+ {title:'İKİ İMZA',tag:'Bir kayıt aynı iki noktayı ters sırada da doğrulayabiliyor. Peki kaynağı kim?',hint:'M plakasını bir yankıyla aç. A→B yönünde bir gerçek kayıt, sonra B→A yönünde başka bir gerçek kayıt üret. F doğrulayıcısını aç, iki imza da 2/2 olunca sağdaki konsollardan yayınlama veya karantinaya alma kararını ver.',start:[2,5],exit:[16,5],barriers:[{x:7,gate:[7,5],key:'M'},{x:12,gate:[12,5],key:'PROOF'},{x:16,gate:[16,5],key:'OUT'}],plates:[{x:4,y:3,key:'M',echoOnly:true}],probes:[{id:'A',x:9,y:3},{id:'B',x:10,y:7}],dualProof:true,phantoms:[{x:10,y:5}],guards:[],block:[{x:13,y:4},{x:13,y:6}]}
 ];
 const ARCHIVE=[
  {id:'A01',title:'PROTOKOL 12',by:'Operatör M. Kora • 03:14',body:[
@@ -272,11 +274,27 @@ const ARCHIVE=[
  {id:'A12',title:'ÜÇ TANIK / TUTANAK',by:'Kimlik denetimi • 06:21',body:[
  'Kamera bir siluet yakaladı. Basınç panelinde ona ait ağırlık yok. Kayıt defterinde o siluetin yakalama imzası bulunamadı.',
  'İlk sonuç bir insanın yokluğu değil: fiziksel iz bırakmayan bir görüntünün kamera hattına enjekte edildiği. Bu görüntünün arkasında kimin olduğunu bilmiyoruz.',
- 'Operatör 00 bir ad olmayabilir. Kamera hattındaki yönetici ayrıcalığının etiketi de olabilir. Kora bu ayrıcalığın kimde olduğunu açıklamadı.']}
+ 'Operatör 00 bir ad olmayabilir. Kamera hattındaki yönetici ayrıcalığının etiketi de olabilir. Kora bu ayrıcalığın kimde olduğunu açıklamadı.']},
+ {id:'A13',title:'KÖKEN / İKİ AYRI AN',by:'Doğrulama teknisyeni • 06:28',body:[
+ 'Sahte görüntü anlık konum uydurabilir. Ancak ardışık iki fiziksel geçişin zaman sırasını imzalamak için gerçek bir hareket kaydı gerekir.',
+ 'A ardından B izini kaydet. Sıralama yanlışsa geçit bu kaydı onaylamaz. Operatörün gönderdiği sahte görüntü de ispat yerine geçmez.',
+ 'Bu test yalnızca kaydın burada üretildiğini destekler. Kaydı üreten kişinin kimliğini tek başına kanıtlamaz.']},
+ {id:'A14',title:'İKİ İMZA / YETKİ KOPYASI',by:'Kora hattı • 06:31',body:[
+ 'A→B ve B→A yolları farklı anlarda gerçek kayıtlara işlendi. İki ayrı kaynak değil, iki farklı rota olmasına rağmen yönetim sistemi ikisine de 00 yetki başlığı ekledi.',
+ 'OPERATÖR 00 kimlik kanıtı değildir. Bir geçiş izni birden fazla kişiye ait olabilir. Kora, yetkiyi kimin kopyaladığını açıklamadı.',
+ 'Yayınlamak sahteciliği görünür kılacak ama yankıların konumlarını açığa çıkarabilir. Karantinaya almak tanıkları koruyacak ama dış incelemeyi geciktirecek.']},
+ {id:'A15_PUBLISH',title:'YAYIN / KAYNAK İMZALARI',by:'Dış gözlem • bölüm IV',body:[
+ 'İki farklı gerçek rota ve sahte sinyalin tutarsızlığı dış hatta yayımlandı. Yönetimin 00 etiketini bir kişi diye açıklaması artık sorgulanabilir.',
+ 'Açıklanan bilgiler iz taşıyıcılarını da görünür kıldı. Kimlerin bu kayıtları kullanacağı henüz bilinmiyor.']},
+ {id:'A15_SEAL',title:'KARANTİNA / KORUNAN TANIKLAR',by:'İç arşiv • bölüm IV',body:[
+ 'Gerçek kayıtların ispatları karantinaya alındı. Görüntüler silinmedi ama dış hat erişimi kesildi. Tanıkların konumları şimdilik korunuyor.',
+ 'Dışarıdan bakıldığında yönetimin anlatısı hâlâ tek geçerli açıklama gibi duruyor. Kora bu sessizliğin ne kadar süreceğini bilmiyor.']}
 ];
-const TERMINALS=[{level:0,x:3,y:7,entry:'A01'},{level:2,x:8,y:7,entry:'A02'},{level:4,x:9,y:5,entry:'A03'},{level:5,x:9,y:3,entry:'A04'},{level:6,x:9,y:4,entry:'A06'},{level:7,x:9,y:7,entry:'A07'},{level:8,x:9,y:5,entry:'A09'},{level:9,x:9,y:8,entry:'A10'},{level:10,x:10,y:9,entry:'A12'}];
+const TERMINALS=[{level:0,x:3,y:7,entry:'A01'},{level:2,x:8,y:7,entry:'A02'},{level:4,x:9,y:5,entry:'A03'},{level:5,x:9,y:3,entry:'A04'},{level:6,x:9,y:4,entry:'A06'},{level:7,x:9,y:7,entry:'A07'},{level:8,x:9,y:5,entry:'A09'},{level:9,x:9,y:8,entry:'A10'},{level:10,x:10,y:9,entry:'A12'},{level:11,x:9,y:8,entry:'A13'},{level:12,x:9,y:8,entry:'A14'}];
+const SOURCE_CHOICES=[{id:'publish',x:14,y:2,title:'KANITI YAYINLA',kicker:'DIŞ HAT / AÇIK KAYIT',story:'İki doğrulanmış hareket izini ve sahte 00 imzasının çelişkisini dış gözlemcilere gönderirsin. Yanlış iddiayı düzeltme şansı doğar, ancak gerçek yankıların izi de başkalarına açılır.',effect:'SONUÇ: Denetlenebilir kanıt kamuya çıkar. Tanıkların bulunduğu hat da ifşa olabilir.',color:'#67eccd'},{id:'seal',x:14,y:8,title:'İZLERİ KARANTİNAYA AL',kicker:'İÇ HAT / GİZLİ KAYIT',story:'Doğrulanmış izleri dış sistemlerden ayırırsın. Sahte görüntülerle gerçek yankıların karışmasını engellersin ancak başkalarının sahteciliği görmesi zorlaşır.',effect:'SONUÇ: Tanıkların yerini korursun. Yönetimin 00 hakkındaki açıklaması dışarıda bir süre daha sorgulanmadan kalabilir.',color:'#f5b789'}];
 const CHOICES=[{id:'keep',x:14,y:2,title:'TANIKLARI KORU',kicker:'BELLEK BAĞLANTISI',story:'Çekirdeği açık tutarsan yankıların belleği ve kimliği korunacak. Dış kapı açılmayacak; kendi geleceğini içeride bırakacaksın.',effect:'SONUÇ: Geçmişte kalanlar sistemden silinmeyecek. Sen tesiste kalacaksın, fakat yeni bir kurtarma olasılığı doğacak.',color:'#6bead0'},{id:'cut',x:14,y:8,title:'ÇEKİRDEĞİ SUSTUR',kicker:'ACİL BOŞALTIM',story:'Çekirdeğin bağlantısını kesersen çıkış açılacak. Yankıların var olma ihtimali de kalıcı olarak silinecek.',effect:'SONUÇ: Kendin tesisten çıkacaksın. Önceki döngülerin izleri sonsuza dek kaybolacak.',color:'#ff8693'}];
-let archiveRead=new Set(),readBefore='playing',activeDecision=null,endingChoice=null,endingHistory=new Set(),chapterPath=null,scannerOn=false,reverseMode=false,auditEvidence=new Map(),auditUnlocked=false,auditMistakes=0;
+let archiveRead=new Set(),readBefore='playing',activeDecision=null,endingChoice=null,endingHistory=new Set(),chapterPath=null,sourceVerdict=null,scannerOn=false,reverseMode=false,auditEvidence=new Map(),auditUnlocked=false,auditMistakes=0;
+try{const v=localStorage.getItem('echo12-source-verdict');if(v==='publish'||v==='seal')sourceVerdict=v}catch(e){}
 try{const p=localStorage.getItem('echo12-chapter-path');if(p==='keep'||p==='cut')chapterPath=p}catch(e){}
 try{const saved=JSON.parse(localStorage.getItem('echo12-archive')||'[]');if(Array.isArray(saved))archiveRead=new Set(saved.filter(id=>ARCHIVE.some(a=>a.id===id)))}catch(e){}
 try{const saved=JSON.parse(localStorage.getItem('echo12-endings')||'[]');if(Array.isArray(saved))endingHistory=new Set(saved.filter(id=>CHOICES.some(c=>c.id===id)))}catch(e){}
