@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 018 — Bölüm VII: Son On İki Saniye / Hikâyenin Finali
+
+**19 oynanabilir oda · 7 hikâye bölümü · 35 arşiv girdisi.** Bu sürüm, ana kampanyaya yeni bir bölüm daha eklemek yerine hikâyenin ana soruşturmasını **üç farklı sonla tamamlar**. Bundan sonraki geliştirme önceliği oynanışın dengesi, görsel kalite, ses ve üretim kararlılığıdır.
+
+- **Oda 18 / Zaman Köprüsü:** Önceden ayrı ayrı öğrenilen iki sistemi birlikte kullanır. En az bir A→B gerçek yankısı, 1,6–3,6 saniyelik imzalı süreye uymalı ve başka bir gerçek yankı aynı anda I sensöründe bulunurken ilki II noktasında olmalıdır. Üç kapının güvenilirliği sahte görüntü veya tek bir yankıyla sağlanamaz.
+- **Oda 19 / Son Yetki:** Başlangıç M yankısıyla açılır. PROOF geçidi **farklı iki gerçek kayıtta** A→B ve B→A imzalarını, F doğrulayıcısını açık tutmayı şart koşar. Son kapı için bilinçli bir yetki kararı gerekir.
+- **Üç alternatif final:** *Anahtarı İptal Et* kötüye kullanımın önünü keser, fakat kayıtların erişimi de kesilebilir. *İzleri Kilitli Tut* kayıtları korur, ama yönetici yetkisinin gelecekte yeniden kullanılma riski sürer. *Bağımsız Denetim* yalnızca K delil panosundaki üç bağımsız, kaynaklı çıkarım tamamlanırsa seçilebilir; denetçilerin güvenilirliği yine kesin değildir.
+- **Önceki kararların sonucu:** Çekirdeği koruma/susturma ile kanıtı yayınlama/karantinaya alma tercihleri, final anlatısında geri alınmış sayılmaz. Kimliği bilinmeyen yönetici ile yankıların bilinci üzerine kanıtsız bir kesinlik sunulmaz.
+- **Kapanış arşivi:** A22 ve A23 adlı iki son soruşturma kaydı, F01_PURGE/F01_PRESERVE/F01_REVIEW adlı üç final arşiv kaydı eklenmiştir. Son karar yerel `echo12-final-verdict` anahtarında saklanır; yeniden oynayarak farklı sonlar görülebilir.
+- **Testler:** Önceki 17 odanın testleri korunur; karma zaman + iki tanık kapısı, karşıt doğrulanmış iki iz, final kararı olmadan son kapının kilitli olması, üçüncü seçeneğin kaynak koşulu, üç alternatif final ve ilerleme kayıtları eklenen testlerle kontrol edilir.
+
 ## Build 017 — Delil Panosu / Bağımsız Çıkarımlar
 
 **17 oda, 6 bölüm ve 30 arşiv kaydı.** Bu sürümde amaç daha fazla aynı tip kapı açmak değil: oyuncunun keşfettiği kayıtları kendi mantığıyla karşılaştırıp, kesin delil ile varsayımı ayırabildiği tekrar kullanılabilir bir **soruşturma arayüzü** kurmak.
