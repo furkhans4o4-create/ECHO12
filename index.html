@@ -779,6 +779,97 @@ async function importSaveFile(event){
   applySave(parsed);
  }catch(e){feedback.textContent='Geri yüklenemedi: '+(e instanceof SyntaxError?'Geçerli bir JSON dosyası değil.':e.message);feedback.className='vault-feedback error';event.target.value=''}
 }
+
+let inspectorBefore='playing',inspectorPreviousFocus=null,inspectorTime=0;
+const inspectorCtx=$('inspector-map').getContext('2d');
+function inspectorTrackPoint(samples,t){
+ return samples[Math.max(0,Math.min(samples.length-1,Math.round(t/DT)))];
+}
+function drawInspector(){
+ const ctx=inspectorCtx,canvas=$('inspector-map'),t=inspectorTime,selected=$('inspector-echo').value;
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ ctx.fillStyle='#0a182b';ctx.fillRect(0,0,canvas.width,canvas.height);
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+  const wall=x===0||y===0||x===W-1||y===H-1||level.block.some(p=>p.x===x&&p.y===y)||
+   level.barriers.some(b=>b.x===x&&!(b.gate[0]===x&&b.gate[1]===y));
+  ctx.fillStyle=wall?'#385066':((x+y)%2?'#172c40':'#1c3449');
+  ctx.fillRect(x*T,y*T,T,T);
+  if(!wall){ctx.strokeStyle='#ffffff0a';ctx.strokeRect(x*T+.5,y*T+.5,T-1,T-1)}
+ }
+ for(const barrier of level.barriers){
+  ctx.fillStyle='#91624b';ctx.fillRect(barrier.gate[0]*T+4,barrier.gate[1]*T+3,T-8,T-6);
+  ctx.fillStyle='#ffedbe';ctx.textAlign='center';ctx.font='bold 11px ui-monospace,monospace';
+  ctx.fillText(barrier.key,(barrier.gate[0]+.5)*T,(barrier.gate[1]+.5)*T+4);
+ }
+ for(const plate of level.plates){
+  ctx.beginPath();ctx.arc((plate.x+.5)*T,(plate.y+.5)*T,11,0,Math.PI*2);
+  ctx.fillStyle=plate.routeMode?'#f6c58f':'#69dabc';ctx.fill();
+  ctx.fillStyle='#14293c';ctx.textAlign='center';ctx.font='bold 12px ui-monospace,monospace';
+  ctx.fillText(plate.key,(plate.x+.5)*T,(plate.y+.5)*T+4);
+ }
+ for(const p of [...(level.probes||[]),...(level.syncPads||[])]){
+  ctx.fillStyle=p.id==='A'||p.id==='I'?'#4fcbff':'#cd9fff';
+  ctx.fillRect((p.x+.5)*T-12,(p.y+.5)*T-12,24,24);
+  ctx.fillStyle='#13233a';ctx.font='bold 13px ui-monospace,monospace';ctx.textAlign='center';
+  ctx.fillText(p.id,(p.x+.5)*T,(p.y+.5)*T+5);
+ }
+ const [gx,gy]=level.exit;
+ ctx.save();ctx.translate((gx+.5)*T,(gy+.5)*T);ctx.rotate(Math.PI/4);
+ ctx.fillStyle='#77e9c7';ctx.fillRect(-12,-12,24,24);ctx.restore();
+ const shown=clones.map((c,i)=>({c,i})).filter(item=>selected==='all'||selected===String(item.i));
+ for(const {c,i} of shown){
+  const color=['#d3aaff','#83c8ff','#ffa3c9','#ffdb96','#bdb2ff','#ff9c95'][i%6],path=c.samples;
+  ctx.beginPath();
+  for(let j=0;j<path.length;j+=6){const p=path[j];if(j===0)ctx.moveTo(p.x*T,p.y*T);else ctx.lineTo(p.x*T,p.y*T)}
+  const last=path[path.length-1];ctx.lineTo(last.x*T,last.y*T);
+  ctx.strokeStyle=color;ctx.globalAlpha=.43;ctx.lineWidth=3;ctx.stroke();ctx.globalAlpha=1;
+  const p=ghostAt(c,t);ctx.beginPath();ctx.arc(p.x*T,p.y*T,13,0,Math.PI*2);
+  ctx.fillStyle=color;ctx.fill();ctx.lineWidth=3;ctx.strokeStyle='#172139';ctx.stroke();
+  ctx.fillStyle='#152035';ctx.textAlign='center';ctx.font='bold 10px ui-monospace,monospace';ctx.fillText(String(i+1),p.x*T,p.y*T+3);
+ }
+ if((selected==='all'||selected==='live')&&record.length){
+  const p=inspectorTrackPoint(record,t);ctx.beginPath();
+  for(let j=0;j<record.length;j+=5){const at=record[j];if(j===0)ctx.moveTo(at.x*T,at.y*T);else ctx.lineTo(at.x*T,at.y*T)}
+  ctx.strokeStyle='#70ffe1';ctx.lineWidth=3;ctx.stroke();
+  ctx.beginPath();ctx.arc(p.x*T,p.y*T,9,0,Math.PI*2);
+  ctx.fillStyle='#70ffe1';ctx.fill();ctx.strokeStyle='#16433b';ctx.lineWidth=2;ctx.stroke();
+ }
+ const status=shown.map(({c,i})=>{
+  const order=c.proofOrder?c.proofOrder[0]+'→'+c.proofOrder[1]:'—';
+  const timing=c.proofGap!==null&&c.proofGap!==undefined?' · '+c.proofGap.toFixed(1)+' sn'+(level.timeWindow?(c.timeProof?' ✓':' ×'):''):'';
+  return 'E'+String(i+1).padStart(2,'0')+(c.reverse?' TERS':'')+' · '+order+timing;
+ });
+ if(selected==='all'||selected==='live')status.push('CANLI · '+(record.length-1)+' örnek');
+ $('inspector-status').textContent=status.length?status.join('  /  '):'Henüz kayıtlı yankı yok. İlk hareketini kaydetmek için Boşluk kullan.';
+ $('inspector-count').textContent=clones.length+' / '+MAX_CLONES+' yankı';
+ $('inspector-clock').textContent=t.toFixed(1).replace('.',',')+' / '+LOOP.toFixed(1).replace('.',',')+' sn';
+}
+function setInspectorTime(v){
+ inspectorTime=Math.max(0,Math.min(LOOP,Number(v)||0));
+ $('inspector-scrub').value=String(inspectorTime);
+ drawInspector();
+}
+function openInspector(){
+ if(!['menu','playing','paused','leveldone','allwon'].includes(mode))return;
+ inspectorBefore=mode;inspectorPreviousFocus=document.activeElement;clearInputs();mode='inspecting';
+ const choices=$('inspector-echo');choices.replaceChildren();
+ const all=document.createElement('option');all.value='all';all.textContent='Tüm yankılar ve canlı iz';choices.append(all);
+ for(let i=0;i<clones.length;i++){
+  const opt=document.createElement('option');opt.value=String(i);
+  opt.textContent='E'+String(i+1).padStart(2,'0')+(clones[i].reverse?' · TERS':' · NORMAL');
+  choices.append(opt);
+ }
+ const current=document.createElement('option');current.value='live';current.textContent='Yalnızca mevcut canlı iz';choices.append(current);
+ choices.value='all';
+ $('inspector').classList.remove('hidden');$('inspector').setAttribute('aria-hidden','false');
+ setInspectorTime(elapsed);$('inspector-close').focus();updateHUD();
+}
+function closeInspector(){
+ if(mode!=='inspecting')return;
+ $('inspector').classList.add('hidden');$('inspector').setAttribute('aria-hidden','true');
+ mode=inspectorBefore;clearInputs();updateHUD();
+ if(inspectorPreviousFocus&&typeof inspectorPreviousFocus.focus==='function')inspectorPreviousFocus.focus();
+}
 function openCaseBoard(){
  if(!['menu','playing','paused','leveldone','allwon'].includes(mode))return;
  caseBefore=mode;casePreviousFocus=document.activeElement;clearInputs();mode='investigating';
@@ -993,9 +1084,9 @@ function releaseTouchDirection(code,id,btn){
  if(!touchHeld.has(code)&&!keyboardHeld.has(code))keys.delete(code);
  if(!touchHeld.has(code)){btn.classList.remove('is-held');btn.setAttribute('aria-pressed','false')}
 }
-function onKeyDown(e){const focusedButton=e.target?.closest?.('button');if(e.code==='Space'&&focusedButton&&!focusedButton.disabled&&!focusedButton.closest('.hidden'))return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.repeat&&['Space','KeyB','KeyK','KeyO','KeyH','KeyF','KeyP','KeyR','KeyZ','Enter','KeyE','KeyL','Escape'].includes(e.code))return;if(mode==='vaulting'){if(e.code==='Escape'||e.code==='KeyB')closeVault();return}if(mode==='investigating'){if(e.code==='Escape'||e.code==='KeyK')closeCaseBoard();return}if(mode==='selecting'){if(e.code==='Escape')closeRoomSelector();return}if(mode==='playing'&&['KeyW','KeyA','KeyS','KeyD','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.code)){keys.add(e.code);keyboardHeld.add(e.code)}if(mode==='auditing'){if(e.code==='Escape')exitAuditPanel();return}if(mode==='reading'){if(['Escape','KeyE','KeyL'].includes(e.code))closeArchive();return}if(mode==='decision'){if(e.code==='Escape')cancelDecision();else if(e.code==='Enter')confirmDecision();return}if(e.code==='KeyB'){openVault();return}if(e.code==='KeyK'){openCaseBoard();return}if(e.code==='KeyO'){openRoomSelector();return}if(e.code==='KeyH'){showHint();return}if(e.code==='KeyF'){toggleFrequency();return}if(e.code==='KeyM'){toggleSound();return}if(e.code==='KeyL'){openArchive();return}if(e.code==='KeyE'){interactTerminal();return}if(e.code==='Enter'&&mode!=='playing')startGame();if(e.code==='Space'){if(mode==='playing')cycleCommit();else if(mode==='menu'||mode==='leveldone'||mode==='allwon')startGame()}if(e.code==='KeyR'&&(mode==='playing'||mode==='paused'))restart();if(e.code==='KeyZ'&&mode==='playing')undoEcho();if(e.code==='KeyP'&&(mode==='playing'||mode==='paused'))pause()}
+function onKeyDown(e){const focusedButton=e.target?.closest?.('button');if(e.code==='Space'&&focusedButton&&!focusedButton.disabled&&!focusedButton.closest('.hidden'))return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.repeat&&['Space','KeyI','KeyB','KeyK','KeyO','KeyH','KeyF','KeyP','KeyR','KeyZ','Enter','KeyE','KeyL','Escape'].includes(e.code))return;if(mode==='inspecting'){if(e.code==='Escape'||e.code==='KeyI')closeInspector();return}if(mode==='vaulting'){if(e.code==='Escape'||e.code==='KeyB')closeVault();return}if(mode==='investigating'){if(e.code==='Escape'||e.code==='KeyK')closeCaseBoard();return}if(mode==='selecting'){if(e.code==='Escape')closeRoomSelector();return}if(mode==='playing'&&['KeyW','KeyA','KeyS','KeyD','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.code)){keys.add(e.code);keyboardHeld.add(e.code)}if(mode==='auditing'){if(e.code==='Escape')exitAuditPanel();return}if(mode==='reading'){if(['Escape','KeyE','KeyL'].includes(e.code))closeArchive();return}if(mode==='decision'){if(e.code==='Escape')cancelDecision();else if(e.code==='Enter')confirmDecision();return}if(e.code==='KeyI'){openInspector();return}if(e.code==='KeyB'){openVault();return}if(e.code==='KeyK'){openCaseBoard();return}if(e.code==='KeyO'){openRoomSelector();return}if(e.code==='KeyH'){showHint();return}if(e.code==='KeyF'){toggleFrequency();return}if(e.code==='KeyM'){toggleSound();return}if(e.code==='KeyL'){openArchive();return}if(e.code==='KeyE'){interactTerminal();return}if(e.code==='Enter'&&mode!=='playing')startGame();if(e.code==='Space'){if(mode==='playing')cycleCommit();else if(mode==='menu'||mode==='leveldone'||mode==='allwon')startGame()}if(e.code==='KeyR'&&(mode==='playing'||mode==='paused'))restart();if(e.code==='KeyZ'&&mode==='playing')undoEcho();if(e.code==='KeyP'&&(mode==='playing'||mode==='paused'))pause()}
 window.addEventListener('keydown',onKeyDown);window.addEventListener('keyup',e=>{keyboardHeld.delete(e.code);if(!touchHeld.has(e.code))keys.delete(e.code)});window.addEventListener('blur',()=>{clearInputs();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)});document.addEventListener('visibilitychange',()=>{if(document.hidden){clearInputs();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)}});
-$('audit-close').onclick=exitAuditPanel;for(const btn of $('audit-options').querySelectorAll('button'))btn.onclick=()=>submitVerdict(btn.dataset.verdict);$('decision-cancel').onclick=cancelDecision;$('decision-confirm').onclick=confirmDecision;$('replay-choice').onclick=()=>{loadLevel(levelIndex===18?18:levelIndex===16?16:levelIndex===14?14:levelIndex===12?12:5);hideOverlay()};$('archive-close').onclick=closeArchive;$('logbook').onclick=()=>mode==='reading'?closeArchive():openArchive();$('interact').onclick=interactTerminal;$('save-vault-button').onclick=openVault;$('vault-close').onclick=closeVault;$('vault-export').onclick=exportSave;$('vault-import').addEventListener('change',importSaveFile);$('case-board-button').onclick=openCaseBoard;$('case-close').onclick=closeCaseBoard;$('room-select').onclick=openRoomSelector;$('room-picker-close').onclick=closeRoomSelector;$('help-button').onclick=showHint;$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('undo').onclick=undoEcho;$('restart').onclick=restart;$('sound').onclick=toggleSound;$('frequency').onclick=toggleFrequency;
+$('audit-close').onclick=exitAuditPanel;for(const btn of $('audit-options').querySelectorAll('button'))btn.onclick=()=>submitVerdict(btn.dataset.verdict);$('decision-cancel').onclick=cancelDecision;$('decision-confirm').onclick=confirmDecision;$('replay-choice').onclick=()=>{loadLevel(levelIndex===18?18:levelIndex===16?16:levelIndex===14?14:levelIndex===12?12:5);hideOverlay()};$('archive-close').onclick=closeArchive;$('logbook').onclick=()=>mode==='reading'?closeArchive():openArchive();$('interact').onclick=interactTerminal;$('inspector-button').onclick=openInspector;$('inspector-close').onclick=closeInspector;$('inspector-echo').onchange=drawInspector;$('inspector-scrub').oninput=e=>setInspectorTime(e.target.value);$('inspector-back').onclick=()=>setInspectorTime(Math.round((inspectorTime-.5)*10)/10);$('inspector-forward').onclick=()=>setInspectorTime(Math.round((inspectorTime+.5)*10)/10);$('save-vault-button').onclick=openVault;$('vault-close').onclick=closeVault;$('vault-export').onclick=exportSave;$('vault-import').addEventListener('change',importSaveFile);$('case-board-button').onclick=openCaseBoard;$('case-close').onclick=closeCaseBoard;$('room-select').onclick=openRoomSelector;$('room-picker-close').onclick=closeRoomSelector;$('help-button').onclick=showHint;$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('undo').onclick=undoEcho;$('restart').onclick=restart;$('sound').onclick=toggleSound;$('frequency').onclick=toggleFrequency;
 for(const btn of document.querySelectorAll('.mobilepad [data-dir]')){
  const code=btn.dataset.dir;
  btn.addEventListener('pointerdown',e=>{e.preventDefault();if(mode!=='playing')return;holdTouchDirection(code,e.pointerId,btn);try{btn.setPointerCapture(e.pointerId)}catch(err){}});
@@ -1256,7 +1347,7 @@ function updateHUD(){
  $('mobile-undo').disabled=!playing||clones.length===0;
  $('mobile-pause').disabled=!(playing||mode==='paused');
  $('mobile-pause').textContent=mode==='paused'?'▶ Devam':'Ⅱ Duraklat';
- updateCampaignUI();updateProtocolStatus();if(levelIndex===0)$('hint').textContent=currentObjective();$('frequency').disabled=mode!=='playing'||!(level.phantoms||level.reverseEnabled);$('frequency').textContent=level.phantoms?'F · DOĞRULA '+(scannerOn?'AÇIK':'KAPALI'):level.reverseEnabled?'F · '+(reverseMode?'TERS':'NORMAL'):'F · KAPALI';const canInteract=!!(nearWitnessConsole()||nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice());$('interact').disabled=mode!=='playing'||!canInteract;$('interact').textContent=nearWitnessConsole()?'⌁ Kora tanıklığını onayla':nearestSensor()?'⌁ Kanıt topla':nearestAuditConsole()?'⌁ Kanıtları karşılaştır':nearestChoice()?'⌁ Çekirdek kararı':'⌁ Terminali oku';refreshArchiveCount();$('room').textContent=`${String(levelIndex+1).padStart(2,'0')} / ${String(LVLS.length).padStart(2,'0')}`;$('time').textContent=`${Math.max(0,LOOP-elapsed).toFixed(1)} sn`;$('timefill').style.width=(100*elapsed/LOOP)+'%';$('clones').textContent=`${clones.length} / ${MAX_CLONES}`;$('mode').textContent={menu:'HAZIR',playing:'KAYIT',paused:'DURDU',leveldone:'BAŞARILI',allwon:'TAMAMLANDI',reading:'ARŞİV',decision:'KARAR',auditing:'KANIT',vaulting:'KAYIT KASASI',investigating:'DELİL PANOSU',selecting:'ODA SEÇİMİ'}[mode]||mode;
+ updateCampaignUI();updateProtocolStatus();if(levelIndex===0)$('hint').textContent=currentObjective();$('frequency').disabled=mode!=='playing'||!(level.phantoms||level.reverseEnabled);$('frequency').textContent=level.phantoms?'F · DOĞRULA '+(scannerOn?'AÇIK':'KAPALI'):level.reverseEnabled?'F · '+(reverseMode?'TERS':'NORMAL'):'F · KAPALI';const canInteract=!!(nearWitnessConsole()||nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice());$('interact').disabled=mode!=='playing'||!canInteract;$('interact').textContent=nearWitnessConsole()?'⌁ Kora tanıklığını onayla':nearestSensor()?'⌁ Kanıt topla':nearestAuditConsole()?'⌁ Kanıtları karşılaştır':nearestChoice()?'⌁ Çekirdek kararı':'⌁ Terminali oku';refreshArchiveCount();$('room').textContent=`${String(levelIndex+1).padStart(2,'0')} / ${String(LVLS.length).padStart(2,'0')}`;$('time').textContent=`${Math.max(0,LOOP-elapsed).toFixed(1)} sn`;$('timefill').style.width=(100*elapsed/LOOP)+'%';$('clones').textContent=`${clones.length} / ${MAX_CLONES}`;$('mode').textContent={menu:'HAZIR',playing:'KAYIT',paused:'DURDU',leveldone:'BAŞARILI',allwon:'TAMAMLANDI',reading:'ARŞİV',decision:'KARAR',auditing:'KANIT',inspecting:'YANKI İNCELEME',vaulting:'KAYIT KASASI',investigating:'DELİL PANOSU',selecting:'ODA SEÇİMİ'}[mode]||mode;
 const rem=LOOP-elapsed,critical=mode==='playing'&&rem<=3,anyOpen=level.barriers.some(b=>gateOpen(b.key));
 $('signal-value').textContent=critical?'SON '+Math.ceil(rem)+' SANİYE':mode==='playing'?(level.phantoms&&!scannerOn?'SİNYAL DOĞRULANMADI':level.reverseEnabled&&reverseMode?'TERS KAYIT HAZIR':anyOpen?'GEÇİŞ AÇIK':'KAYIT ALINIYOR'):mode==='allwon'?'PROTOKOL TAMAMLANDI':mode==='decision'?'ONAY BEKLENİYOR':mode==='auditing'?'KANIT DENETİMİ':mode==='reading'?'ARŞİV OKUNUYOR':'SİSTEM BEKLEMEDE';
 $('signal-strip').classList.toggle('critical',critical);syncAtmos();}
