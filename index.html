@@ -662,7 +662,7 @@ function renderChapterRecap(){
  }
 }
 function victory(){
- if(levelIndex===5&&!endingChoice){flash('Çıkış mühürlü. Önce çekirdekte karar vermelisin.');return}
+ if([5,12].includes(levelIndex)&&!endingChoice){flash('Çıkış mühürlü. Önce karar konsolunda seçim yapmalısın.');return}
  const improved=recordVictoryRun();mode='leveldone';playCue('win');pulseFX(player.x,player.y,'#53f3d0',2.3);rewindWash=.4;
  const n=levelIndex+1;
  try{localStorage.setItem('echo12-unlocked',String(Math.max(getUnlocked(),Math.min(n,LVLS.length-1))))}catch(e){}
@@ -687,11 +687,21 @@ function victory(){
    try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
    showOverlay('BÖLÜM III / TERS İZ',kept?'Kayıtların arasında biri var.':'Susturulan hat yeniden konuştu.',
    'Görüntülere karışan OPERATÖR 00 kodu yeni bir kapıya yönlendiriyor. <strong>Görüntü, basınç ve imza</strong> bu kez birbiriyle uyuşmuyor.','KANIT DENETİMİNE GEÇ →');
- }else if(n===LVLS.length){
-   wonAll=true;mode='allwon';archiveRead.add('A12');
+ }else if(levelIndex===10){
+   archiveRead.add('A12');
    try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
    showOverlay('BÖLÜM III / ÜÇ TANIK','OPERATÖR 00 bir kişi olmayabilir.',
-    'Görüntü vardı; fakat onu doğrulayan hiçbir fiziksel veya imzalı kayıt bulunamadı. <strong>00</strong>, kişiden çok sisteme görüntü enjekte eden bir yönetici yetkisi olabilir. Kora bu erişimin kime verildiğini söylememiş. Arşive yeni tutanak eklendi.','BAŞTAN OYNA ↺');
+    'Kameradaki görüntüyü doğrulayan bir fiziksel iz yok. <strong>00</strong> bir yetki başlığı olabilir; şimdi farklı zaman sıralarında kaydedilmiş gerçek hareketlerle bunun izini süreceğiz. <strong>BÖLÜM IV: İZİN SIRASI</strong>','BÖLÜM IV →');
+ }else if(n===LVLS.length){
+   sourceVerdict=endingChoice;wonAll=true;mode='allwon';
+   archiveRead.add(sourceVerdict==='publish'?'A15_PUBLISH':'A15_SEAL');
+   try{localStorage.setItem('echo12-source-verdict',sourceVerdict);localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
+   const isPublic=sourceVerdict==='publish',fromInside=chapterPath!=='cut';
+   showOverlay('BÖLÜM IV / İKİ İMZA',isPublic?'Kanıt artık gizli değil.':'Tanıkların izi korunuyor.',
+     isPublic?
+     (fromInside?'Çekirdekte koruduğun yankıların iki ayrı, gerçek rotası dış incelemeye açıldı. Sahte 00 sinyalinin tek bir kişiye ait olduğu iddiası artık sorgulanabilir. <strong>Ancak yankıların yerini de ortaya çıkardın.</strong>':'Dış hatta ulaştırdığın iki gerçek rotanın kaynağı doğrulandı; 00 kodunun kimlik olmadığına dair kanıt yayımlandı. <strong>İçeride kalan kayıtların yerleri de açığa çıkmış olabilir.</strong>'):
+     (fromInside?'İçeride tuttuğun gerçek kayıtları karantinaya aldın. Tanıkların izi korunuyor; <strong>ama dışarıdaki gözlemciler yönetimin 00 açıklamasına itiraz edemiyor.</strong>':'Dış hat üzerinden iki doğrulanmış kaydı korumalı arşive kilitledin. Bu bir kaçış sağlamadı; <strong>kanıt henüz kamuya çıkmadığı için yönetimin anlatısı sürüyor.</strong>'),
+     'YENİDEN BAŞLA ↺');
  }else{
    showOverlay('GEÇİŞ KİLİDİ AÇILDI','ODA '+String(n).padStart(2,'0')+' TAMAMLANDI',
       clones.length+' yankıyla kapıyı aştın. Bir sonraki protokol seni bekliyor.','SONRAKİ ODA →');
