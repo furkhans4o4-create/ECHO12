@@ -213,7 +213,7 @@ button:focus-visible{outline:3px solid #62f3d3;outline-offset:2px}
 <div class="camera-toolbar" aria-label="Görünüm ayarları"><button type="button" id="camera-toggle" class="secondary" aria-pressed="false">⊙ Yakın takip: kapalı</button><div class="camera-note" id="camera-note">Tam harita görünümü · Kamera ayarını dilediğinde değiştirebilirsin.</div><div class="minimap-box" id="minimap-box" hidden><span class="minimap-heading">HARİTA · TÜM ODA</span><canvas id="minimap" width="216" height="132" role="img" aria-label="Tüm odanın küçük haritası, oyuncu ve açık kapılar"></canvas><span class="minimap-legend">◆ Oyuncu &nbsp; ● Yankı &nbsp; ◇ Çıkış</span></div></div>
 <div class="mobile-controls" aria-label="Dokunmatik oyun kontrolleri"><div class="mobile-controls-info">DOKUNMATİK KONTROL <span>İki yöne aynı anda basarak çapraz yürü</span></div><div class="mobilepad" role="group" aria-label="Yön tuşları"><button type="button" data-dir="ArrowUp" aria-label="Yukarı yürü" aria-pressed="false">↑</button><button type="button" data-dir="ArrowLeft" aria-label="Sola yürü" aria-pressed="false">←</button><button type="button" data-dir="ArrowDown" aria-label="Aşağı yürü" aria-pressed="false">↓</button><button type="button" data-dir="ArrowRight" aria-label="Sağa yürü" aria-pressed="false">→</button><button type="button" id="mobile-record" aria-label="Mevcut döngüyü kaydet">↺<small>KAYDET</small></button></div><div class="mobile-shortcuts"><button type="button" id="mobile-interact" class="secondary">⌁ Etkileşim</button><button type="button" id="mobile-undo" class="secondary">↶ Geri al</button><button type="button" id="mobile-pause" class="secondary">Ⅱ Duraklat</button></div></div>
 <div class="signal-strip" id="signal-strip" aria-label="Canlı sistem durumu"><span>SİSTEM SİNYALİ / <strong id="signal-value">HAZIR</strong></span><span class="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></div>
-<div class="timeline" aria-label="Yankıların zaman çizelgesi"><div class="timeline-head"><span>HAREKET KAYITLARI</span><small>Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas</small></div><canvas id="timeline" width="960" height="155" role="img" aria-label="12 saniyelik hareket ve plaka tetikleme çizelgesi"></canvas></div>
+<div class="timeline" aria-label="Yankıların zaman çizelgesi"><div class="timeline-head"><span>HAREKET KAYITLARI</span><small id="timeline-legend">Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas</small></div><canvas id="timeline" width="960" height="155" role="img" aria-label="12 saniyelik hareket ve plaka tetikleme çizelgesi"></canvas></div>
 <div class="help"><div class="helptext"><kbd>W A S D</kbd> veya <kbd>← ↑ ↓ →</kbd> yürü &nbsp; <kbd>Boşluk</kbd> döngüyü kaydet &nbsp; <kbd>R</kbd> odayı sıfırla &nbsp; <kbd>Z</kbd> son yankıyı sil &nbsp; <kbd>P</kbd> duraklat &nbsp; <kbd>E</kbd> terminal &nbsp; <kbd>L</kbd> arşiv &nbsp; <kbd>M</kbd> ses &nbsp; <kbd>H</kbd> ipucu &nbsp; <kbd>O</kbd> oda seçimi</div>
 <div class="controls"><button class="secondary" id="commit">↺ Yankıyı kaydet</button><button class="secondary" id="undo">↶ Son yankıyı sil</button><button class="secondary" id="restart">↻ Odayı sıfırla</button><button class="secondary" id="interact" disabled>⌁ Terminali oku</button><button class="secondary" id="logbook">▤ Arşiv <span id="archive-count">0/19</span></button><button class="secondary" id="room-select" title="O: açılmış odaları seç">▦ Oda seç</button><button class="secondary" id="help-button" title="H: aşamalı ipucu">? İpucu</button><button class="sound" id="sound">♪ Ses: açık</button><button class="sound" id="frequency" title="F: kayıt doğrulama / ters kayıt" disabled>F · KAPALI</button></div><div id="hint-assist" class="hint-assist hidden" role="status" aria-live="polite"><strong id="hint-step"></strong><span id="hint-body"></span></div></div>
 
@@ -533,7 +533,7 @@ function showDebrief(improved){
  if(improved)tokens.push(['Yeni kişisel rekor','★']);
  for(const [label,value] of tokens){const tag=document.createElement('span');tag.className='debrief-stat'+(label==='Yeni kişisel rekor'?' best':'');tag.textContent=label+': '+value;d.append(tag)}
 }
-function loadLevel(idx){lastProofSignature='';motionTrail=[];needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=11?'BÖLÜM IV / ':idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8,11].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8,11].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
+function loadLevel(idx){lastProofSignature='';motionTrail=[];needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];$('timeline-legend').textContent=level.probes?'Mor: yankı · Yeşil: canlı · A/B: sıralı okuma anları':'Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas';scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=11?'BÖLÜM IV / ':idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8,11].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8,11].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
 
 function closeAuditPanel(){$('audit').classList.add('hidden');$('audit').setAttribute('aria-hidden','true')}
 function nearestSensor(){return (level.sensors||[]).find(v=>Math.hypot(player.x-v.x-.5,player.y-v.y-.5)<.72)||null}
@@ -574,7 +574,7 @@ function confirmDecision(){if(mode!=='decision'||!activeDecision)return;endingCh
  const positive=['keep','publish'].includes(endingChoice);
  flash(levelIndex===12?(endingChoice==='publish'?'Gerçek kayıtlar dış hatta iletildi.':'İzler karantinaya alındı.'):positive?'Tanık kanalı etkin: çekirdeğe geçiş açık.':'Çekirdek susturuldu: dış çıkış açık.');
  pulseFX(player.x,player.y,positive?'#6bead0':'#ff8693',1.8);rewindWash=.45;playCue(positive?'keep':'cut');updateHUD()}
-function showOverlay(kicker,title,body,button){$('chapter-recap').replaceChildren();$('debrief').replaceChildren();$('kicker').textContent=kicker;$('dialog-title').textContent=title;$('dialog-text').innerHTML=body;$('start').textContent=button;$('replay-choice').classList.toggle('visible',mode==='allwon'||(mode==='leveldone'&&levelIndex===5));$('overlay').classList.remove('hidden')}
+function showOverlay(kicker,title,body,button){$('authority-chain').replaceChildren();$('chapter-recap').replaceChildren();$('debrief').replaceChildren();$('kicker').textContent=kicker;$('dialog-title').textContent=title;$('dialog-text').innerHTML=body;$('start').textContent=button;$('replay-choice').classList.toggle('visible',mode==='allwon'||(mode==='leveldone'&&levelIndex===5));$('overlay').classList.remove('hidden')}
 function hideOverlay(){const overlay=$('overlay');overlay.classList.add('hidden');if(overlay.contains(document.activeElement)&&typeof document.activeElement.blur==='function')document.activeElement.blur()}
 function nearestTerminal(){return TERMINALS.find(t=>t.level===levelIndex&&Math.hypot(player.x-t.x-.5,player.y-t.y-.5)<1.13)||null}
 function refreshArchiveCount(){$('archive-count').textContent=archiveRead.size+'/'+ARCHIVE.length}
@@ -688,6 +688,22 @@ function spawnParticle(x,y,color){particles.push({x,y,vx:(Math.random()-.5)*2.4,
 function guardPos(g){const travel=g.y2-g.y1,p=((elapsed*g.speed+g.offset)%(2*travel));return{x:g.x+.5,y:(p<travel?g.y1+p:g.y2-(p-travel))+.5}}
 
 
+
+function renderAuthorityChain(){
+ const el=$('authority-chain');el.replaceChildren();
+ if(levelIndex!==12||!['publish','seal'].includes(sourceVerdict))return;
+ const route=sourceVerdict==='publish';
+ const nodes=[
+  ['01 / GÖRÜNTÜ','00 etiketi kamera hattında görünüyor.',''],
+  ['02 / HAREKET','A→B ve B→A gerçek kayıtlarda ayrı ayrı doğrulandı.',''],
+  ['03 / YETKİ SAHİBİ','00 erişim etiketinin kime verildiği hâlâ bilinmiyor.','unknown'],
+  ['04 / DIŞ HAT',route?'Kayıtlar yayımlandı; tanık izi açığa çıkabilir.':'Kanıt karantinada; dışarıdaki inceleme engellendi.',route?'exposed':'unknown']
+ ];
+ for(const [title,body,state] of nodes){
+  const node=document.createElement('section');node.className='authority-node'+(state?' '+state:'');
+  const a=document.createElement('strong'),b=document.createElement('span');a.textContent=title;b.textContent=body;node.append(a,b);el.append(node);
+ }
+}
 function chapterRecapForRoom(){
  const internal=chapterPath!=='cut';
  if(levelIndex===5)return {
@@ -759,7 +775,7 @@ function victory(){
    showOverlay('GEÇİŞ KİLİDİ AÇILDI','ODA '+String(n).padStart(2,'0')+' TAMAMLANDI',
       clones.length+' yankıyla kapıyı aştın. Bir sonraki protokol seni bekliyor.','SONRAKİ ODA →');
  }
- renderChapterRecap();showDebrief(improved);updateHUD();
+ renderChapterRecap();renderAuthorityChain();showDebrief(improved);updateHUD();
 }
 function step(dt){wallClock+=dt;for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt}particles=particles.filter(p=>p.life>0);
 for(const f of fxRings)f.life-=dt;fxRings=fxRings.filter(f=>f.life>0);rewindWash=Math.max(0,rewindWash-dt*1.6);
@@ -878,7 +894,7 @@ function drawTimeline(){
  const w=960,h=155,left=91,right=933,trackW=right-left;tc.clearRect(0,0,w,h);
  tc.fillStyle='#8fa7bf';tc.font='11px ui-monospace,Consolas,monospace';tc.textAlign='center';
  for(let second=0;second<=12;second+=2){let x=left+trackW*second/12;tc.fillStyle='#8ea3bd';tc.fillText(second+'s',x,13);tc.strokeStyle='#2b4157';tc.beginPath();tc.moveTo(x,19);tc.lineTo(x,148);tc.stroke()}
- let tracks=[...clones.map((c,i)=>({label:(c.reverse?'R':'E')+String(i+1).padStart(2,'0'),samples:c.samples,live:false,reverse:!!c.reverse})),{label:'CANLI',samples:record,live:true,reverse:false}];
+ let tracks=[...clones.map((c,i)=>({label:(c.reverse?'R':'E')+String(i+1).padStart(2,'0'),samples:c.samples,live:false,reverse:!!c.reverse,events:c.proofEvents||[]})),{label:'CANLI',samples:record,live:true,reverse:false,events:traceEvents(record,level.probes)}];
  for(let i=0;i<tracks.length;i++){
   const row=24+i*18,track=tracks[i];tc.textAlign='left';tc.font='bold 11px ui-monospace,monospace';tc.fillStyle=track.live?'#53f3d0':track.label[0]==='R'?'#ffcb97':'#c8b1ff';tc.fillText(track.label,11,row+10);
   tc.fillStyle='#192b3d';tc.fillRect(left,row,trackW,11);
@@ -886,6 +902,12 @@ function drawTimeline(){
   for(let k=1;k<samples.length;k+=5){const sampleAt=i=>samples[track.reverse?Math.max(0,samples.length-1-i):i];const p=sampleAt(k),prev=sampleAt(Math.max(0,k-5)),x=left+trackW*(k/60)/LOOP,width=Math.max(2,trackW*5/720);let moving=Math.hypot(p.x-prev.x,p.y-prev.y)>.04;
    if(moving){tc.fillStyle=track.live?'#3bccad':'#9272d5';tc.fillRect(x,row+1,width,9)}
    if(level.plates.some(plate=>Math.hypot(p.x-plate.x-.5,p.y-plate.y-.5)<.46)){tc.fillStyle='#ffd17e';tc.fillRect(x,row-1,Math.max(3,width),13)}
+  }
+  for(const event of track.events){
+   const xx=left+trackW*event.second/LOOP;
+   tc.fillStyle=event.id==='A'?'#62ddff':'#edb7ff';tc.strokeStyle='#132033';tc.lineWidth=1.3;
+   tc.beginPath();tc.moveTo(xx,row-4);tc.lineTo(xx+7,row+4);tc.lineTo(xx,row+13);tc.lineTo(xx-7,row+4);tc.closePath();tc.fill();tc.stroke();
+   tc.font='bold 9px ui-monospace,Consolas,monospace';tc.textAlign='center';tc.fillStyle='#0b1a26';tc.fillText(event.id,xx,row+7);
   }
  }
  let x=left+trackW*Math.min(1,elapsed/LOOP);tc.strokeStyle='#f3f8ff';tc.lineWidth=2;tc.beginPath();tc.moveTo(x,18);tc.lineTo(x,150);tc.stroke();tc.lineWidth=1;
