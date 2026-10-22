@@ -249,7 +249,7 @@ button:focus-visible{outline:3px solid #62f3d3;outline-offset:2px}
 </head>
 <body>
 <div class="wrap">
-<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 019</div></header>
+<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 020</div></header>
 <div class="topbar">
  <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 19</div></div>
  <div class="stat"><div class="label">Döngüye kalan</div><div class="value teal" id="time">12.0 sn</div><div class="meters"><div class="meter"><i id="timefill"></i></div></div></div>
@@ -276,7 +276,7 @@ button:focus-visible{outline:3px solid #62f3d3;outline-offset:2px}
 <section class="protocol-status" aria-label="Geçit hedefleri"><div class="protocol-status-head"><strong>ANLIK GEÇİT DURUMU</strong><small id="gate-counter">0 / 0 açık</small></div><div class="gate-status-grid" id="gate-status"></div></section>
 <section class="proof-panel" id="proof-panel" hidden aria-label="Sıralı kayıt doğrulama paneli"><div class="protocol-status-head"><strong>İMZA DOĞRULAMA / A VE B GEÇİŞLERİ</strong><small id="proof-status" role="status" aria-live="polite">Kayıt bekleniyor</small></div><p class="proof-help">Parlak A ve B noktalarına <strong>aynı döngü içinde</strong> sırayla dokun. Gerçek yankıyı kaydet; F doğrulayıcısı sahte görüntüleri ayırır.</p><div class="proof-grid"><div><span class="proof-label">BU DÖNGÜDE</span><div id="proof-live" class="proof-sequence">—</div></div><div><span class="proof-label">KAYDEDİLMİŞ İMZALAR</span><div id="proof-records" class="proof-record-list">Henüz yok</div></div></div><div id="proof-evidence" class="proof-evidence">A→B: 0/1</div></section>
 <section id="sync-panel" class="sync-panel" hidden aria-label="İki tanık senkronizasyonu"><div class="protocol-status-head"><strong>ÇİFTE TANIKLIK / AYRI KAYITLAR</strong><small id="sync-verdict" role="status" aria-live="polite">İmza bekleniyor</small></div><div class="sync-grid"><div id="sync-left">I · YANKI BEKLENİYOR</div><div id="sync-right">II · YANKI BEKLENİYOR</div></div><p id="sync-rule">İki farklı yankı aynı anda gerekli.</p></section>
-<footer>BUILD 019 · KAYIT KASASI / ÜÇ FİNAL ARŞİVİ</footer>
+<footer>BUILD 020 · KAMPANYA ROZETLERİ / KAYIT GÜVENİLİRLİĞİ</footer>
 </div>
 <script>
 (()=>{
@@ -583,9 +583,9 @@ function renderRoomSelector(){
  const grid=$('room-picker-grid');grid.replaceChildren();const max=getUnlocked();
  for(let i=0;i<LVLS.length;i++){
   const room=LVLS[i],btn=document.createElement('button');btn.type='button';btn.className='room-tile'+(i===levelIndex?' current':'');btn.dataset.room=String(i);
-  const accessible=i<=max;btn.disabled=!accessible;btn.setAttribute('aria-label',String(i+1)+'. oda: '+room.title+(accessible?'':' (kilitli)'));
+  const accessible=i<=max,completed=clearedRooms.has(i);btn.disabled=!accessible;btn.dataset.cleared=String(completed);btn.setAttribute('aria-label',String(i+1)+'. oda: '+room.title+(completed?' (tamamlandı)':accessible?' (açık)':' (kilitli)'));
   const heading=document.createElement('strong');heading.textContent=String(i+1).padStart(2,'0')+' · '+room.title;
-  const sub=document.createElement('small');const best=readBestRun(i);sub.textContent=accessible?(i===levelIndex?'ŞU ANKİ ODA · ':'AÇIK · ')+(i<=5?'BÖLÜM I':i<=7?'BÖLÜM II':i<=10?'BÖLÜM III':i<=12?'BÖLÜM IV':i<=14?'BÖLÜM V':i<=16?'BÖLÜM VI':'BÖLÜM VII')+(best?' · EN İYİ '+best.echoes+' YANKI':''):'KİLİTLİ · Önceki odaları tamamla';
+  const sub=document.createElement('small');const best=readBestRun(i);sub.textContent=accessible?(completed?(i===levelIndex?'✓ TAMAMLANDI · ŞU ANKİ ODA · ':'✓ TAMAMLANDI · '):i===levelIndex?'ŞU ANKİ ODA · ':'AÇIK · ')+(i<=5?'BÖLÜM I':i<=7?'BÖLÜM II':i<=10?'BÖLÜM III':i<=12?'BÖLÜM IV':i<=14?'BÖLÜM V':i<=16?'BÖLÜM VI':'BÖLÜM VII')+(best?' · EN İYİ '+best.echoes+' YANKI':''):'KİLİTLİ · Önceki odaları tamamla';
   btn.append(heading,sub);btn.addEventListener('click',()=>selectRoom(i));grid.append(btn);
  }
 }
@@ -629,7 +629,7 @@ function snapshotSave(){
   progress:{
    unlocked:getUnlocked(),chapterPath,sourceVerdict,finalVerdict,
    archive:[...archiveRead],endings:[...endingHistory],caseSolved:[...caseSolved],
-   bestRuns:JSON.parse(JSON.stringify(bestRuns)),muted:!soundOn,camera:cameraMode
+   bestRuns:JSON.parse(JSON.stringify(bestRuns)),clearedRooms:[...clearedRooms].sort((a,b)=>a-b),muted:!soundOn,camera:cameraMode
   }
  };
 }
@@ -644,6 +644,13 @@ function validateSave(raw){
  const archiveIds=ARCHIVE.map(a=>a.id),caseIds=CASE_FILES.map(c=>c.id);
  if(!validList(p.archive,archiveIds)||!validList(p.endings,['keep','cut'])||!validList(p.caseSolved,caseIds))throw Error('Arşiv veya delil kayıtları geçersiz.');
  if(typeof p.muted!=='boolean'||!['focus','overview'].includes(p.camera))throw Error('Tercih bilgileri geçersiz.');
+ let restoredClears;
+ if(p.clearedRooms===undefined){
+  restoredClears=Array.from({length:p.unlocked},(_,i)=>i);
+  if(p.finalVerdict&&p.unlocked===LVLS.length-1)restoredClears.push(LVLS.length-1);
+ }else if(Array.isArray(p.clearedRooms)&&p.clearedRooms.length<=LVLS.length&&p.clearedRooms.every(i=>Number.isInteger(i)&&i>=0&&i<LVLS.length&&i<=p.unlocked)){
+  restoredClears=[...new Set(p.clearedRooms)].sort((a,b)=>a-b);
+ }else throw Error('Tamamlanan oda kayıtları geçersiz.');
  if(!p.bestRuns||typeof p.bestRuns!=='object'||Array.isArray(p.bestRuns))throw Error('Oda rekorları geçersiz.');
  const cleanedRuns=Object.create(null);
  for(const [key,v] of Object.entries(p.bestRuns)){
@@ -662,7 +669,7 @@ function validateSave(raw){
  return {
   unlocked:p.unlocked,chapterPath:p.chapterPath,sourceVerdict:p.sourceVerdict,finalVerdict:p.finalVerdict,
   archive,endings:[...new Set(p.endings)],caseSolved:deduced,
-  bestRuns:cleanedRuns,muted:p.muted,camera:p.camera
+  bestRuns:cleanedRuns,clearedRooms:restoredClears,muted:p.muted,camera:p.camera
  };
 }
 function applySave(raw){
@@ -676,12 +683,27 @@ function applySave(raw){
   'echo12-endings':JSON.stringify(restored.endings),
   'echo12-case-deductions':JSON.stringify(restored.caseSolved),
   'echo12-best-runs':JSON.stringify(restored.bestRuns),
+  'echo12-room-clears':JSON.stringify(restored.clearedRooms),
   'echo12-muted':restored.muted?'1':'0',
   'echo12-camera-mode':restored.camera
  };
- for(const [key,value] of Object.entries(values)){
-  if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);
+ // Prepare an in-memory rollback snapshot before changing a single saved key.
+ const original=Object.create(null);
+ for(const key of Object.keys(values))original[key]=localStorage.getItem(key);
+ try{
+  for(const [key,value] of Object.entries(values)){
+   if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);
+  }
+ }catch(error){
+  let rollbackFailed=false;
+  for(const [key,value] of Object.entries(original)){
+   try{if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value)}
+   catch(e){rollbackFailed=true}
+  }
+  if(rollbackFailed)throw Error('Geri yükleme kesildi, önceki kayıtları geri yazma da başarısız oldu.');
+  throw Error('Kayıt yazılamadı. Önceki kayıtlar korundu.');
  }
+ clearedRooms=new Set(restored.clearedRooms);
  archiveRead=new Set(restored.archive);endingHistory=new Set(restored.endings);caseSolved=new Set(restored.caseSolved);
  chapterPath=restored.chapterPath;sourceVerdict=restored.sourceVerdict;finalVerdict=restored.finalVerdict;
  bestRuns=restored.bestRuns;soundOn=!restored.muted;cameraMode=restored.camera;
@@ -692,7 +714,7 @@ function applySave(raw){
  return restored;
 }
 function renderVault(){
- $('vault-progress').textContent=(getUnlocked()+1)+' / '+LVLS.length+' ODA AÇIK · '+archiveRead.size+' / '+ARCHIVE.length+' ARŞİV · '+caseSolved.size+'/3 DELİL · '+Object.keys(bestRuns).length+' ODA REKORU';
+ $('vault-progress').textContent=(getUnlocked()+1)+' / '+LVLS.length+' ODA AÇIK · '+archiveRead.size+' / '+ARCHIVE.length+' ARŞİV · '+caseSolved.size+'/3 DELİL · '+Object.keys(bestRuns).length+' ODA REKORU · '+clearedRooms.size+'/'+LVLS.length+' TAMAMLANDI';
  const found=new Set([...archiveRead].filter(id=>id.startsWith('F01_')));
  const endings=[['F01_PURGE','00 anahtarını iptal et'],['F01_PRESERVE','Kayıtları koru'],['F01_REVIEW','Bağımsız incelemeye aktar']];
  const list=$('vault-endings');list.replaceChildren();
@@ -797,16 +819,27 @@ const ROOM_BRIEFS=[
  'Zaman farkı doğru tek bir kaydı ve aynı anda ikinci gerçek yankıyı birlikte kullan.',
  'İki ters yönlü gerçek imzayı kanıtla ve ardından son yetki kararını bilinçli olarak ver.'
 ];
+let clearedRooms=new Set();
+try{
+ const value=localStorage.getItem('echo12-room-clears');
+ if(value===null){
+  for(let i=0;i<getUnlocked();i++)clearedRooms.add(i);
+  if(finalVerdict)clearedRooms.add(LVLS.length-1);
+ }else{
+  const saved=JSON.parse(value);
+  if(Array.isArray(saved))for(const i of saved)if(Number.isInteger(i)&&i>=0&&i<LVLS.length&&i<=getUnlocked())clearedRooms.add(i);
+ }
+}catch(e){}
 let roomActiveSeconds=0,runHintCount=0,lastGateSignature='',bestRuns={};
 try{const saved=JSON.parse(localStorage.getItem('echo12-best-runs')||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))bestRuns=saved}catch(e){}
 function chapterFor(index){return CHAPTER_INFO.find(c=>index>=c.from&&index<=c.to)||CHAPTER_INFO[0]}
 function updateCampaignUI(){
  const c=chapterFor(levelIndex);$('chapter-label').textContent=c.label;
  $('campaign-counter').textContent=String(levelIndex+1).padStart(2,'0')+' / '+String(LVLS.length).padStart(2,'0');
- const grid=$('campaign-segments'),signature=levelIndex+':'+getUnlocked();
+ const grid=$('campaign-segments'),signature=levelIndex+':'+getUnlocked()+':'+[...clearedRooms].sort((a,b)=>a-b).join(',');
  if(grid.dataset.signature===signature)return;
  grid.dataset.signature=signature;grid.replaceChildren();const max=getUnlocked();
- for(let i=0;i<LVLS.length;i++){const cell=document.createElement('span');cell.className='campaign-cell'+(i<max?' finished':'')+(i===levelIndex?' active':'')+([6,8,11,13,15,17].includes(i)?' chapter-break':'');grid.append(cell)}
+ for(let i=0;i<LVLS.length;i++){const cell=document.createElement('span');cell.className='campaign-cell'+(clearedRooms.has(i)?' finished':'')+(i===levelIndex?' active':'')+([6,8,11,13,15,17].includes(i)?' chapter-break':'');grid.append(cell)}
 }
 function gateCondition(barrier){
  const key=barrier.key,open=gateOpen(key),p=level.plates.find(x=>x.key===key);
@@ -1110,7 +1143,7 @@ function renderChapterRecap(){
 }
 function victory(){
  if([5,12,18].includes(levelIndex)&&!endingChoice){flash('Çıkış mühürlü. Önce karar konsolunda seçim yapmalısın.');return}
- const improved=recordVictoryRun();mode='leveldone';playCue('win');pulseFX(player.x,player.y,'#53f3d0',2.3);rewindWash=.4;
+ const improved=recordVictoryRun();clearedRooms.add(levelIndex);try{localStorage.setItem('echo12-room-clears',JSON.stringify([...clearedRooms].sort((a,b)=>a-b)))}catch(e){}mode='leveldone';playCue('win');pulseFX(player.x,player.y,'#53f3d0',2.3);rewindWash=.4;
  const n=levelIndex+1;
  try{localStorage.setItem('echo12-unlocked',String(Math.max(getUnlocked(),Math.min(n,LVLS.length-1))))}catch(e){}
  for(let i=0;i<40;i++)spawnParticle(player.x,player.y,i%2?'#53f3d0':'#ba9dff');
