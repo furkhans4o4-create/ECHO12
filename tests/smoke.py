@@ -334,6 +334,9 @@ def main():
             assert page.locator('#room').inner_text()=='12 / 13'
             assert 'BÖLÜM IV' in page.locator('#chapter-label').inner_text()
             assert page.locator('#frequency').is_enabled()
+            assert page.locator('#proof-panel').is_visible()
+            assert 'A/B: sıralı okuma anları' in page.locator('#timeline-legend').inner_text()
+            assert 'F İLE DOĞRULA' in page.locator('#proof-evidence').inner_text()
             assert not page.evaluate("window.__echo12Test.gate('PROOF')")
             page.keyboard.press('f')
             page.evaluate("window.__echo12Test.tick(.3)")
@@ -345,9 +348,14 @@ def main():
             page.keyboard.press('f')
             assert not page.evaluate("window.__echo12Test.gate('PROOF')"),'B to A must not satisfy A to B'
             assert 'A→B 0/1' in page.locator('#gate-status').inner_text()
+            assert 'B→A' in page.locator('#proof-records').inner_text()
+            assert 'A→B 0/1' in page.locator('#proof-evidence').inner_text()
             # A different real trace goes A then B.
             move(page,'d',1.729);move(page,'w',.493);move(page,'d',.247);move(page,'s',.986);commit(page)
             assert page.evaluate("window.__echo12Test.gate('PROOF')"),'Recorded A to B unlocks proof when scanner is on'
+            assert 'A→B' in page.locator('#proof-records').inner_text()
+            assert page.locator('#proof-evidence').evaluate("(e)=>e.classList.contains('valid')")
+            assert 'GERÇEK İMZA ONAYLANDI' in page.locator('#proof-status').inner_text()
             assert page.locator('#gate-counter').inner_text()=='1 / 2 açık' or page.locator('#gate-counter').inner_text()=='2 / 2 açık'
             move(page,'d',3.45)
             verify(page,errors,'BAŞARILI')
@@ -364,8 +372,13 @@ def main():
             page.keyboard.press('f')
             assert not page.evaluate("window.__echo12Test.gate('PROOF')"),'Only forward trace is insufficient in final chamber'
             assert 'A→B 1/1' in page.locator('#gate-status').inner_text()
+            assert 'A→B 1/1' in page.locator('#proof-evidence').inner_text()
+            assert 'B→A 0/1' in page.locator('#proof-evidence').inner_text()
             move(page,'d',1.976);move(page,'s',.493);move(page,'w',.986);move(page,'a',.247);commit(page)
             assert page.evaluate("window.__echo12Test.gate('PROOF')")
+            assert page.locator('#proof-evidence').evaluate("(e)=>e.classList.contains('valid')")
+            assert page.locator('#proof-records .proof-record.verified').count()==2
+            assert 'B→A 1/1' in page.locator('#proof-evidence').inner_text()
             assert page.locator('#gate-counter').inner_text() in ('1 / 3 açık','2 / 3 açık')
             page.evaluate("window.__echo12Test.teleport(14.5,2.5)")
             page.keyboard.press('e')
@@ -383,6 +396,10 @@ def main():
             assert 'AÇIK KALAN SORU' in page.locator('#chapter-recap').inner_text()
             assert 'yerini' in page.locator('#chapter-recap').inner_text().lower()
             assert page.locator('#archive-count').inner_text().endswith('/19')
+            assert page.locator('#authority-chain .authority-node').count()==4
+            assert 'kime verildiği' in page.locator('#authority-chain').inner_text().lower()
+            assert page.locator('#authority-chain .exposed').count()==1
+            assert 'dışarı' in page.locator('#authority-chain').inner_text().lower()
             page.locator('#replay-choice').click()
             verify(page,errors,'KAYIT')
             assert page.locator('#room').inner_text()=='13 / 13'
@@ -397,6 +414,9 @@ def main():
             assert 'A15_SEAL' in page.evaluate("localStorage.getItem('echo12-archive')")
             assert 'A15_PUBLISH' in page.evaluate("localStorage.getItem('echo12-archive')")
             assert 'yönetimin' in page.locator('#chapter-recap').inner_text().lower()
+            assert page.locator('#authority-chain .authority-node').count()==4
+            assert page.locator('#authority-chain .exposed').count()==0
+            assert 'karantinada' in page.locator('#authority-chain').inner_text().lower()
             assert not errors,errors
             page.close()
             print('PASS room 13: dual ordered proofs, irreversible routing choice and replayable outcomes')
