@@ -786,7 +786,7 @@ def main():
             assert page.locator('#case-board').is_hidden()
             page.keyboard.press('l')
             verify(page,errors,'ARŞİV')
-            assert page.locator('#archive-list button').count()==30
+            assert page.locator('#archive-list button').count()==35
             assert page.locator('#archive-list button').filter(has_text='ÇIKARIM 03').count()==1
             assert not errors, errors
             page.close()
