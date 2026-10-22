@@ -883,6 +883,62 @@ def main():
             page.close()
             print('PASS Build 019: offline backup, corrupt JSON rejection, save normalization and discovered finales')
 
+            # Build 021: echo inspector pauses physical simulation while allowing deterministic
+            # seeking into any recorded ghost, including a selected reverse echo.
+            page, errors = load(browser, 0)
+            page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.12)")
+            commit(page)
+            page.evaluate("window.__echo12Test.tick(.24)")
+            base=page.evaluate("""() => ({elapsed,position:{...player},record:record.length,echoes:clones.length})""")
+            assert base['echoes']==1
+            page.keyboard.press('i')
+            verify(page,errors,'YANKI İNCELEME')
+            assert page.locator('#inspector').is_visible()
+            assert page.locator('#inspector-echo option').count()==3
+            assert '1 / 6 yankı' in page.locator('#inspector-count').inner_text()
+            assert page.locator('#inspector-map').get_attribute('width')=='864'
+            assert page.locator('#inspector-map').evaluate("(e)=>e.getContext('2d').getImageData(0,0,1,1).data[3]")==255
+            page.locator('#inspector-echo').select_option('0')
+            assert 'E01' in page.locator('#inspector-status').inner_text()
+            page.locator('#inspector-forward').click()
+            time1=page.evaluate("inspectorTime")
+            assert time1>base['elapsed']
+            page.locator('#inspector-scrub').evaluate("""e => {e.value='10.5';e.dispatchEvent(new Event('input',{bubbles:true}))}""")
+            assert abs(page.evaluate("inspectorTime")-10.5)<.001
+            assert '10,5 / 12,0 sn' in page.locator('#inspector-clock').inner_text()
+            page.locator('#inspector-scrub').focus()
+            page.keyboard.press('ArrowRight')
+            assert page.evaluate("inspectorTime")>10.5,'Keyboard scrubber must receive arrow keys'
+            page.evaluate("window.__echo12Test.tick(.7)")
+            after=page.evaluate("""() => ({elapsed,position:{...player},record:record.length,echoes:clones.length})""")
+            assert base==after,(base,after)
+            page.keyboard.press('Escape')
+            verify(page,errors,'KAYIT')
+            assert page.locator('#inspector').is_hidden()
+            page.keyboard.press('p')
+            verify(page,errors,'DURDU')
+            page.keyboard.press('i')
+            verify(page,errors,'YANKI İNCELEME')
+            page.keyboard.press('Escape')
+            verify(page,errors,'DURDU')
+            page.keyboard.press('p')
+            verify(page,errors,'KAYIT')
+            assert not errors,errors
+            page.close()
+
+            page, errors = load(browser, 9)
+            page.keyboard.press('f')
+            page.evaluate("window.__echo12Test.tick(.3)")
+            commit(page)
+            page.keyboard.press('i')
+            assert 'TERS' in page.locator('#inspector-echo option').all_inner_texts()[1]
+            page.locator('#inspector-echo').select_option('0')
+            assert 'TERS' in page.locator('#inspector-status').inner_text()
+            assert not errors,errors
+            page.close()
+            print('PASS Build 021: modal pause, selectable and reversed echo paths, nonmutating 12s scrubbing and keyboard')
+
             # Verify display and audio feedback without changing a real puzzle solution.
             page, errors = load(browser, 0)
             page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
