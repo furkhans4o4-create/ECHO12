@@ -1066,13 +1066,13 @@ def main():
             page,errors=load(browser,10)
             # Use the non-gameplay test hook for the audit dialog without
             # depending on map traversal, and verify its focus return.
-            page.locator('#interact').evaluate("(e)=>e.focus()")
+            page.locator('#logbook').evaluate("(e)=>e.focus()")
             page.evaluate("window.__echo12Test.openAudit()")
             verify(page,errors,'KANIT')
             assert page.evaluate("document.activeElement?.id")=='audit-close'
             page.keyboard.press('Escape')
             verify(page,errors,'KAYIT')
-            assert page.evaluate("document.activeElement?.id")=='interact'
+            assert page.evaluate("document.activeElement?.id")=='logbook'
             assert not errors,errors
             page.close()
             print('PASS Build 023: focus stays within six modal dialogs and returns to opening controls')
