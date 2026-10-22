@@ -24,7 +24,7 @@ def load(browser, level):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -133,7 +133,7 @@ def main():
             page.keyboard.press("e")
             assert page.locator("#mode").inner_text() == "ARŞİV"
             assert "PERSONEL NO. 12" in page.locator("#archive-body").inner_text()
-            assert page.locator("#archive-count").inner_text() == "1/27"
+            assert page.locator("#archive-count").inner_text() == "1/30"
             saved = page.locator("#time").inner_text()
             page.evaluate("window.__echo12Test.tick(1.5)")
             assert page.locator("#time").inner_text() == saved, "Archive must pause simulation"
@@ -187,13 +187,13 @@ def main():
             assert 'Kimse cevap vermedi' in page.locator('#dialog-title').inner_text()
             assert set(page.evaluate("JSON.parse(localStorage.getItem('echo12-endings'))"))=={'cut','keep'}
             assert 'çekirdeği susturdun' in page.locator('#chapter-recap').inner_text().lower()
-            assert page.locator('#archive-count').inner_text()=='2/27'
+            assert page.locator('#archive-count').inner_text()=='2/30'
             saved=page.evaluate('JSON.stringify(window.__echo12Store)')
             html=page.evaluate('document.documentElement.outerHTML')
             html=html.replace('window.__echo12Store ??= {};','window.__echo12Store = '+saved+';')
             page.set_content(html,wait_until='load')
             page.locator('#logbook').click()
-            assert '2 / 27' in page.locator('#archive-status').inner_text()
+            assert '2 / 30' in page.locator('#archive-status').inner_text()
             verify(page,errors,'ARŞİV')
             page.close()
             print('PASS persisted endings: both results recoverable from storage')
@@ -235,7 +235,7 @@ def main():
             assert page.evaluate("window.__echo12Test.gate('P')")
             move(page,'d',1.6)
             verify(page,errors,'BAŞARILI')
-            assert page.locator('#archive-count').inner_text().endswith('/27')
+            assert page.locator('#archive-count').inner_text().endswith('/30')
             assert 'BÖLÜM II' in page.locator('#kicker').inner_text()
             assert 'üçüncü silueti' in page.locator('#chapter-recap').inner_text().lower()
             page.close()
@@ -281,7 +281,7 @@ def main():
             move(page,'d',3.5)
             verify(page,errors,'BAŞARILI')
             assert 'OPERATÖR 00' in page.locator('#dialog-text').inner_text()
-            assert page.locator('#archive-count').inner_text().endswith('/27')
+            assert page.locator('#archive-count').inner_text().endswith('/30')
             page.close()
             print('PASS room 10: reverse replay, forward-only gate, chapter III handoff')
 
@@ -325,7 +325,7 @@ def main():
             verify(page,errors,'BAŞARILI')
             assert 'yetki başlığı' in page.locator('#dialog-text').inner_text()
             assert 'OPERATÖR 00' in page.locator('#chapter-recap').inner_text()
-            assert page.locator('#archive-count').inner_text().endswith('/27')
+            assert page.locator('#archive-count').inner_text().endswith('/30')
             page.close()
             print('PASS room 11: evidence triage and chapter IV transition')
 
@@ -359,7 +359,7 @@ def main():
             assert page.locator('#gate-counter').inner_text()=='1 / 2 açık' or page.locator('#gate-counter').inner_text()=='2 / 2 açık'
             move(page,'d',3.45)
             verify(page,errors,'BAŞARILI')
-            assert page.locator('#archive-count').inner_text().endswith('/27')
+            assert page.locator('#archive-count').inner_text().endswith('/30')
             page.close()
             print('PASS room 12: real ordered provenance, rejected inversion and scanner verification')
 
@@ -393,7 +393,7 @@ def main():
             verify(page,errors,'BAŞARILI')
             assert page.evaluate("localStorage.getItem('echo12-source-verdict')")=='publish'
             assert 'BÖLÜM V' in page.locator('#start').inner_text()
-            assert page.locator('#archive-count').inner_text().endswith('/27')
+            assert page.locator('#archive-count').inner_text().endswith('/30')
             page.close()
             print('PASS room 13: dual real imprints and chapter V handoff')
 
@@ -417,7 +417,7 @@ def main():
             assert page.locator('#proof-evidence').evaluate("(e)=>e.classList.contains('valid')")
             move(page,'d',3.45)
             verify(page,errors,'BAŞARILI')
-            assert page.locator('#archive-count').inner_text().endswith('/27')
+            assert page.locator('#archive-count').inner_text().endswith('/30')
             assert not errors,errors
             page.close()
             print('PASS room 14: attestation gap rejects fast spoof and accepts measured movement')
@@ -443,7 +443,7 @@ def main():
             verify(page,errors,'BAŞARILI')
             assert 'İki yankı' in page.locator('#dialog-title').inner_text()
             assert 'A18_PUBLIC' in page.evaluate("localStorage.getItem('echo12-archive')")
-            assert page.locator('#archive-count').inner_text().endswith('/27')
+            assert page.locator('#archive-count').inner_text().endswith('/30')
             assert page.locator('#authority-chain .authority-node').count()==4
             page.close()
             print('PASS room 15 public: synchronized two-echo route and chapter V result')
@@ -524,7 +524,7 @@ def main():
                 page.evaluate("window.__echo12Test.tick(.04)")
                 verify(page,errors,'TAMAMLANDI')
                 assert ('A21_PUBLIC' if route=='publish' else 'A21_SEALED') in page.evaluate("localStorage.getItem('echo12-archive')")
-                assert page.locator('#archive-count').inner_text().endswith('/27')
+                assert page.locator('#archive-count').inner_text().endswith('/30')
                 assert 'KORA' in page.locator('#kicker').inner_text()
                 assert 'AÇIK KALAN SORU' in page.locator('#chapter-recap').inner_text()
                 assert not errors,errors
@@ -663,6 +663,56 @@ def main():
             assert not errors, errors
             page.close()
             print('PASS Build 012: focus camera, full-map minimap, follow origin, manual overview and preference')
+
+            # Build 017: three independent evidence cases are locked until their actual archive sources are found.
+            page, errors = load(browser, 0)
+            assert page.locator('#case-board-count').inner_text()=='0/3'
+            page.keyboard.press('k')
+            verify(page,errors,'DELİL PANOSU')
+            assert page.locator('#case-grid .case-item').count()==3
+            assert page.locator('[data-case-id="C01"] .case-options button').first.is_disabled()
+            frozen=page.locator('#time').inner_text()
+            page.evaluate("window.__echo12Test.tick(1.2)")
+            assert page.locator('#time').inner_text()==frozen, 'Case board must pause active loop'
+            page.keyboard.press('Escape')
+            verify(page,errors,'KAYIT')
+            assert page.locator('#case-board').is_hidden()
+            page.evaluate("window.__echo12Test.grantEvidence(['A09'])")
+            page.keyboard.press('k')
+            assert page.locator('[data-case-id="C01"] .case-options button').first.is_disabled(), 'Both sources must be present'
+            page.keyboard.press('Escape')
+            page.evaluate("window.__echo12Test.grantEvidence(['A12'])")
+            page.keyboard.press('k')
+            assert page.locator('[data-case-id="C01"] .case-options button').first.is_enabled()
+            page.locator('[data-case-id="C01"] .case-options button').first.click()
+            assert page.locator('#case-board-count').inner_text()=='0/3', 'Wrong inference must not grant reward'
+            assert 'Henüz doğrulanamadı' in page.locator('[data-case-id="C01"] .case-feedback').inner_text()
+            page.locator('[data-case-id="C01"] .case-options button').nth(1).click()
+            assert page.locator('#case-board-count').inner_text()=='1/3'
+            assert 'D01' in page.evaluate("localStorage.getItem('echo12-archive')")
+            assert 'C01' in page.evaluate("localStorage.getItem('echo12-case-deductions')")
+            assert page.locator('[data-case-id="C01"] .case-options button').first.is_disabled()
+            assert page.locator('[data-case-id="C02"] .case-options button').first.is_disabled()
+            page.keyboard.press('Escape')
+            page.evaluate("window.__echo12Test.grantEvidence(['A14','A17','A19','A20'])")
+            page.keyboard.press('k')
+            page.locator('[data-case-id="C02"] .case-options button').nth(1).click()
+            page.locator('[data-case-id="C03"] .case-options button').nth(1).click()
+            assert page.locator('#case-progress').inner_text().startswith('3 / 3')
+            assert page.locator('#case-board-count').inner_text()=='3/3'
+            assert page.locator('#archive-count').inner_text().endswith('/30')
+            for name in ['D01','D02','D03']:
+                assert name in page.evaluate("localStorage.getItem('echo12-archive')")
+            page.keyboard.press('k')
+            verify(page,errors,'KAYIT')
+            assert page.locator('#case-board').is_hidden()
+            page.keyboard.press('l')
+            verify(page,errors,'ARŞİV')
+            assert page.locator('#archive-list button').count()==30
+            assert page.locator('#archive-list button').filter(has_text='ÇIKARIM 03').count()==1
+            assert not errors, errors
+            page.close()
+            print('PASS Build 017: source-gated independent casework, wrong answer rejection, persistent files and paused modal')
 
             # Verify display and audio feedback without changing a real puzzle solution.
             page, errors = load(browser, 0)
