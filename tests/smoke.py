@@ -85,6 +85,8 @@ def main():
             move(page, "d", .99); move(page, "w", .49); commit(page)
             move(page, "d", 3.4)
             verify(page, errors, "BAŞARILI")
+            assert page.evaluate("JSON.parse(localStorage.getItem('echo12-room-clears'))")==[0]
+            assert page.locator('#campaign-segments .campaign-cell.finished').count()==1
             record=page.evaluate("JSON.parse(localStorage.getItem('echo12-best-runs'))")
             assert record['0']['echoes']==1 and record['0']['seconds']>0, record
             assert page.locator('#debrief .debrief-stat').count() >= 3
@@ -92,6 +94,8 @@ def main():
             assert page.locator('#gate-counter').inner_text() == '1 / 1 açık'
             page.locator('#room-select').click()
             assert 'EN İYİ 1 YANKI' in page.locator('[data-room="0"]').inner_text()
+            assert page.locator('[data-room="0"]').get_attribute('data-cleared')=='true'
+            assert 'TAMAMLANDI' in page.locator('[data-room="0"]').inner_text()
             page.keyboard.press('Escape')
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
@@ -805,6 +809,7 @@ def main():
             saved=page.evaluate("window.__echo12Test.save()")
             assert saved['format']=='ECHO12_SAVE_V1' and saved['version']==1
             assert saved['progress']['unlocked']==0
+            assert saved['progress']['clearedRooms']==[]
             assert page.evaluate("""() => {try{window.__echo12Test.validate({format:'evil'});return false}catch(e){return true}}""")
             page.keyboard.press('Escape')
             verify(page,errors,'KAYIT')
@@ -822,23 +827,55 @@ def main():
             backup['progress'].update({
                 'unlocked':4,'chapterPath':'cut','sourceVerdict':'seal','finalVerdict':'review',
                 'archive':['A09','A12','D01','F01_REVIEW'],'endings':['cut'],'caseSolved':['C01'],
-                'bestRuns':{'0':{'echoes':2,'seconds':19.1,'hints':0}},'muted':True,'camera':'overview'
+                'bestRuns':{'0':{'echoes':2,'seconds':19.1,'hints':0}},'clearedRooms':[0,1,3],'muted':True,'camera':'overview'
             })
             assert page.evaluate("""data => {try{
                 const copy=JSON.parse(JSON.stringify(data));copy.progress.bestRuns['0'].seconds=-5;
                 window.__echo12Test.restore(copy);return false;
               }catch(e){return true}}""",backup)
             assert page.evaluate("localStorage.getItem('echo12-unlocked')") is None
+            # An invalid completed room can never exceed the unlocked range.
+            assert page.evaluate("""data=>{try{
+                const x=JSON.parse(JSON.stringify(data));x.progress.clearedRooms=[0,18];
+                window.__echo12Test.validate(x);return false
+            }catch(e){return true}}""",backup)
+            # Backwards compatibility: v1 backups without explicit completion metadata.
+            legacy=page.evaluate("""data=>{
+                const x=JSON.parse(JSON.stringify(data));delete x.progress.clearedRooms;
+                return window.__echo12Test.validate(x).clearedRooms
+            }""",backup)
+            assert legacy==[0,1,2,3],legacy
+            # Simulate storage quota failure partway through the commit.
+            # Restoring must roll back *all* previous fields and leave in-memory game state intact.
+            assert page.evaluate("""data=>{
+                const before=JSON.stringify(window.__echo12Store),original=localStorage.setItem;
+                let failed=false;
+                localStorage.setItem=function(k,v){
+                    if(k==='echo12-best-runs'&&!failed){failed=true;throw Error('storage full')}
+                    return original.call(this,k,v)
+                };
+                try{window.__echo12Test.restore(data);return false}
+                catch(e){return JSON.stringify(window.__echo12Store)===before&&
+                  window.__echo12Test.save().progress.unlocked===0}
+                finally{localStorage.setItem=original}
+            }""",backup), 'Partial quota failures must be fully rolled back'
             page.evaluate("data=>window.__echo12Test.restore(data)",backup)
             verify(page,errors,'KAYIT')
             assert page.locator('#room').inner_text()=='05 / 19'
             assert page.locator('#case-board-count').inner_text()=='1/3'
             assert page.locator('#archive-count').inner_text()=='4/35'
+            assert page.evaluate("JSON.parse(localStorage.getItem('echo12-room-clears'))")==[0,1,3]
+            assert page.locator('#campaign-segments .campaign-cell.finished').count()==3
+            page.locator('#room-select').click()
+            assert page.locator('[data-room="2"]').get_attribute('data-cleared')=='false'
+            assert page.locator('[data-room="3"]').get_attribute('data-cleared')=='true'
+            page.keyboard.press('Escape')
             assert page.evaluate("localStorage.getItem('echo12-final-verdict')")=='review'
             assert page.evaluate("localStorage.getItem('echo12-muted')")=='1'
             assert page.evaluate("JSON.parse(localStorage.getItem('echo12-best-runs'))['0'].echoes")==2
             page.keyboard.press('b')
             assert page.locator('#vault-endings .vault-ending.earned').count()==1
+            assert '3/19 TAMAMLANDI' in page.locator('#vault-progress').inner_text()
             assert 'Bağımsız incelemeye aktar' in page.locator('#vault-endings').inner_text()
             page.keyboard.press('Escape')
             verify(page,errors,'KAYIT')
