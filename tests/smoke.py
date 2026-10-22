@@ -331,7 +331,7 @@ def main():
 
             # Build 013: a forged silhouette and a wrong-order trace cannot certify identity.
             page, errors = load(browser, 11)
-            assert page.locator('#room').inner_text()=='12 / 15'
+            assert page.locator('#room').inner_text()=='12 / 17'
             assert 'BÖLÜM IV' in page.locator('#chapter-label').inner_text()
             assert page.locator('#frequency').is_enabled()
             assert page.locator('#proof-panel').is_visible()
@@ -365,7 +365,7 @@ def main():
 
             # Build 013: two independently recorded opposite directions, then a lasting choice.
             page, errors = load(browser, 12)
-            assert page.locator('#room').inner_text()=='13 / 15'
+            assert page.locator('#room').inner_text()=='13 / 17'
             assert not page.evaluate("window.__echo12Test.gate('PROOF')")
             move(page,'d',.493);move(page,'w',.493);commit(page)
             move(page,'d',1.73);move(page,'w',.493);move(page,'d',.247);move(page,'s',.986);commit(page)
