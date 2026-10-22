@@ -512,10 +512,12 @@ function updateCampaignUI(){
 }
 function gateCondition(barrier){
  const key=barrier.key,open=gateOpen(key),p=level.plates.find(x=>x.key===key);
- if(open)return {open:true,reason:key==='OUT'?'Karar onaylandı':key==='AUDIT'?'Kanıt karşılaştırıldı':'Etkin'};
+ if(open)return {open:true,reason:key==='OUT'?'Karar onaylandı':key==='AUDIT'?'Kanıt karşılaştırıldı':key==='STAMP'?'Zaman damgası doğrulandı':'Etkin'};
  if(key==='OUT')return {open:false,reason:'Konsolda karar ver'};
  if(key==='AUDIT')return {open:false,reason:'Kanıt '+auditEvidence.size+'/3'+(auditEvidence.size===3?' · hüküm bekleniyor':'')};
  if(key==='PROOF'){const q=verifiedTraceCounts();return {open:false,reason:level.dualProof?'A→B '+Math.min(1,q.forward)+'/1 · B→A '+Math.min(1,q.backward)+'/1'+(!scannerOn?' · F kapalı':''):!scannerOn?'F · doğrulayıcı kapalı':'A→B '+Math.min(1,q.forward)+'/1 kayıt'};}
+ if(key==='STAMP')return {open:false,reason:!scannerOn?'F · doğrulayıcı kapalı':'Zaman damgası '+Math.min(1,timedSignatureCount())+'/1'};
+ if(key==='ROUTE'){const p=level.plates.find(p=>p.key===key);return {open:false,reason:sourceVerdict==='publish'?'Yankı '+Math.min(2,liveRelayCount(p))+'/2 · 3 sn röle':'Canlı temas · 3 sn röle'};}
  if(!p)return {open:false,reason:'Kayıt bekleniyor'};
  if(p.echoCount)return {open:false,reason:'Yankı '+Math.min(p.echoCount,plateOccupancy(p).echoes)+'/'+p.echoCount};
  if(p.needsScan)return {open:false,reason:scannerOn?'Doğrulanmış yankı gerekli':'F · doğrulayıcı kapalı'};
@@ -614,7 +616,7 @@ function closeArchive(){if(mode!=='reading')return;$('archive').classList.add('h
 function interactTerminal(){if(mode!=='playing')return;const sensor=nearestSensor();if(sensor){scanSensor(sensor);return}if(nearestAuditConsole()){openAuditPanel();return}const choice=nearestChoice();if(choice){openDecision(choice);return}const terminal=nearestTerminal();if(terminal)openArchive(terminal.entry);else flash('Bir terminale veya konsola yaklaş.')}
 function startGame(){if(wonAll){loadLevel(0)}else if(mode==='menu'){loadLevel(getUnlocked())}else if(mode==='leveldone'){loadLevel(Math.min(levelIndex+1,LVLS.length-1))}else if(mode==='allwon'){loadLevel(0)}else if(mode==='paused'){mode='playing'}hideOverlay();audioBeep(700)}
 function resetPlayer(){motionTrail=[];needsRedraw=true;player={x:level.start[0]+.5,y:level.start[1]+.5};elapsed=0;relayUntil={};record=[{...player}];lastCountdownBeat=-1;}
-function cycleCommit(manual=true){if(mode!=='playing')return;if(clones.length>=MAX_CLONES){if(!manual)resetPlayer();flash('6 yankı sınırı doldu. Z ile son yankıyı sil.');audioBeep(190,.2,'sawtooth');return}const samples=record.map(p=>({...p})),last=samples[samples.length-1];while(samples.length<Math.round(LOOP/DT)+1)samples.push({...last});const proofEvents=traceEvents(samples,level.probes),order=traceOrder(samples,level.probes);clones.push({samples,color:clones.length,reverse:!!(level.reverseEnabled&&reverseMode),proofOrder:order,proofEvents});if(order){pulseFX(player.x,player.y,'#ffe6aa',1.2)}for(let j=0;j<17;j++)spawnParticle(player.x,player.y,'#ba9dff');pulseFX(player.x,player.y,'#bd9dff',2);rewindWash=.55;playCue('echo');resetPlayer();flash(manual?'Yankın kaydedildi. Yeni döngü başladı.':'12 saniye doldu. Geçmişin kaydedildi.');updateHUD()}
+function cycleCommit(manual=true){if(mode!=='playing')return;if(clones.length>=MAX_CLONES){if(!manual)resetPlayer();flash('6 yankı sınırı doldu. Z ile son yankıyı sil.');audioBeep(190,.2,'sawtooth');return}const samples=record.map(p=>({...p})),last=samples[samples.length-1];while(samples.length<Math.round(LOOP/DT)+1)samples.push({...last});const proofEvents=traceEvents(samples,level.probes),order=traceOrder(samples,level.probes),timeCheck=timeAttestation(proofEvents,level.timeWindow);clones.push({samples,color:clones.length,reverse:!!(level.reverseEnabled&&reverseMode),proofOrder:order,proofEvents,proofGap:timeCheck.gap,timeProof:timeCheck.valid});if(order){pulseFX(player.x,player.y,'#ffe6aa',1.2)}for(let j=0;j<17;j++)spawnParticle(player.x,player.y,'#ba9dff');pulseFX(player.x,player.y,'#bd9dff',2);rewindWash=.55;playCue('echo');resetPlayer();flash(manual?'Yankın kaydedildi. Yeni döngü başladı.':'12 saniye doldu. Geçmişin kaydedildi.');updateHUD()}
 function undoEcho(){if(mode!=='playing'||!clones.length)return;clones.pop();resetPlayer();flash('Son yankı silindi. Bu döngü de başa alındı.');audioBeep(390,.12);pulseFX(player.x,player.y,'#f0b8ff');updateHUD()}
 function flash(s){msg=s;msgUntil=wallClock+2.3}
 function restart(){if(!level)return;loadLevel(levelIndex);hideOverlay();audioBeep(400,.1)}
@@ -648,7 +650,7 @@ $('mobile-undo').onclick=undoEcho;
 $('mobile-pause').onclick=pause;$('camera-toggle').onclick=toggleCamera;
 function ghostAt(c,t=elapsed){const moment=c.reverse?LOOP-t:t;const index=Math.max(0,Math.min(c.samples.length-1,Math.round(moment/DT)));return c.samples[index]}
 function plateOccupancy(p){const x=p.x+.5,y=p.y+.5;return {live:Math.hypot(player.x-x,player.y-y)<.46,echoes:clones.reduce((n,c)=>{if(p.reverseOnly&&!c.reverse||p.forwardOnly&&c.reverse)return n;const g=ghostAt(c);return n+(Math.hypot(g.x-x,g.y-y)<.46?1:0)},0)}}
-function platePressed(p){const count=plateOccupancy(p);if(p.needsScan)return scannerOn&&count.echoes>0;if(p.reverseOnly||p.forwardOnly)return count.echoes>0;if(p.selfOnly)return count.live;if(p.echoCount)return count.echoes>=p.echoCount;if(p.echoOnly)return count.echoes>0;return count.live||count.echoes>0}
+function platePressed(p){if(p.routeMode)return sourceVerdict==='publish'?liveRelayCount(p)>=2:plateOccupancy(p).live;const count=plateOccupancy(p);if(p.needsScan)return scannerOn&&count.echoes>0;if(p.reverseOnly||p.forwardOnly)return count.echoes>0;if(p.selfOnly)return count.live;if(p.echoCount)return count.echoes>=p.echoCount;if(p.echoOnly)return count.echoes>0;return count.live||count.echoes>0}
 function toggleFrequency(){if(mode!=='playing')return;if(level.phantoms){scannerOn=!scannerOn;flash(scannerOn?'Doğrulayıcı etkin. Sahte imzalar kırmızı işaretlendi.':'Doğrulayıcı kapandı. Sahte imzalar ayırt edilemiyor.')}else if(level.reverseEnabled){reverseMode=!reverseMode;flash(reverseMode?'Sonraki kayıt TERS oynatılacak.':'Sonraki kayıt NORMAL oynatılacak.')}else return;audioBeep(scannerOn||reverseMode?930:440,.11,'sine');updateGateFeedback();updateHUD()}
 function updateRelays(){for(const p of level.plates)if(p.pulse&&platePressed(p))relayUntil[p.key]=Math.max(relayUntil[p.key]||0,elapsed+p.pulse)}
 
@@ -677,18 +679,34 @@ function updateProofPanel(){
  if(!enabled)return;
  const live=traceEvents(record,level.probes);
  const counts=verifiedTraceCounts();
- const found=clones.map((c,i)=>({i,order:c.proofOrder,events:c.proofEvents||[]}));
- const liveSequence=live.length?live.map(x=>x.id+' '+x.second.toFixed(1)+'s').join(' → '):'Henüz A/B noktasına temas yok';
- const stage=live.length===0?'İlk okuma noktasını bul':live.length===1?live[0].id+' kaydediliyor · karşı noktaya git':traceOrder(record,level.probes)?'Kayıt hazır · BOŞLUK ile kaydet':'Okuma sırası devam ediyor';
- const signature=[levelIndex,scannerOn,liveSequence,clones.length,counts.forward,counts.backward,found.map(x=>x.order).join('|')].join('~');
+ const found=clones.map((c,i)=>({i,order:c.proofOrder,events:c.proofEvents||[],gap:c.proofGap,valid:!!c.timeProof}));
+ const liveSequence=live.length?live.map(x=>x.id+' '+x.second.toFixed(1)+'s').join(' → ')+:'Henüz A/B noktasına temas yok';
+ const pending=timeAttestation(live,level.timeWindow);
+ const stage=live.length===0?'İlk okuma noktasını bul':live.length===1?live[0].id+' kaydediliyor · karşı noktaya git':level.timeWindow?(pending.valid?'Zaman damgası hazır · BOŞLUK':pending.gap===null?'Önce A sonra B':'Aralık '+pending.gap.toFixed(1)+' sn · '+level.timeWindow.join('–')+' sn gerekli'):traceOrder(record,level.probes)?'Kayıt hazır · BOŞLUK ile kaydet':'Okuma sırası devam ediyor';
+ const signature=[levelIndex,scannerOn,liveSequence,clones.length,counts.forward,counts.backward,found.map(x=>x.order+':'+x.gap+':'+x.valid).join('|')].join('~');
  if(signature===lastProofSignature)return;lastProofSignature=signature;
  $('proof-live').textContent=liveSequence;
  const box=$('proof-records');box.replaceChildren();
  if(!found.length)box.textContent='Henüz kayıt yok';
- for(const item of found){const tag=document.createElement('span');tag.className='proof-record'+(item.order==='AB'||item.order==='BA'?' verified':' invalid');tag.textContent='E'+String(item.i+1).padStart(2,'0')+' · '+(item.order?item.order[0]+'→'+item.order[1]:'İMZA YOK');box.append(tag)}
- const required=level.dualProof?'A→B '+Math.min(1,counts.forward)+'/1  ·  B→A '+Math.min(1,counts.backward)+'/1':'A→B '+Math.min(1,counts.forward)+'/1';
+ for(const item of found){const tag=document.createElement('span');tag.className='proof-record'+(level.timeWindow?(item.valid?' verified':' invalid'):(item.order==='AB'||item.order==='BA'?' verified':' invalid'));tag.textContent='E'+String(item.i+1).padStart(2,'0')+' · '+(item.order?item.order[0]+'→'+item.order[1]:'İMZA YOK')+(level.timeWindow&&item.gap!==null?' · '+item.gap.toFixed(1)+' sn':'');box.append(tag)}
+ const required=level.timeWindow?'A→B aralığı '+level.timeWindow[0]+'–'+level.timeWindow[1]+' sn · '+Math.min(1,timedSignatureCount())+'/1':level.dualProof?'A→B '+Math.min(1,counts.forward)+'/1  ·  B→A '+Math.min(1,counts.backward)+'/1':'A→B '+Math.min(1,counts.forward)+'/1';
  const isReady=sourceProofValid();$('proof-evidence').textContent=required+(scannerOn?'  ·  TARAMA AÇIK':'  ·  F İLE DOĞRULA');$('proof-evidence').classList.toggle('valid',isReady);
  $('proof-status').textContent=isReady?'GERÇEK İMZA ONAYLANDI':!scannerOn?'DOĞRULAYICI KAPALI':stage;
+}
+
+function timeAttestation(events,window){
+ if(!window||!events||!events.length)return {gap:null,valid:false};
+ const a=events.find(e=>e.id==='A');
+ const b=a&&events.find(e=>e.id==='B'&&e.second>a.second);
+ if(!a||!b||events[0].id!=='A')return {gap:null,valid:false};
+ const gap=Math.round((b.second-a.second)*100)/100;
+ return {gap,valid:gap>=window[0]-.001&&gap<=window[1]+.001};
+}
+function timedSignatureCount(){
+ return clones.reduce((n,c)=>n+(c.proofOrder==='AB'&&c.timeProof===true?1:0),0);
+}
+function liveRelayCount(p){
+ return clones.reduce((n,c)=>{const g=ghostAt(c);return n+(Math.hypot(g.x-p.x-.5,g.y-p.y-.5)<.46?1:0)},0);
 }
 function verifiedTraceCounts(){
  let forward=0,backward=0;
@@ -697,12 +715,12 @@ function verifiedTraceCounts(){
 }
 function sourceProofValid(){
  if(!level.probes||!scannerOn)return false;
- const q=verifiedTraceCounts();return q.forward>=1&&(!level.dualProof||q.backward>=1);
+ const q=verifiedTraceCounts();return level.timeWindow?timedSignatureCount()>=1:q.forward>=1&&(!level.dualProof||q.backward>=1);
 }
 function nearbyProbe(){
  return (level.probes||[]).find(p=>Math.hypot(player.x-p.x-.5,player.y-p.y-.5)<.48)||null;
 }
-function gateOpen(key){if(key==='OUT')return !!endingChoice;if(key==='AUDIT')return auditUnlocked;if(key==='PROOF')return sourceProofValid();const p=level.plates.find(p=>p.key===key);return !!p&&(p.pulse?!!relayUntil[key]&&relayUntil[key]>elapsed:platePressed(p))}
+function gateOpen(key){if(key==='OUT')return !!endingChoice;if(key==='AUDIT')return auditUnlocked;if(key==='PROOF'||key==='STAMP')return sourceProofValid();const p=level.plates.find(p=>p.key===key);return !!p&&(p.pulse?!!relayUntil[key]&&relayUntil[key]>elapsed:platePressed(p))}
 function tileType(x,y){if(x<1||x>=W-1||y<1||y>=H-1)return 'wall';if(level.block.some(p=>p.x===x&&p.y===y))return 'wall';for(const b of level.barriers){if(b.x===x){if(b.gate[0]===x&&b.gate[1]===y)return gateOpen(b.key)?'gateopen':'gate';return 'wall'}}return 'floor'}
 function collides(x,y){const r=.27;for(let tx=Math.floor(x-r);tx<=Math.floor(x+r);tx++)for(let ty=Math.floor(y-r);ty<=Math.floor(y+r);ty++){const tp=tileType(tx,ty);if(tp==='wall'||tp==='gate'){let nx=Math.max(tx,Math.min(x,tx+1)),ny=Math.max(ty,Math.min(y,ty+1));if((x-nx)**2+(y-ny)**2<r*r)return true}}return false}
 function spawnParticle(x,y,color){particles.push({x,y,vx:(Math.random()-.5)*2.4,vy:(Math.random()-.5)*2.4,life:.4+Math.random()*.6,color})}
