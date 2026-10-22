@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 016 — Bölüm VI: Ayrı Tanıklar
+
+**17 oynanabilir oda, 6 hikâye bölümü ve 27 arşiv girdisi.** Bu sürüm yalnızca daha fazla baskı plakası eklemez: iki ayrı kaydedilmiş kişinin hareketinin **aynı saniyede iki farklı sensörde doğrulanmasını** ve bunun bilinçli bir tanıklığa dönüşmesini sağlar.
+
+- **Oda 16 / Ayrı Tanıklar:** İlk kapıyı M plakasındaki bir yankıyla aç. Ardından ayrı döngülerde bir gerçek yankıyı I, diğer gerçek yankıyı II sensöründe tut. XSYNC kapısı yalnızca **farklı kayıt kimlikleri aynı anda iki noktadaysa** ve F doğrulayıcısı açıksa açılır. Aynı sensörde iki hayalet, tek hayalet veya sahte siluet bunu sağlayamaz.
+- **Oda 17 / Kora Protokolü:** Aynı eşzamanlılık bulmacasını çöz, ardından Kora konsolunda E ile son tanıklığı onayla. Önceden **yayınlama** seçilmişse tarayıcı açık olmalıdır; **karantina** seçilmişse iki yankıyı doğrulayıp kapıdan geçtikten sonra tarayıcı kapatılmalıdır. Her iki rotada da finale ulaşmak mümkündür ama farklı işlem protokolleri gerekir.
+- **Yeni kanıt paneli:** I ve II sensörlerinde hangi gerçek yankının bulunduğu ve çift tanıklığın onaylanıp onaylanmadığı görülebilir. Sensörler oyun alanında ve mobil küçük haritada işaretlenir.
+- **Anlatı ve arşiv:** Bölüm V tamamlanınca Bölüm VI açılır. A19, A20 ve iki farklı son kayıt (A21_PUBLIC/A21_SEALED) eklendi. Kora'nın yetkiye erişebildiğine dair izler var; fakat yönetici anahtarının ilk sahibini kesinleştiren bir iddiada bulunulmuyor.
+- **Testler:** Eski 15 oda korunurken iki yeni odanın tarayıcı testleri eklendi. Aynı sensörde iki hayaletin yetersizliği, ayrı iki yankının kabul edilmesi, tarayıcı kilidi, karantinada tarayıcıyı kapatmadan E komutunun reddi ve iki final denetlenir.
+
 ## Build 015 — Bölüm V: Kayıp Saniye
 
 **15 oda, 5 bölüm, 23 arşiv girdisi.** Yeni bölüm, OPERATÖR 00'ın tek bir kimlik olmadığı bulgusunu bu kez **doğrulanabilir zaman aralığı** ve eski seçimlerin yeni fiziksel kapılara etkisi üzerinden ilerletir.
