@@ -24,7 +24,7 @@ def load(browser, level):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -34,7 +34,8 @@ def load(browser, level):
     window.__echo12Store ??= {};
     Object.defineProperty(window, 'localStorage', {configurable:true,value:{
       getItem(key){return Object.hasOwn(window.__echo12Store,key)?window.__echo12Store[key]:null},
-      setItem(key,value){window.__echo12Store[key]=String(value)}
+      setItem(key,value){window.__echo12Store[key]=String(value)},
+      removeItem(key){delete window.__echo12Store[key]}
     }});
     </script>"""
     html=html.replace('<script>\n(()=>{',storage_stub+'<script>\n(()=>{')
@@ -791,6 +792,59 @@ def main():
             assert not errors, errors
             page.close()
             print('PASS Build 017: source-gated independent casework, wrong answer rejection, persistent files and paused modal')
+
+            # Build 019: save vault freezes the loop and exports a versioned, offline JSON backup.
+            page, errors = load(browser, 0)
+            page.keyboard.press('b')
+            verify(page,errors,'KAYIT KASASI')
+            assert page.locator('#vault-endings .vault-ending').count()==3
+            assert page.locator('#vault-endings .vault-ending.earned').count()==0
+            before=page.locator('#time').inner_text()
+            page.evaluate("window.__echo12Test.tick(.7)")
+            assert page.locator('#time').inner_text()==before
+            saved=page.evaluate("window.__echo12Test.save()")
+            assert saved['format']=='ECHO12_SAVE_V1' and saved['version']==1
+            assert saved['progress']['unlocked']==0
+            assert page.evaluate("""() => {try{window.__echo12Test.validate({format:'evil'});return false}catch(e){return true}}""")
+            page.keyboard.press('Escape')
+            verify(page,errors,'KAYIT')
+            page.keyboard.press('b')
+            with page.expect_download() as d:
+                page.locator('#vault-export').click()
+            assert d.value.suggested_filename=='ECHO12_Kayit_Yedegi.json'
+            page.locator('#vault-import').set_input_files({
+                "name":"broken.json","mimeType":"application/json","buffer":b'{{corrupt'
+            })
+            assert 'Geri yüklenemedi' in page.locator('#vault-feedback').inner_text()
+            assert page.locator('#mode').inner_text()=='KAYIT KASASI'
+            # Restore a complete file, not just room progress; reject manipulated values first.
+            backup=page.evaluate("window.__echo12Test.save()")
+            backup['progress'].update({
+                'unlocked':4,'chapterPath':'cut','sourceVerdict':'seal','finalVerdict':'review',
+                'archive':['A09','A12','D01','F01_REVIEW'],'endings':['cut'],'caseSolved':['C01'],
+                'bestRuns':{'0':{'echoes':2,'seconds':19.1,'hints':0}},'muted':True,'camera':'overview'
+            })
+            assert page.evaluate("""data => {try{
+                const copy=JSON.parse(JSON.stringify(data));copy.progress.bestRuns['0'].seconds=-5;
+                window.__echo12Test.restore(copy);return false;
+              }catch(e){return true}}""",backup)
+            assert page.evaluate("localStorage.getItem('echo12-unlocked')") is None
+            page.evaluate("data=>window.__echo12Test.restore(data)",backup)
+            verify(page,errors,'KAYIT')
+            assert page.locator('#room').inner_text()=='05 / 19'
+            assert page.locator('#case-board-count').inner_text()=='1/3'
+            assert page.locator('#archive-count').inner_text()=='4/35'
+            assert page.evaluate("localStorage.getItem('echo12-final-verdict')")=='review'
+            assert page.evaluate("localStorage.getItem('echo12-muted')")=='1'
+            assert page.evaluate("JSON.parse(localStorage.getItem('echo12-best-runs'))['0'].echoes")==2
+            page.keyboard.press('b')
+            assert page.locator('#vault-endings .vault-ending.earned').count()==1
+            assert 'Bağımsız incelemeye aktar' in page.locator('#vault-endings').inner_text()
+            page.keyboard.press('Escape')
+            verify(page,errors,'KAYIT')
+            assert not errors,errors
+            page.close()
+            print('PASS Build 019: offline backup, corrupt JSON rejection, save normalization and discovered finales')
 
             # Verify display and audio feedback without changing a real puzzle solution.
             page, errors = load(browser, 0)
