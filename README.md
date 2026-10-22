@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 012 — Yakın Takip Kamerası ve Bölüm Finalleri
+
+Yeni oda eklenmedi: **11 oda, 3 hikâye bölümü ve 15 arşiv kaydı** korunuyor. Amaç özellikle mobil cihazlarda küçük karo ve kapıların okunabilirliğini artırmak ve bölüm kapanışlarına anlamlı bir anlatı ritmi kazandırmak.
+
+- **Yakın takip kamerası:** Kamera, oyun mekaniğini değiştirmeden sahneyi 1,65 kat büyütür ve karakterin konumunu takip eder. Masaüstünde varsayılan tam görünüm, küçük ekranda varsayılan yakın takip modu sunulur. Oyun altındaki düğmeyle iki görünüm arasında geçiş yapılabilir.
+- **Harita görünümü:** Yakın takip açıkken oyun alanı dışında 18×11 odanın tamamını gösteren küçük harita açılır. Duvarlar, açık/kapalı geçitler, basınç plakaları, oyuncu, kaydedilmiş yankılar ve çıkış simgesi aynı anda görülebilir.
+- **Kayıtlı tercih:** Kamera seçimi `echo12-camera-mode` anahtarıyla yerel saklanır. Diğer ilerleme kayıtlarından bağımsızdır; istenildiğinde değiştirilebilir.
+- **Bölüm kapanış raporu:** Bölüm I (oda 6), Bölüm II (oda 8) ve Bölüm III (oda 11) bitiminde iki ayrı sonuç kartı eklenmiştir: **Kesinleşen bulgu** ve **Açık kalan soru**. İlk bölümdeki çekirdeği koruma veya susturma tercihleri raporların metnini de değiştirir. Bu kartlar önceki hikâye seçimlerini değiştirmez.
+- **Görsel hareket izi:** Oyuncunun arkasında çok kısa süre kalan, yalnızca dekoratif bir ışık izi bulunur. Hareket fiziği, çarpışma, yankı kayıtları ve süreler aynı kalır. Sistemde az hareket tercihi açıkken iz çizilmez.
+- **Tarayıcı testleri:** Yakın takip, zoom takibi, küçük harita, görünüm tercihi, iki farklı bölüm I raporu ve sonraki iki bölüm raporu otomatik kontrole eklendi.
+
 ## Build 011 — Mobil Kontroller ve Çizim Performansı
 
 Bu sürüm, oyun kurallarına ve 11 oda / 15 arşiv yapısına dokunmadan mobil kullanım ile çizim maliyetini iyileştirir.
@@ -129,4 +140,4 @@ Testler tüm **on bir odayı** oynanış kurallarıyla çözerek denetler. Build
 
 Tamamen bağımsız HTML / CSS / JavaScript ve Canvas 2D. Oyun kaynak kodu `index.html` içindedir; `tests/smoke.py` testleri ve `.github/workflows/smoke.yml` otomatik doğrulamayı sağlar.
 
-**Yön:** Build 012: dokunmatik oynanış için gerçek cihaz verisiyle dengeleme; görsel okunabilirlik, bölüm sonu deneyimi ve yeni oyun içi keşiflerin değerlendirilmesi.
+**Yön:** Build 013: OPERATÖR 00 araştırmasını gerçek oynanış kararlarıyla ilerleten yeni vaka yapısı, ilk üç bölümde açıklanan ipuçlarının tutarlılık değerlendirmesi ve üretim kalitesi.
