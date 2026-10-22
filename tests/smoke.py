@@ -939,6 +939,58 @@ def main():
             page.close()
             print('PASS Build 021: modal pause, selectable and reversed echo paths, nonmutating 12s scrubbing and keyboard')
 
+            # Build 022: high contrast and three-state motion modes are real persistent
+            # accessibility settings. They must not change the 12-second physical timeline.
+            page, errors = load(browser, 0)
+            assert page.locator('.accessibility-settings').count()==1
+            page.locator('.accessibility-settings summary').click()
+            assert page.locator('#motion-toggle').inner_text()=='Hareket: Sistem'
+            assert page.locator('#contrast-toggle').get_attribute('aria-pressed')=='false'
+            page.locator('#motion-toggle').click()
+            assert page.locator('#motion-toggle').inner_text()=='Hareket: Azaltılmış'
+            assert page.locator('body').evaluate("(e)=>e.classList.contains('reduced-motion')")
+            assert page.evaluate("localStorage.getItem('echo12-motion-setting')")=='on'
+            page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.15)")
+            assert page.evaluate("window.__echo12Test.gate('A')")
+            assert page.evaluate("window.__echo12Test.fx().rings")==0,'Reduced motion must suppress rings'
+            assert page.evaluate("window.__echo12Test.fx().wash")==0,'Reduced motion must suppress washes'
+            active=page.evaluate("window.__echo12Test.inspect().elapsed")
+            page.evaluate("window.__echo12Test.tick(.30)")
+            later=page.evaluate("window.__echo12Test.inspect().elapsed")
+            assert .25<later-active<.35, 'Accessibility must not alter simulation rate'
+            page.locator('#contrast-toggle').click()
+            assert page.locator('#contrast-toggle').get_attribute('aria-pressed')=='true'
+            assert page.locator('body').evaluate("(e)=>e.classList.contains('high-contrast')")
+            assert page.evaluate("localStorage.getItem('echo12-contrast-setting')")=='on'
+            assert page.locator('#scene').evaluate("(e)=>getComputedStyle(e).filter")!='none'
+            state=page.evaluate("window.__echo12Test.save()")
+            assert state['progress']['motion']=='on' and state['progress']['contrast']=='on'
+            assert page.evaluate("""data=>{const x=JSON.parse(JSON.stringify(data));x.progress.motion='blink';
+                try{window.__echo12Test.validate(x);return false}catch(e){return true}}""",state)
+            assert page.evaluate("""data=>{const x=JSON.parse(JSON.stringify(data));x.progress.contrast='unknown';
+                try{window.__echo12Test.validate(x);return false}catch(e){return true}}""",state)
+            page.locator('#motion-toggle').click()
+            assert page.locator('#motion-toggle').inner_text()=='Hareket: Normal'
+            assert not page.locator('body').evaluate("(e)=>e.classList.contains('reduced-motion')")
+            page.locator('#motion-toggle').click()
+            assert page.locator('#motion-toggle').inner_text()=='Hareket: Sistem'
+            page.locator('#contrast-toggle').click()
+            assert not page.locator('body').evaluate("(e)=>e.classList.contains('high-contrast')")
+            page.evaluate("data=>window.__echo12Test.restore(data)",state)
+            assert page.locator('body').evaluate("(e)=>e.classList.contains('high-contrast')")
+            assert page.locator('body').evaluate("(e)=>e.classList.contains('reduced-motion')")
+            assert page.evaluate("localStorage.getItem('echo12-motion-setting')")=='on'
+            assert page.locator('#motion-toggle').get_attribute('aria-pressed')=='true'
+            # Older backup files lack these optional preferences, remain supported.
+            previous=page.evaluate("""data=>{const x=JSON.parse(JSON.stringify(data));
+                delete x.progress.motion;delete x.progress.contrast;
+                return window.__echo12Test.validate(x)}""",state)
+            assert previous['motion']=='auto' and previous['contrast']=='off'
+            assert not errors,errors
+            page.close()
+            print('PASS Build 022: contrast, reduced motion, system preference cycling and portable accessibility backup')
+
             # Verify display and audio feedback without changing a real puzzle solution.
             page, errors = load(browser, 0)
             page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
