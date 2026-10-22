@@ -192,13 +192,20 @@ button:focus-visible{outline:3px solid #62f3d3;outline-offset:2px}
 .authority-node.exposed strong{color:#ffe1ad}
 @media(max-width:680px){.proof-grid,.authority-chain{grid-template-columns:1fr 1fr}.proof-panel{padding:11px}.authority-node{padding:8px}.authority-node span{font-size:10px}}
 @media(max-width:400px){.proof-grid{grid-template-columns:1fr}}
+
+.sync-panel{margin:10px 0;padding:14px;border:1px solid #507f98;border-radius:12px;background:#10263a;color:#d1ebf0}
+.sync-panel[hidden]{display:none}.sync-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sync-grid>div{padding:10px;background:#0b1829;border:1px solid #44627c;border-radius:8px;color:#9cceec;font:700 11px ui-monospace,Consolas,monospace}
+#sync-verdict[data-valid="true"]{color:#8dffda}
+#sync-rule{margin:10px 0 0;color:#b7cbd7;font-size:12px;line-height:1.5}
+@media(max-width:440px){.sync-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 015</div></header>
+<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 016</div></header>
 <div class="topbar">
- <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 15</div></div>
+ <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 17</div></div>
  <div class="stat"><div class="label">Döngüye kalan</div><div class="value teal" id="time">12.0 sn</div><div class="meters"><div class="meter"><i id="timefill"></i></div></div></div>
  <div class="stat"><div class="label">Kaydedilmiş yankı</div><div class="value purple" id="clones">0 / 6</div></div>
  <div class="stat"><div class="label">Durum</div><div class="value" id="mode" style="font-size:16px;padding-top:4px">HAZIR</div></div>
@@ -215,12 +222,13 @@ button:focus-visible{outline:3px solid #62f3d3;outline-offset:2px}
 <div class="signal-strip" id="signal-strip" aria-label="Canlı sistem durumu"><span>SİSTEM SİNYALİ / <strong id="signal-value">HAZIR</strong></span><span class="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></div>
 <div class="timeline" aria-label="Yankıların zaman çizelgesi"><div class="timeline-head"><span>HAREKET KAYITLARI</span><small id="timeline-legend">Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas</small></div><canvas id="timeline" width="960" height="155" role="img" aria-label="12 saniyelik hareket ve plaka tetikleme çizelgesi"></canvas></div>
 <div class="help"><div class="helptext"><kbd>W A S D</kbd> veya <kbd>← ↑ ↓ →</kbd> yürü &nbsp; <kbd>Boşluk</kbd> döngüyü kaydet &nbsp; <kbd>R</kbd> odayı sıfırla &nbsp; <kbd>Z</kbd> son yankıyı sil &nbsp; <kbd>P</kbd> duraklat &nbsp; <kbd>E</kbd> terminal &nbsp; <kbd>L</kbd> arşiv &nbsp; <kbd>M</kbd> ses &nbsp; <kbd>H</kbd> ipucu &nbsp; <kbd>O</kbd> oda seçimi</div>
-<div class="controls"><button class="secondary" id="commit">↺ Yankıyı kaydet</button><button class="secondary" id="undo">↶ Son yankıyı sil</button><button class="secondary" id="restart">↻ Odayı sıfırla</button><button class="secondary" id="interact" disabled>⌁ Terminali oku</button><button class="secondary" id="logbook">▤ Arşiv <span id="archive-count">0/23</span></button><button class="secondary" id="room-select" title="O: açılmış odaları seç">▦ Oda seç</button><button class="secondary" id="help-button" title="H: aşamalı ipucu">? İpucu</button><button class="sound" id="sound">♪ Ses: açık</button><button class="sound" id="frequency" title="F: kayıt doğrulama / ters kayıt" disabled>F · KAPALI</button></div><div id="hint-assist" class="hint-assist hidden" role="status" aria-live="polite"><strong id="hint-step"></strong><span id="hint-body"></span></div></div>
+<div class="controls"><button class="secondary" id="commit">↺ Yankıyı kaydet</button><button class="secondary" id="undo">↶ Son yankıyı sil</button><button class="secondary" id="restart">↻ Odayı sıfırla</button><button class="secondary" id="interact" disabled>⌁ Terminali oku</button><button class="secondary" id="logbook">▤ Arşiv <span id="archive-count">0/27</span></button><button class="secondary" id="room-select" title="O: açılmış odaları seç">▦ Oda seç</button><button class="secondary" id="help-button" title="H: aşamalı ipucu">? İpucu</button><button class="sound" id="sound">♪ Ses: açık</button><button class="sound" id="frequency" title="F: kayıt doğrulama / ters kayıt" disabled>F · KAPALI</button></div><div id="hint-assist" class="hint-assist hidden" role="status" aria-live="polite"><strong id="hint-step"></strong><span id="hint-body"></span></div></div>
 
 <div class="log"><div class="indicator"></div><div><div class="logtitle" id="mission">PROTOKOL 01 · İLK İZ</div><div class="logdesc" id="hint">Yeşil plakaya bas, SPACE ile yankını kaydet. Sonraki döngüde kapı açılınca çıkışa git.</div></div></div>
 <section class="protocol-status" aria-label="Geçit hedefleri"><div class="protocol-status-head"><strong>ANLIK GEÇİT DURUMU</strong><small id="gate-counter">0 / 0 açık</small></div><div class="gate-status-grid" id="gate-status"></div></section>
 <section class="proof-panel" id="proof-panel" hidden aria-label="Sıralı kayıt doğrulama paneli"><div class="protocol-status-head"><strong>İMZA DOĞRULAMA / A VE B GEÇİŞLERİ</strong><small id="proof-status" role="status" aria-live="polite">Kayıt bekleniyor</small></div><p class="proof-help">Parlak A ve B noktalarına <strong>aynı döngü içinde</strong> sırayla dokun. Gerçek yankıyı kaydet; F doğrulayıcısı sahte görüntüleri ayırır.</p><div class="proof-grid"><div><span class="proof-label">BU DÖNGÜDE</span><div id="proof-live" class="proof-sequence">—</div></div><div><span class="proof-label">KAYDEDİLMİŞ İMZALAR</span><div id="proof-records" class="proof-record-list">Henüz yok</div></div></div><div id="proof-evidence" class="proof-evidence">A→B: 0/1</div></section>
-<footer>BUILD 015 · BÖLÜM V: KAYIP SANİYE</footer>
+<section id="sync-panel" class="sync-panel" hidden aria-label="İki tanık senkronizasyonu"><div class="protocol-status-head"><strong>ÇİFTE TANIKLIK / AYRI KAYITLAR</strong><small id="sync-verdict" role="status" aria-live="polite">İmza bekleniyor</small></div><div class="sync-grid"><div id="sync-left">I · YANKI BEKLENİYOR</div><div id="sync-right">II · YANKI BEKLENİYOR</div></div><p id="sync-rule">İki farklı yankı aynı anda gerekli.</p></section>
+<footer>BUILD 016 · BÖLÜM VI: AYRI TANIKLAR</footer>
 </div>
 <script>
 (()=>{
@@ -248,7 +256,9 @@ const LVLS=[
  {title:'İZİN SIRASI',tag:'Görüntü bir hareketi taklit eder. Ama iki ayrı anın sırasını bilmek başka şeydir.',hint:'Sol M plakasına bir yankı bırak. İlk kapıyı geç; A sonra B okuma noktalarına sırayla dokunup bu yolu bir YANKI olarak kaydet. F ile doğrulayıcıyı aç. Tamamlanan gerçek rota ikinci kilidi açar.',start:[2,5],exit:[15,5],barriers:[{x:7,gate:[7,5],key:'M'},{x:12,gate:[12,5],key:'PROOF'}],plates:[{x:4,y:3,key:'M',echoOnly:true}],probes:[{id:'A',x:9,y:3},{id:'B',x:10,y:7}],phantoms:[{x:10,y:5}],guards:[],block:[]},
  {title:'İKİ İMZA',tag:'Bir kayıt aynı iki noktayı ters sırada da doğrulayabiliyor. Peki kaynağı kim?',hint:'M plakasını bir yankıyla aç. A→B yönünde bir gerçek kayıt, sonra B→A yönünde başka bir gerçek kayıt üret. F doğrulayıcısını aç, iki imza da 2/2 olunca sağdaki konsollardan yayınlama veya karantinaya alma kararını ver.',start:[2,5],exit:[16,5],barriers:[{x:7,gate:[7,5],key:'M'},{x:12,gate:[12,5],key:'PROOF'},{x:16,gate:[16,5],key:'OUT'}],plates:[{x:4,y:3,key:'M',echoOnly:true}],probes:[{id:'A',x:9,y:3},{id:'B',x:10,y:7}],dualProof:true,phantoms:[{x:10,y:5}],guards:[],block:[{x:13,y:4},{x:13,y:6}]},
  {title:'KAYIP SANİYE',tag:'İki noktayı bilmek kolaydır. Aralarındaki zamanı taklit etmek daha zor.',hint:'M plakasına bir yankı bırak. A ve B noktalarını bu sırayla 1,6–3,6 saniye arayla geçerek yeni bir yankı kaydet. F ile doğrulayıcıyı aç. Gerçek bir zaman damgası T kilidini açar.',start:[2,5],exit:[15,5],barriers:[{x:7,gate:[7,5],key:'M'},{x:12,gate:[12,5],key:'STAMP'}],plates:[{x:4,y:3,key:'M',echoOnly:true}],probes:[{id:'A',x:9,y:3},{id:'B',x:10,y:7}],timeWindow:[1.6,3.6],phantoms:[{x:9,y:7}],guards:[],block:[]},
- {title:'YETKİ KAPISI',tag:'Yayınlanan izler izlenebilir. Gizlenen izler ise içeriden kilitlenir.',hint:'M için yankı, A→B arasında 1,6–3,6 saniye olan gerçek bir imza oluştur. F doğrulayıcıyı aç. Son röle yayın yolunda iki eşzamanlı yankı, karantina yolunda canlı temas gerektirir. Dışarıya çık.',start:[2,5],exit:[16,5],barriers:[{x:7,gate:[7,5],key:'M'},{x:12,gate:[12,5],key:'STAMP'},{x:16,gate:[16,5],key:'ROUTE'}],plates:[{x:4,y:3,key:'M',echoOnly:true},{x:14,y:5,key:'ROUTE',routeMode:true,pulse:3}],probes:[{id:'A',x:9,y:3},{id:'B',x:10,y:7}],timeWindow:[1.6,3.6],phantoms:[{x:10,y:5}],guards:[],block:[]}
+ {title:'YETKİ KAPISI',tag:'Yayınlanan izler izlenebilir. Gizlenen izler ise içeriden kilitlenir.',hint:'M için yankı, A→B arasında 1,6–3,6 saniye olan gerçek bir imza oluştur. F doğrulayıcıyı aç. Son röle yayın yolunda iki eşzamanlı yankı, karantina yolunda canlı temas gerektirir. Dışarıya çık.',start:[2,5],exit:[16,5],barriers:[{x:7,gate:[7,5],key:'M'},{x:12,gate:[12,5],key:'STAMP'},{x:16,gate:[16,5],key:'ROUTE'}],plates:[{x:4,y:3,key:'M',echoOnly:true},{x:14,y:5,key:'ROUTE',routeMode:true,pulse:3}],probes:[{id:'A',x:9,y:3},{id:'B',x:10,y:7}],timeWindow:[1.6,3.6],phantoms:[{x:10,y:5}],guards:[],block:[]},
+ {title:'AYRI TANIKLAR',tag:'Aynı an, iki ayrı oda. Bir görüntü iki tanığın yerini tutamaz.',hint:'M plakasını bir yankıyla açık tut. F doğrulayıcısını aç. Ayrı döngülerde iki yankıyı I ve II izleme noktalarına yerleştir; X geçidi ancak iki farklı gerçek yankı aynı anda oradaysa açılır.',start:[2,5],exit:[15,5],barriers:[{x:7,gate:[7,5],key:'M'},{x:12,gate:[12,5],key:'XSYNC'}],plates:[{x:4,y:3,key:'M',echoOnly:true}],syncPads:[{id:'I',x:9,y:3},{id:'II',x:10,y:7}],phantoms:[{x:9,y:7}],guards:[],block:[]},
+ {title:'KORA PROTOKOLÜ',tag:'Kayıtlar birleşti. Tanıklığın açıklanması başka, korunması başka.',hint:'M yankısı ve iki ayrı I/II yankısıyla X kilidini aç. Ardından 14,5 yakınındaki konsola E ile ulaş. Önceki karar YAYIN ise F açıkken, KARANTİNA ise F kapalıyken onayla. Son kapı tanıklık tamamlanınca açılır.',start:[2,5],exit:[16,5],barriers:[{x:7,gate:[7,5],key:'M'},{x:12,gate:[12,5],key:'XSYNC'},{x:16,gate:[16,5],key:'WITNESS'}],plates:[{x:4,y:3,key:'M',echoOnly:true}],syncPads:[{id:'I',x:9,y:3},{id:'II',x:10,y:7}],witnessConsole:[14,5],phantoms:[{x:9,y:7}],guards:[],block:[]}
 ];
 const ARCHIVE=[
  {id:'A01',title:'PROTOKOL 12',by:'Operatör M. Kora • 03:14',body:[
@@ -332,9 +342,23 @@ const ARCHIVE=[
  'Röle artık kimlerin nereden geçtiğini gizleyemiyor. Kanıt dış incelemeye açık; tanıkların güvenliği henüz sağlanmadı.']},
  {id:'A18_SEALED',title:'GİZLİ HAT / CANLI ANAHTAR',by:'Bölüm V raporu',body:[
  'Korunan verileri yalnızca canlı operatörün teması dış hattın son rölesinden geçirdi. Eski yankılar bu yolu açamadı.',
- 'Tanıkların yeri korunuyor, fakat sistemin kendi görevli anahtarlarını kimin kopyaladığı hâlâ bilinmiyor.']}
+ 'Tanıkların yeri korunuyor, fakat sistemin kendi görevli anahtarlarını kimin kopyaladığı hâlâ bilinmiyor.']},
+ {id:'A19',title:'AYRI TANIKLAR / EŞZAMAN',by:'Kora tesis hattı • 06:47',body:[
+ 'İki bağımsız hareket kaydı aynı saniyede iki farklı noktada yeniden oluştu. Tek bir sabit görüntü ne iki sensörü ne de iki gerçek rotayı doğrulayabilir.',
+ 'Sistem bunu tanık eşzamanlılığı olarak kaydediyor. İki iz aynı kişiden türemiş olabilir; aynı anda ayrı ayrı etkin olmaları bu olasılığı çürütmez.',
+ 'Ölçüm önemli bir farkı kanıtladı: ekrana çizilen bir hayalet ile fiziksel röleyi etkileyen kaydedilmiş iz aynı şey değildir.']},
+ {id:'A20',title:'KORA / İKİ AYRI ANAHTAR',by:'Yetki protokolü • 06:53',body:[
+ 'Yayın izninin imza denetimi ile karantina izninin gizlilik denetimi ayrı durumda tutulmuş. Aynı eşzamanlı kanıt iki farklı karara yol açabilir.',
+ 'Kora son komutu kendi adına kaydetmiyor. Yetki etiketinin sahibi hakkında kesin delil bulunmadığından sistem kime ait olduğunu boş bırakıyor.',
+ 'Operatör 00 kodunun ait olduğu insanı değil, kodun hangi işlemleri mümkün kıldığını öğreniyoruz.']},
+ {id:'A21_PUBLIC',title:'AÇIK TANIKLIK / PAYLAŞILAN KAYIT',by:'Bölüm VI sonuç kaydı',body:[
+ 'İki bağımsız yankı açık tarama altında doğrulandı. Gerçek hareket izlerinin eşzamanlılığı dış gözlemcilere sunuldu.',
+ 'Kora, erişim etiketini kimin kopyaladığını söylemedi. İzlerin yayınlanması yanlış resmi anlatıya meydan okurken tanıkların güvenliğini riske attı.']},
+ {id:'A21_SEALED',title:'GİZLİ TANIKLIK / KORUNAN KAYIT',by:'Bölüm VI sonuç kaydı',body:[
+ 'İki bağımsız yankı doğrulandıktan sonra tarama hattı kapatılarak veri gizli arşive aktarıldı.',
+ 'Kora tanıkları korudu, fakat kamuya açık düzeltme yapılmadı. Erişim etiketini kimin kopyaladığı hâlâ bilinmiyor.']}
 ];
-const TERMINALS=[{level:0,x:3,y:7,entry:'A01'},{level:2,x:8,y:7,entry:'A02'},{level:4,x:9,y:5,entry:'A03'},{level:5,x:9,y:3,entry:'A04'},{level:6,x:9,y:4,entry:'A06'},{level:7,x:9,y:7,entry:'A07'},{level:8,x:9,y:5,entry:'A09'},{level:9,x:9,y:8,entry:'A10'},{level:10,x:10,y:9,entry:'A12'},{level:11,x:9,y:8,entry:'A13'},{level:12,x:9,y:8,entry:'A14'},{level:13,x:9,y:8,entry:'A16'},{level:14,x:9,y:8,entry:'A17'}];
+const TERMINALS=[{level:0,x:3,y:7,entry:'A01'},{level:2,x:8,y:7,entry:'A02'},{level:4,x:9,y:5,entry:'A03'},{level:5,x:9,y:3,entry:'A04'},{level:6,x:9,y:4,entry:'A06'},{level:7,x:9,y:7,entry:'A07'},{level:8,x:9,y:5,entry:'A09'},{level:9,x:9,y:8,entry:'A10'},{level:10,x:10,y:9,entry:'A12'},{level:11,x:9,y:8,entry:'A13'},{level:12,x:9,y:8,entry:'A14'},{level:13,x:9,y:8,entry:'A16'},{level:14,x:9,y:8,entry:'A17'},{level:15,x:9,y:8,entry:'A19'},{level:16,x:9,y:8,entry:'A20'}];
 const SOURCE_CHOICES=[{id:'publish',x:14,y:2,title:'KANITI YAYINLA',kicker:'DIŞ HAT / AÇIK KAYIT',story:'İki doğrulanmış hareket izini ve sahte 00 imzasının çelişkisini dış gözlemcilere gönderirsin. Yanlış iddiayı düzeltme şansı doğar, ancak gerçek yankıların izi de başkalarına açılır.',effect:'SONUÇ: Denetlenebilir kanıt kamuya çıkar. Tanıkların bulunduğu hat da ifşa olabilir.',color:'#67eccd'},{id:'seal',x:14,y:8,title:'İZLERİ KARANTİNAYA AL',kicker:'İÇ HAT / GİZLİ KAYIT',story:'Doğrulanmış izleri dış sistemlerden ayırırsın. Sahte görüntülerle gerçek yankıların karışmasını engellersin ancak başkalarının sahteciliği görmesi zorlaşır.',effect:'SONUÇ: Tanıkların yerini korursun. Yönetimin 00 hakkındaki açıklaması dışarıda bir süre daha sorgulanmadan kalabilir.',color:'#f5b789'}];
 const CHOICES=[{id:'keep',x:14,y:2,title:'TANIKLARI KORU',kicker:'BELLEK BAĞLANTISI',story:'Çekirdeği açık tutarsan yankıların belleği ve kimliği korunacak. Dış kapı açılmayacak; kendi geleceğini içeride bırakacaksın.',effect:'SONUÇ: Geçmişte kalanlar sistemden silinmeyecek. Sen tesiste kalacaksın, fakat yeni bir kurtarma olasılığı doğacak.',color:'#6bead0'},{id:'cut',x:14,y:8,title:'ÇEKİRDEĞİ SUSTUR',kicker:'ACİL BOŞALTIM',story:'Çekirdeğin bağlantısını kesersen çıkış açılacak. Yankıların var olma ihtimali de kalıcı olarak silinecek.',effect:'SONUÇ: Kendin tesisten çıkacaksın. Önceki döngülerin izleri sonsuza dek kaybolacak.',color:'#ff8693'}];
 let archiveRead=new Set(),readBefore='playing',activeDecision=null,endingChoice=null,endingHistory=new Set(),chapterPath=null,sourceVerdict=null,scannerOn=false,reverseMode=false,auditEvidence=new Map(),auditUnlocked=false,auditMistakes=0;
@@ -433,7 +457,9 @@ const LEVEL_HINTS=[
  ['A ve B noktalarından aynı döngü içinde geçiş sırası doğrulanıyor.','Önce M plakasını yankıyla aç, sonraki döngüde A sonra B istasyonlarına yürü ve kaydet.','Yankıyı kaydettikten sonra F ile tarayıcıyı aç. Kapıda A→B 1/1 gördüğünde geç.'],
  ['İki ayrı gerçek yankının aynı iki noktadan farklı sırayla geçmesi gerekli.','M için bir yankı bırak; ikinci kayıtta A→B, üçüncüde B→A rotasını izle.','İki farklı kayıt ayrı tutulur. F tarayıcısını açıp 2/2 olduğunu gördüğünde iki karar konsolundan birine git.'],
  ['İz sırası kadar iki nokta arasında geçen süre de kontrol ediliyor.','M için bir kayıt bırak; A üzerinden B yoluna git ama B noktasına hemen girme. 1,6–3,6 sn zaman farkını hedefle.','Doğru aralıklı A→B hareketini kaydet, F doğrulayıcıyı aç ve STAMP geçidini kullan.'],
- ['Bir önceki seçim, son rölenin kimi kabul ettiğini değiştirdi.','Önce 1,6–3,6 sn aralıklı A→B kaydını oluştur. Yayın yolunda son plakaya aynı anda iki ayrı yankı gerek; karantina yolunda sen basmalısın.','Yayın için son rölede durup iki kez kaydet. Karantina için canlı olarak basıp 3 saniyelik süre dolmadan çık.']
+ ['Bir önceki seçim, son rölenin kimi kabul ettiğini değiştirdi.','Önce 1,6–3,6 sn aralıklı A→B kaydını oluştur. Yayın yolunda son plakaya aynı anda iki ayrı yankı gerek; karantina yolunda sen basmalısın.','Yayın için son rölede durup iki kez kaydet. Karantina için canlı olarak basıp 3 saniyelik süre dolmadan çık.'],
+ ['İki farklı plakaya basan yankılar aynı saniyede aktif olmalı.','M plakasını tutan ilk yankıdan sonra I sensörüne bir yankı kaydet; ikinci yankıyı II sensörüne kaydet. F açılınca X kilidi durumunu izle.','I ve II noktasındaki sensörlerde iki ayrı kaydedilmiş yankı eşzamanlı bulunmalı; tek yankı ikisini aynı anda açamaz.'],
+ ['Kora konsolu, yayın ile karantina kararlarına farklı doğrulama uygular.','I ve II yankıları X kapısını açtığında sağdaki konsola ilerle. Yayın yolunda F açık, karantina yolunda F kapalı olmalı.','İki kaydı yerleştir, F açıkken kapıdan geç; ardından karantinadaysan F kapatıp E kullan. Yayımdaysan F açık tutup E kullan.']
 ];
 let hintStage=0,selectorBefore='menu',selectorPreviousFocus=null;
 function resetHints(){hintStage=0;$('hint-assist').classList.add('hidden');$('hint-step').textContent='';$('hint-body').textContent=''}
@@ -454,7 +480,7 @@ function renderRoomSelector(){
   const room=LVLS[i],btn=document.createElement('button');btn.type='button';btn.className='room-tile'+(i===levelIndex?' current':'');btn.dataset.room=String(i);
   const accessible=i<=max;btn.disabled=!accessible;btn.setAttribute('aria-label',String(i+1)+'. oda: '+room.title+(accessible?'':' (kilitli)'));
   const heading=document.createElement('strong');heading.textContent=String(i+1).padStart(2,'0')+' · '+room.title;
-  const sub=document.createElement('small');const best=readBestRun(i);sub.textContent=accessible?(i===levelIndex?'ŞU ANKİ ODA · ':'AÇIK · ')+(i<=5?'BÖLÜM I':i<=7?'BÖLÜM II':i<=10?'BÖLÜM III':i<=12?'BÖLÜM IV':'BÖLÜM V')+(best?' · EN İYİ '+best.echoes+' YANKI':''):'KİLİTLİ · Önceki odaları tamamla';
+  const sub=document.createElement('small');const best=readBestRun(i);sub.textContent=accessible?(i===levelIndex?'ŞU ANKİ ODA · ':'AÇIK · ')+(i<=5?'BÖLÜM I':i<=7?'BÖLÜM II':i<=10?'BÖLÜM III':i<=12?'BÖLÜM IV':i<=14?'BÖLÜM V':'BÖLÜM VI')+(best?' · EN İYİ '+best.echoes+' YANKI':''):'KİLİTLİ · Önceki odaları tamamla';
   btn.append(heading,sub);btn.addEventListener('click',()=>selectRoom(i));grid.append(btn);
  }
 }
@@ -480,7 +506,8 @@ const CHAPTER_INFO=[
  {from:6,to:7,label:'BÖLÜM II · KARŞI SİNYAL',theme:'İki ayrı iz, tek ortak zaman.',intro:'Kayıtlar birbirini bekliyor. Çekirdek hakkındaki kararın sonuçları burada başlıyor.'},
  {from:8,to:10,label:'BÖLÜM III · KANIT',theme:'Görünmek, orada olmak demek değildir.',intro:'Sahte görüntüyü gerçek kayıttan ayır. Sonuca varsayımla değil, kanıtla ulaş.'},
  {from:11,to:12,label:'BÖLÜM IV · KÖKEN',theme:'Sıralama gerçek, kimlik belirsiz.',intro:'OPERATÖR 00 bir kişi değilse, hangi iz gerçektir? Aynı iki kapının iki farklı zaman sırasını kaydet.'},
- {from:13,to:14,label:'BÖLÜM V · KAYIP SANİYE',theme:'Gerçek iz zamanını da taşır.',intro:'Bir imzanın doğruluğu yalnızca iki konumda değil, aradaki süre ve iletim izinlerinde saklı.'}
+ {from:13,to:14,label:'BÖLÜM V · KAYIP SANİYE',theme:'Gerçek iz zamanını da taşır.',intro:'Bir imzanın doğruluğu yalnızca iki konumda değil, aradaki süre ve iletim izinlerinde saklı.'},
+ {from:15,to:16,label:'BÖLÜM VI · AYRI TANIKLAR',theme:'Aynı an, farklı yerler.',intro:'Gerçek izleri aynı anda iki noktada doğrula. Kora, hangi tanıklığın hangi hatta çıkacağını hâlâ açıklamadı.'}
 ];
 const ROOM_BRIEFS=[
  'Yeşil A plakasını kullanarak tek kilitli geçidi aç ve çıkışa ulaş.',
@@ -497,7 +524,9 @@ const ROOM_BRIEFS=[
  'A ardından B okuma noktasından geçtiğini gösteren gerçek bir yankı kaydı üret.',
  'A→B ve B→A olarak iki farklı izi kanıtla; ardından hangi hattın dışarı açılacağına karar ver.',
  'A ile B arasındaki gerçek zaman farkını kaydet ve damgayı doğrula.',
- 'Önce zaman damgasını ispatla. Önceki yayın/karantina kararına göre son röleyi aç.'
+ 'Önce zaman damgasını ispatla. Önceki yayın/karantina kararına göre son röleyi aç.',
+ 'İki ayrı gerçek yankı aynı anda I ve II sensörlerinde bulunmalı.',
+ 'İki tanığı eşzamanlı doğrula, sonra önceki kararına uygun Kora konsolunu kullan.'
 ];
 let roomActiveSeconds=0,runHintCount=0,lastGateSignature='',bestRuns={};
 try{const saved=JSON.parse(localStorage.getItem('echo12-best-runs')||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))bestRuns=saved}catch(e){}
@@ -508,12 +537,14 @@ function updateCampaignUI(){
  const grid=$('campaign-segments'),signature=levelIndex+':'+getUnlocked();
  if(grid.dataset.signature===signature)return;
  grid.dataset.signature=signature;grid.replaceChildren();const max=getUnlocked();
- for(let i=0;i<LVLS.length;i++){const cell=document.createElement('span');cell.className='campaign-cell'+(i<max?' finished':'')+(i===levelIndex?' active':'')+([6,8,11,13].includes(i)?' chapter-break':'');grid.append(cell)}
+ for(let i=0;i<LVLS.length;i++){const cell=document.createElement('span');cell.className='campaign-cell'+(i<max?' finished':'')+(i===levelIndex?' active':'')+([6,8,11,13,15].includes(i)?' chapter-break':'');grid.append(cell)}
 }
 function gateCondition(barrier){
  const key=barrier.key,open=gateOpen(key),p=level.plates.find(x=>x.key===key);
  if(open)return {open:true,reason:key==='OUT'?'Karar onaylandı':key==='AUDIT'?'Kanıt karşılaştırıldı':key==='STAMP'?'Zaman damgası doğrulandı':'Etkin'};
  if(key==='OUT')return {open:false,reason:'Konsolda karar ver'};
+ if(key==='XSYNC'){const p=syncedEchoOwners();return {open:false,reason:!scannerOn?'F · doğrulayıcı kapalı': 'I '+(p.first>=0?'1':'0')+'/1 · II '+(p.second>=0?'1':'0')+'/1'};}
+ if(key==='WITNESS')return {open:false,reason:'Kora konsolunda E ile tanıklığı onayla'};
  if(key==='AUDIT')return {open:false,reason:'Kanıt '+auditEvidence.size+'/3'+(auditEvidence.size===3?' · hüküm bekleniyor':'')};
  if(key==='PROOF'){const q=verifiedTraceCounts();return {open:false,reason:level.dualProof?'A→B '+Math.min(1,q.forward)+'/1 · B→A '+Math.min(1,q.backward)+'/1'+(!scannerOn?' · F kapalı':''):!scannerOn?'F · doğrulayıcı kapalı':'A→B '+Math.min(1,q.forward)+'/1 kayıt'};}
  if(key==='STAMP')return {open:false,reason:!scannerOn?'F · doğrulayıcı kapalı':'Zaman damgası '+Math.min(1,timedSignatureCount())+'/1'};
@@ -556,7 +587,7 @@ function showDebrief(improved){
  if(improved)tokens.push(['Yeni kişisel rekor','★']);
  for(const [label,value] of tokens){const tag=document.createElement('span');tag.className='debrief-stat'+(label==='Yeni kişisel rekor'?' best':'');tag.textContent=label+': '+value;d.append(tag)}
 }
-function loadLevel(idx){lastProofSignature='';motionTrail=[];needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];$('timeline-legend').textContent=level.probes?'Mor: yankı · Yeşil: canlı · A/B: sıralı okuma anları':'Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas';scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=13?'BÖLÜM V / ':idx>=11?'BÖLÜM IV / ':idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8,11,13].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8,11,13].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
+function loadLevel(idx){witnessVerified=false;lastSyncStatus='';lastProofSignature='';motionTrail=[];needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];$('timeline-legend').textContent=level.probes?'Mor: yankı · Yeşil: canlı · A/B: sıralı okuma anları':'Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas';scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=15?'BÖLÜM VI / ':idx>=13?'BÖLÜM V / ':idx>=11?'BÖLÜM IV / ':idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8,11,13,15].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8,11,13,15].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
 
 function closeAuditPanel(){$('audit').classList.add('hidden');$('audit').setAttribute('aria-hidden','true')}
 function nearestSensor(){return (level.sensors||[]).find(v=>Math.hypot(player.x-v.x-.5,player.y-v.y-.5)<.72)||null}
@@ -613,7 +644,7 @@ function renderArchive(activeId){
 function openArchive(entryId){if(mode==='reading')return;readBefore=mode;clearInputs();if(entryId&&!archiveRead.has(entryId)){archiveRead.add(entryId);try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}audioBeep(780,.14,'triangle')}
  mode='reading';renderArchive(entryId||[...archiveRead][archiveRead.size-1]||null);$('archive').classList.remove('hidden');$('archive').setAttribute('aria-hidden','false');$('archive-close').focus();updateHUD()}
 function closeArchive(){if(mode!=='reading')return;$('archive').classList.add('hidden');$('archive').setAttribute('aria-hidden','true');mode=readBefore;clearInputs();updateHUD()}
-function interactTerminal(){if(mode!=='playing')return;const sensor=nearestSensor();if(sensor){scanSensor(sensor);return}if(nearestAuditConsole()){openAuditPanel();return}const choice=nearestChoice();if(choice){openDecision(choice);return}const terminal=nearestTerminal();if(terminal)openArchive(terminal.entry);else flash('Bir terminale veya konsola yaklaş.')}
+function interactTerminal(){if(mode!=='playing')return;if(nearWitnessConsole()){authorizeWitness();return}const sensor=nearestSensor();if(sensor){scanSensor(sensor);return}if(nearestAuditConsole()){openAuditPanel();return}const choice=nearestChoice();if(choice){openDecision(choice);return}const terminal=nearestTerminal();if(terminal)openArchive(terminal.entry);else flash('Bir terminale veya konsola yaklaş.')}
 function startGame(){if(wonAll){loadLevel(0)}else if(mode==='menu'){loadLevel(getUnlocked())}else if(mode==='leveldone'){loadLevel(Math.min(levelIndex+1,LVLS.length-1))}else if(mode==='allwon'){loadLevel(0)}else if(mode==='paused'){mode='playing'}hideOverlay();audioBeep(700)}
 function resetPlayer(){motionTrail=[];needsRedraw=true;player={x:level.start[0]+.5,y:level.start[1]+.5};elapsed=0;relayUntil={};record=[{...player}];lastCountdownBeat=-1;}
 function cycleCommit(manual=true){if(mode!=='playing')return;if(clones.length>=MAX_CLONES){if(!manual)resetPlayer();flash('6 yankı sınırı doldu. Z ile son yankıyı sil.');audioBeep(190,.2,'sawtooth');return}const samples=record.map(p=>({...p})),last=samples[samples.length-1];while(samples.length<Math.round(LOOP/DT)+1)samples.push({...last});const proofEvents=traceEvents(samples,level.probes),order=traceOrder(samples,level.probes),timeCheck=timeAttestation(proofEvents,level.timeWindow);clones.push({samples,color:clones.length,reverse:!!(level.reverseEnabled&&reverseMode),proofOrder:order,proofEvents,proofGap:timeCheck.gap,timeProof:timeCheck.valid});if(order){pulseFX(player.x,player.y,'#ffe6aa',1.2)}for(let j=0;j<17;j++)spawnParticle(player.x,player.y,'#ba9dff');pulseFX(player.x,player.y,'#bd9dff',2);rewindWash=.55;playCue('echo');resetPlayer();flash(manual?'Yankın kaydedildi. Yeni döngü başladı.':'12 saniye doldu. Geçmişin kaydedildi.');updateHUD()}
@@ -637,7 +668,7 @@ function releaseTouchDirection(code,id,btn){
 }
 function onKeyDown(e){const focusedButton=e.target?.closest?.('button');if(e.code==='Space'&&focusedButton&&!focusedButton.disabled&&!focusedButton.closest('.hidden'))return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.repeat&&['Space','KeyO','KeyH','KeyF','KeyP','KeyR','KeyZ','Enter','KeyE','KeyL','Escape'].includes(e.code))return;if(mode==='selecting'){if(e.code==='Escape')closeRoomSelector();return}if(mode==='playing'&&['KeyW','KeyA','KeyS','KeyD','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.code)){keys.add(e.code);keyboardHeld.add(e.code)}if(mode==='auditing'){if(e.code==='Escape')exitAuditPanel();return}if(mode==='reading'){if(['Escape','KeyE','KeyL'].includes(e.code))closeArchive();return}if(mode==='decision'){if(e.code==='Escape')cancelDecision();else if(e.code==='Enter')confirmDecision();return}if(e.code==='KeyO'){openRoomSelector();return}if(e.code==='KeyH'){showHint();return}if(e.code==='KeyF'){toggleFrequency();return}if(e.code==='KeyM'){toggleSound();return}if(e.code==='KeyL'){openArchive();return}if(e.code==='KeyE'){interactTerminal();return}if(e.code==='Enter'&&mode!=='playing')startGame();if(e.code==='Space'){if(mode==='playing')cycleCommit();else if(mode==='menu'||mode==='leveldone'||mode==='allwon')startGame()}if(e.code==='KeyR'&&(mode==='playing'||mode==='paused'))restart();if(e.code==='KeyZ'&&mode==='playing')undoEcho();if(e.code==='KeyP'&&(mode==='playing'||mode==='paused'))pause()}
 window.addEventListener('keydown',onKeyDown);window.addEventListener('keyup',e=>{keyboardHeld.delete(e.code);if(!touchHeld.has(e.code))keys.delete(e.code)});window.addEventListener('blur',()=>{clearInputs();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)});document.addEventListener('visibilitychange',()=>{if(document.hidden){clearInputs();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)}});
-$('audit-close').onclick=exitAuditPanel;for(const btn of $('audit-options').querySelectorAll('button'))btn.onclick=()=>submitVerdict(btn.dataset.verdict);$('decision-cancel').onclick=cancelDecision;$('decision-confirm').onclick=confirmDecision;$('replay-choice').onclick=()=>{loadLevel(levelIndex===14?14:levelIndex===12?12:5);hideOverlay()};$('archive-close').onclick=closeArchive;$('logbook').onclick=()=>mode==='reading'?closeArchive():openArchive();$('interact').onclick=interactTerminal;$('room-select').onclick=openRoomSelector;$('room-picker-close').onclick=closeRoomSelector;$('help-button').onclick=showHint;$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('undo').onclick=undoEcho;$('restart').onclick=restart;$('sound').onclick=toggleSound;$('frequency').onclick=toggleFrequency;
+$('audit-close').onclick=exitAuditPanel;for(const btn of $('audit-options').querySelectorAll('button'))btn.onclick=()=>submitVerdict(btn.dataset.verdict);$('decision-cancel').onclick=cancelDecision;$('decision-confirm').onclick=confirmDecision;$('replay-choice').onclick=()=>{loadLevel(levelIndex===16?16:levelIndex===14?14:levelIndex===12?12:5);hideOverlay()};$('archive-close').onclick=closeArchive;$('logbook').onclick=()=>mode==='reading'?closeArchive():openArchive();$('interact').onclick=interactTerminal;$('room-select').onclick=openRoomSelector;$('room-picker-close').onclick=closeRoomSelector;$('help-button').onclick=showHint;$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('undo').onclick=undoEcho;$('restart').onclick=restart;$('sound').onclick=toggleSound;$('frequency').onclick=toggleFrequency;
 for(const btn of document.querySelectorAll('.mobilepad [data-dir]')){
  const code=btn.dataset.dir;
  btn.addEventListener('pointerdown',e=>{e.preventDefault();if(mode!=='playing')return;holdTouchDirection(code,e.pointerId,btn);try{btn.setPointerCapture(e.pointerId)}catch(err){}});
@@ -720,7 +751,37 @@ function sourceProofValid(){
 function nearbyProbe(){
  return (level.probes||[]).find(p=>Math.hypot(player.x-p.x-.5,player.y-p.y-.5)<.48)||null;
 }
-function gateOpen(key){if(key==='OUT')return !!endingChoice;if(key==='AUDIT')return auditUnlocked;if(key==='PROOF'||key==='STAMP')return sourceProofValid();const p=level.plates.find(p=>p.key===key);return !!p&&(p.pulse?!!relayUntil[key]&&relayUntil[key]>elapsed:platePressed(p))}
+
+let witnessVerified=false,lastSyncStatus='';
+function syncedEchoOwners(){
+ if(!level.syncPads)return {first:-1,second:-1,verified:false};
+ const [a,b]=level.syncPads;
+ const first=clones.findIndex(c=>{const p=ghostAt(c);return Math.hypot(p.x-a.x-.5,p.y-a.y-.5)<.46});
+ const second=clones.findIndex((c,i)=>{if(i===first)return false;const p=ghostAt(c);return Math.hypot(p.x-b.x-.5,p.y-b.y-.5)<.46});
+ return {first,second,verified:first!==-1&&second!==-1&&scannerOn};
+}
+function nearWitnessConsole(){
+ return !!level.witnessConsole&&Math.hypot(player.x-level.witnessConsole[0]-.5,player.y-level.witnessConsole[1]-.5)<1.04;
+}
+function authorizeWitness(){
+ if(!nearWitnessConsole()||mode!=='playing')return false;
+ if(witnessVerified){flash('Tanık komutu daha önce doğrulandı.');return true}
+ const pairing=syncedEchoOwners();if(pairing.first<0||pairing.second<0){flash('İki farklı yankı I ve II sensörlerinde birlikte bulunmalı.');return false}
+ const publish=sourceVerdict==='publish';
+ if((publish&& !scannerOn)||(!publish&&scannerOn)){flash(publish?'Yayın için F tarayıcısı açık olmalı.':'Karantina için F tarayıcısını kapat.');return false}
+ witnessVerified=true;flash(publish?'Açık tanıklık onaylandı.':'Korunan tanıklık onaylandı.');playCue('gate');pulseFX(player.x,player.y,publish?'#72efd8':'#f6bb87',2);updateGateFeedback();updateHUD();return true;
+}
+function updateSyncStatus(){
+ const box=$('sync-panel');if(!box)return;box.hidden=!level.syncPads;if(!level.syncPads)return;
+ const sync=syncedEchoOwners(),state=[levelIndex,scannerOn,sync.first,sync.second,witnessVerified,sourceVerdict].join(':');
+ if(lastSyncStatus===state)return;lastSyncStatus=state;
+ $('sync-left').textContent=sync.first<0?'I · YANKI BEKLENİYOR':'I · E'+(sync.first+1)+' DOĞRULANDI';
+ $('sync-right').textContent=sync.second<0?'II · AYRI YANKI BEKLENİYOR':'II · E'+(sync.second+1)+' DOĞRULANDI';
+ $('sync-verdict').textContent=witnessVerified?'KORA ONAYLADI · ÇIKIŞ AÇIK':!scannerOn?'F DOĞRULAYICISINI AÇ':sync.verified?'İKİ BAĞIMSIZ KAYIT EŞZAMANLI': 'İKİ FARKLI YANKI AYNI ANDA GEREKLİ';
+ $('sync-verdict').dataset.valid=String(sync.verified||witnessVerified);
+ $('sync-rule').textContent=level.witnessConsole?'KORA KONSOLU: '+(sourceVerdict==='publish'?'F AÇIKKEN E · AÇIK TANIKLIK':'F KAPALIYKEN E · GİZLİ TANIKLIK'):'Bir yankı aynı anda iki sensöre tanıklık edemez.';
+}
+function gateOpen(key){if(key==='OUT')return !!endingChoice;if(key==='XSYNC')return syncedEchoOwners().verified;if(key==='WITNESS')return witnessVerified;if(key==='AUDIT')return auditUnlocked;if(key==='PROOF'||key==='STAMP')return sourceProofValid();const p=level.plates.find(p=>p.key===key);return !!p&&(p.pulse?!!relayUntil[key]&&relayUntil[key]>elapsed:platePressed(p))}
 function tileType(x,y){if(x<1||x>=W-1||y<1||y>=H-1)return 'wall';if(level.block.some(p=>p.x===x&&p.y===y))return 'wall';for(const b of level.barriers){if(b.x===x){if(b.gate[0]===x&&b.gate[1]===y)return gateOpen(b.key)?'gateopen':'gate';return 'wall'}}return 'floor'}
 function collides(x,y){const r=.27;for(let tx=Math.floor(x-r);tx<=Math.floor(x+r);tx++)for(let ty=Math.floor(y-r);ty<=Math.floor(y+r);ty++){const tp=tileType(tx,ty);if(tp==='wall'||tp==='gate'){let nx=Math.max(tx,Math.min(x,tx+1)),ny=Math.max(ty,Math.min(y,ty+1));if((x-nx)**2+(y-ny)**2<r*r)return true}}return false}
 function spawnParticle(x,y,color){particles.push({x,y,vx:(Math.random()-.5)*2.4,vy:(Math.random()-.5)*2.4,life:.4+Math.random()*.6,color})}
@@ -730,7 +791,7 @@ function guardPos(g){const travel=g.y2-g.y1,p=((elapsed*g.speed+g.offset)%(2*tra
 
 function renderAuthorityChain(){
  const el=$('authority-chain');el.replaceChildren();
- if(![12,14].includes(levelIndex)||!['publish','seal'].includes(sourceVerdict))return;
+ if(![12,14,16].includes(levelIndex)||!['publish','seal'].includes(sourceVerdict))return;
  const route=sourceVerdict==='publish';
  const nodes=[
   ['01 / GÖRÜNTÜ','00 etiketi kamera hattında görünüyor.',''],
@@ -753,6 +814,7 @@ function chapterRecapForRoom(){
   proven:internal?'İç hatta iki bağımsız yankı aynı anda kapıyı tuttu.':'Dış hatta da iki farklı yankı izi aynı ana denk geldi.',
   question:'Kaydı bulunmayan üçüncü silueti kim, neden sisteme ekledi?'
  };
+ if(levelIndex===16)return {proven:'İki farklı gerçek yankı I ve II sensörlerinde aynı anda doğrulandı. Kora bu tanıklığı '+(sourceVerdict==='publish'?'açık':'gizli')+' hatta aktardı.',question:'00 yetki ailesinin ilk kopyasını kim oluşturdu ve Kora hangi bilgileri saklıyor?'};
  if(levelIndex===14)return {proven:'A→B hareketi doğrulanmış zaman farkıyla kaydedildi. Önceden seçtiğin kanalın son rölesi de gerçekten açıldı.',question:sourceVerdict==='publish'?'Açığa çıkan tanık konumları kimlerin eline geçecek?':'Gizlenen kanıtın dışarıya güvenle aktarılması mümkün mü?'};
  if(levelIndex===12)return {proven:'A→B ve B→A gerçek kayıtlarla ayrı ayrı doğrulandı. 00 imzası tek bir kişinin kimliği olarak kabul edilemez.',question:sourceVerdict==='publish'?'Dış hat, tanıkların yerini kimlere gösterecek?':'Kanıt dışarıya kapalıyken yönetimin iddiasını kim sorgulayacak?'};
  if(levelIndex===10)return {
@@ -808,13 +870,21 @@ function victory(){
    showOverlay('BÖLÜM IV / İKİ İMZA',published?'Kanıt artık gizli değil.':'Tanıkların izi korunuyor.',
     published?'İki ayrı gerçek iz dış gözlemcilere iletildi. Yayın protokolü son kapıda <strong>iki eşzamanlı yankı</strong> isteyecek.':'Kayıtların konumları karantinada saklanıyor. Son kapı <strong>yalnızca canlı taşıyıcıya</strong> açılacak.',
     'BÖLÜM V →');
- }else if(n===LVLS.length){
-   wonAll=true;mode='allwon';const published=sourceVerdict==='publish';
+ }else if(levelIndex===14){
+   const published=sourceVerdict==='publish';
    archiveRead.add(published?'A18_PUBLIC':'A18_SEALED');
    try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
    showOverlay('BÖLÜM V / YETKİ KAPISI',
     published?'İki yankı son anahtarı birlikte çevirdi.':'Kapı yalnızca sana açıldı.',
-    published?'Zamanı doğrulanmış gerçek kayıtlar ve eşzamanlı iki tanık dış hattı açtı. <strong>00 etiketinin bir kişiye ait olmadığı artık açık.</strong> Fakat tanıkların konumu korunamadı.':'Kopyalanmış 00 yetkisi doğrulandı. Sona kalan geçidi yalnızca canlı dokunuşun açtı. <strong>Tanıkların izi şimdilik gizli, dış incelemenin yoluysa kapalı.</strong>',
+    published?'Zamanı doğrulanmış gerçek kayıtlar dış hatta ulaştı. <strong>Bölüm VI: Ayrı Tanıklar</strong>, birbirinden uzaktaki iki gerçek kaydın eşzamanlılığını inceleyecek.':'Kopya yetki doğrulandı ve izler gizli tutuldu. <strong>Bölüm VI: Ayrı Tanıklar</strong>, birbirinden uzaktaki iki gerçek kaydın eşzamanlılığını inceleyecek.',
+    'BÖLÜM VI →');
+ }else if(n===LVLS.length){
+   wonAll=true;mode='allwon';const published=sourceVerdict==='publish';
+   archiveRead.add(published?'A21_PUBLIC':'A21_SEALED');
+   try{localStorage.setItem('echo12-archive',JSON.stringify([...archiveRead]))}catch(e){}
+   showOverlay('BÖLÜM VI / KORA PROTOKOLÜ',
+    published?'İki tanık doğrulandı; hat artık açık.':'İki tanık doğrulandı; hat mühürlendi.',
+    published?'Farklı odalardaki iki gerçek yankı aynı anda kayda geçti. <strong>Kora bu tanıklığı yayınladı.</strong> Ancak tanıkların yerleri korunamadı; 00 etiketinin sahibiyse hâlâ bilinmiyor.':'İki bağımsız kayıt eşzamanlılık testini geçti. <strong>Kora tanıklığı gizli arşive aktardı.</strong> Tanıklar korunuyor ama dış dünyaya henüz hiçbir düzeltme ulaşmadı.',
     'YENİDEN BAŞLA ↺');
  }else{
    showOverlay('GEÇİŞ KİLİDİ AÇILDI','ODA '+String(n).padStart(2,'0')+' TAMAMLANDI',
@@ -836,13 +906,13 @@ if(secondLeft<=3&&secondLeft>0&&lastCountdownBeat!==secondLeft){lastCountdownBea
  if(Math.hypot(player.x-level.exit[0]-.5,player.y-level.exit[1]-.5)<.48)victory();if((Math.round(elapsed*10)!==Math.round((elapsed-dt)*10)))updateHUD()
 }
 function updateHUD(){
- updateProofPanel();const playing=mode==='playing';
+ updateSyncStatus();updateProofPanel();const playing=mode==='playing';
  $('mobile-record').disabled=!playing;
- $('mobile-interact').disabled=!playing||!(nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice());
+ $('mobile-interact').disabled=!playing||!(nearWitnessConsole()||nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice());
  $('mobile-undo').disabled=!playing||clones.length===0;
  $('mobile-pause').disabled=!(playing||mode==='paused');
  $('mobile-pause').textContent=mode==='paused'?'▶ Devam':'Ⅱ Duraklat';
- updateCampaignUI();updateProtocolStatus();if(levelIndex===0)$('hint').textContent=currentObjective();$('frequency').disabled=mode!=='playing'||!(level.phantoms||level.reverseEnabled);$('frequency').textContent=level.phantoms?'F · DOĞRULA '+(scannerOn?'AÇIK':'KAPALI'):level.reverseEnabled?'F · '+(reverseMode?'TERS':'NORMAL'):'F · KAPALI';const canInteract=!!(nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice());$('interact').disabled=mode!=='playing'||!canInteract;$('interact').textContent=nearestSensor()?'⌁ Kanıt topla':nearestAuditConsole()?'⌁ Kanıtları karşılaştır':nearestChoice()?'⌁ Çekirdek kararı':'⌁ Terminali oku';refreshArchiveCount();$('room').textContent=`${String(levelIndex+1).padStart(2,'0')} / ${String(LVLS.length).padStart(2,'0')}`;$('time').textContent=`${Math.max(0,LOOP-elapsed).toFixed(1)} sn`;$('timefill').style.width=(100*elapsed/LOOP)+'%';$('clones').textContent=`${clones.length} / ${MAX_CLONES}`;$('mode').textContent={menu:'HAZIR',playing:'KAYIT',paused:'DURDU',leveldone:'BAŞARILI',allwon:'TAMAMLANDI',reading:'ARŞİV',decision:'KARAR',auditing:'KANIT',selecting:'ODA SEÇİMİ'}[mode]||mode;
+ updateCampaignUI();updateProtocolStatus();if(levelIndex===0)$('hint').textContent=currentObjective();$('frequency').disabled=mode!=='playing'||!(level.phantoms||level.reverseEnabled);$('frequency').textContent=level.phantoms?'F · DOĞRULA '+(scannerOn?'AÇIK':'KAPALI'):level.reverseEnabled?'F · '+(reverseMode?'TERS':'NORMAL'):'F · KAPALI';const canInteract=!!(nearWitnessConsole()||nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice());$('interact').disabled=mode!=='playing'||!canInteract;$('interact').textContent=nearWitnessConsole()?'⌁ Kora tanıklığını onayla':nearestSensor()?'⌁ Kanıt topla':nearestAuditConsole()?'⌁ Kanıtları karşılaştır':nearestChoice()?'⌁ Çekirdek kararı':'⌁ Terminali oku';refreshArchiveCount();$('room').textContent=`${String(levelIndex+1).padStart(2,'0')} / ${String(LVLS.length).padStart(2,'0')}`;$('time').textContent=`${Math.max(0,LOOP-elapsed).toFixed(1)} sn`;$('timefill').style.width=(100*elapsed/LOOP)+'%';$('clones').textContent=`${clones.length} / ${MAX_CLONES}`;$('mode').textContent={menu:'HAZIR',playing:'KAYIT',paused:'DURDU',leveldone:'BAŞARILI',allwon:'TAMAMLANDI',reading:'ARŞİV',decision:'KARAR',auditing:'KANIT',selecting:'ODA SEÇİMİ'}[mode]||mode;
 const rem=LOOP-elapsed,critical=mode==='playing'&&rem<=3,anyOpen=level.barriers.some(b=>gateOpen(b.key));
 $('signal-value').textContent=critical?'SON '+Math.ceil(rem)+' SANİYE':mode==='playing'?(level.phantoms&&!scannerOn?'SİNYAL DOĞRULANMADI':level.reverseEnabled&&reverseMode?'TERS KAYIT HAZIR':anyOpen?'GEÇİŞ AÇIK':'KAYIT ALINIYOR'):mode==='allwon'?'PROTOKOL TAMAMLANDI':mode==='decision'?'ONAY BEKLENİYOR':mode==='auditing'?'KANIT DENETİMİ':mode==='reading'?'ARŞİV OKUNUYOR':'SİSTEM BEKLEMEDE';
 $('signal-strip').classList.toggle('critical',critical);syncAtmos();}
@@ -881,7 +951,7 @@ function drawMinimap(){
    miniCtx.fillStyle=type==='wall'?'#3b5064':type==='gate'?'#ebac74':'#51e2c3';miniCtx.fillRect(x*k,y*k,k,k);
   }else{miniCtx.fillStyle=(x+y)%2?'#1e3045':'#18293a';miniCtx.fillRect(x*k+.5,y*k+.5,k-1,k-1)}
  }
- for(const plate of level.plates){miniCtx.fillStyle=platePressed(plate)?'#79edcc':'#bc8eff';miniCtx.fillRect((plate.x+.5)*k-3,(plate.y+.5)*k-3,6,6)}for(const p of (level.probes||[])){miniCtx.fillStyle=p.id==='A'?'#67d7ff':'#e4abff';miniCtx.beginPath();miniCtx.arc((p.x+.5)*k,(p.y+.5)*k,4,0,Math.PI*2);miniCtx.fill()}
+ for(const plate of level.plates){miniCtx.fillStyle=platePressed(plate)?'#79edcc':'#bc8eff';miniCtx.fillRect((plate.x+.5)*k-3,(plate.y+.5)*k-3,6,6)}for(const p of (level.syncPads||[])){miniCtx.fillStyle='#63baff';miniCtx.fillRect((p.x+.5)*k-4,(p.y+.5)*k-4,8,8)}for(const p of (level.probes||[])){miniCtx.fillStyle=p.id==='A'?'#67d7ff':'#e4abff';miniCtx.beginPath();miniCtx.arc((p.x+.5)*k,(p.y+.5)*k,4,0,Math.PI*2);miniCtx.fill()}
  for(const c of clones){const g=ghostAt(c);miniCtx.fillStyle='#e0bdff';miniCtx.beginPath();miniCtx.arc(g.x*k,g.y*k,3,0,Math.PI*2);miniCtx.fill()}
  const goal=level.exit;miniCtx.save();miniCtx.translate((goal[0]+.5)*k,(goal[1]+.5)*k);miniCtx.rotate(Math.PI/4);miniCtx.strokeStyle='#a5ffe7';miniCtx.lineWidth=1.6;miniCtx.strokeRect(-4,-4,8,8);miniCtx.restore();
  miniCtx.fillStyle='#70ffe1';miniCtx.strokeStyle='#072329';miniCtx.lineWidth=1.5;miniCtx.beginPath();miniCtx.arc(player.x*k,player.y*k,5,0,Math.PI*2);miniCtx.fill();miniCtx.stroke();
@@ -906,7 +976,20 @@ function draw(){if(cameraMode==='focus')cameraFocusOrigin();ctx.clearRect(0,0,96
   ctx.textAlign='center';ctx.font='bold 13px ui-monospace,monospace';ctx.fillStyle='#fff';ctx.fillText(probe.id,0,5);ctx.restore();
   ctx.fillStyle='#cedaea';ctx.textAlign='center';ctx.font='9px ui-monospace,monospace';ctx.fillText('İZ / '+probe.id,x,y+29)
  }
- if(level.auditConsole){const x=(level.auditConsole[0]+.5)*T,y=(level.auditConsole[1]+.5)*T;ctx.save();ctx.translate(x,y);ctx.fillStyle=auditUnlocked?'#205d48':'#213b57';ctx.strokeStyle=auditUnlocked?'#6df6c4':'#f6d296';ctx.lineWidth=3;round(-17,-17,34,34,6);ctx.fill();ctx.stroke();ctx.fillStyle='#f4fffa';ctx.font='bold 10px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText('CHK',0,4);ctx.restore();ctx.fillStyle='#c9e2d6';ctx.font='9px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(auditUnlocked?'GEÇTİ':'KANIT',x,y+31)}
+ 
+ // two independent evidence pads; holograms are never counted as real witnesses
+ for(const pad of (level.syncPads||[])){
+  const x=(pad.x+.5)*T,y=(pad.y+.5)*T,owners=syncedEchoOwners(),active=pad.id==='I'?owners.first>=0:owners.second>=0;
+  ctx.save();ctx.translate(x,y);ctx.lineWidth=3;ctx.fillStyle=active?'#226958':'#182c4f';ctx.strokeStyle=active?'#72ffe0':'#87b9fa';
+  ctx.beginPath();ctx.arc(0,0,18,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.textAlign='center';ctx.font='bold 13px ui-monospace,monospace';ctx.fillStyle='#eafffb';ctx.fillText(pad.id,0,5);ctx.restore();
+  ctx.textAlign='center';ctx.font='9px ui-monospace,monospace';ctx.fillStyle=active?'#aaffdf':'#a7bbdb';ctx.fillText(active?'YANKI':'BEKLİYOR',x,y+31);
+ }
+ if(level.witnessConsole){const x=(level.witnessConsole[0]+.5)*T,y=(level.witnessConsole[1]+.5)*T;
+  ctx.fillStyle=witnessVerified?'#1e6553':'#302b49';ctx.strokeStyle=witnessVerified?'#70f6bd':'#f5d09a';ctx.lineWidth=3;round(x-19,y-19,38,38,7);ctx.fill();ctx.stroke();
+  ctx.textAlign='center';ctx.font='bold 11px ui-monospace,monospace';ctx.fillStyle='#f9faed';ctx.fillText('K',x,y+4);ctx.fillText(witnessVerified?'ONAY':'E / KORA',x,y+31);
+ }
+if(level.auditConsole){const x=(level.auditConsole[0]+.5)*T,y=(level.auditConsole[1]+.5)*T;ctx.save();ctx.translate(x,y);ctx.fillStyle=auditUnlocked?'#205d48':'#213b57';ctx.strokeStyle=auditUnlocked?'#6df6c4':'#f6d296';ctx.lineWidth=3;round(-17,-17,34,34,6);ctx.fill();ctx.stroke();ctx.fillStyle='#f4fffa';ctx.font='bold 10px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText('CHK',0,4);ctx.restore();ctx.fillStyle='#c9e2d6';ctx.font='9px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(auditUnlocked?'GEÇTİ':'KANIT',x,y+31)}
  // exit
  {let x=(level.exit[0]+.5)*T,y=(level.exit[1]+.5)*T;ctx.save();ctx.translate(x,y);ctx.rotate(t*.6);ctx.strokeStyle='#53f3d0';ctx.lineWidth=3;ctx.shadowBlur=20;ctx.shadowColor='#53f3d0';ctx.strokeRect(-15,-15,30,30);ctx.rotate(Math.PI/4);ctx.strokeRect(-10,-10,20,20);ctx.restore();ctx.textAlign='center';ctx.font='bold 9px ui-monospace,monospace';ctx.fillStyle='#b0ffe8';ctx.fillText(levelIndex===5?(endingChoice==='keep'?'ÇEKİRDEK':endingChoice==='cut'?'DIŞARI':'KİLİTLİ'):'EXIT',x,y+33)}
  // guards
@@ -923,7 +1006,7 @@ function draw(){if(cameraMode==='focus')cameraFocusOrigin();ctx.clearRect(0,0,96
  // world overlay heads
  ctx.textAlign='left';ctx.font='bold 12px ui-monospace,Consolas,monospace';ctx.fillStyle='#9caec5';ctx.fillText(`SECTOR 0${levelIndex+1}  /  ${level.title}`,52,591);ctx.textAlign='right';ctx.fillStyle='#7c95ad';ctx.fillText('CAPTURE WINDOW · 12.00s',909,591);
  if(msg&&wallClock<msgUntil){ctx.save();let a=Math.min(1,(msgUntil-wallClock)*2);ctx.globalAlpha=a;ctx.fillStyle='#091624dd';round(210,515,540,39,8);ctx.fill();ctx.strokeStyle='#526e83';ctx.stroke();ctx.fillStyle='#dcf8f5';ctx.textAlign='center';ctx.font='bold 13px ui-monospace,monospace';ctx.fillText(msg,480,540);ctx.restore()}
- if(mode==='playing'&&(nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice())){ctx.save();ctx.fillStyle='#0d293be8';round(300,506,360,37,8);ctx.fill();ctx.strokeStyle='#67c5e5';ctx.stroke();ctx.fillStyle='#d9f9ff';ctx.textAlign='center';ctx.font='bold 13px ui-monospace,monospace';ctx.fillText(nearestSensor()?'E  ·  ÖLÇÜM AL':nearestAuditConsole()?'E  ·  KANITLARI KARŞILAŞTIR':nearestChoice()?'E  ·  ÇEKİRDEK KARARI':'E  ·  TERMİNAL KAYDINI OKU',480,531);ctx.restore()}
+ if(mode==='playing'&&(nearWitnessConsole()||nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice())){ctx.save();ctx.fillStyle='#0d293be8';round(300,506,360,37,8);ctx.fill();ctx.strokeStyle='#67c5e5';ctx.stroke();ctx.fillStyle='#d9f9ff';ctx.textAlign='center';ctx.font='bold 13px ui-monospace,monospace';ctx.fillText(nearestSensor()?'E  ·  ÖLÇÜM AL':nearestAuditConsole()?'E  ·  KANITLARI KARŞILAŞTIR':nearestChoice()?'E  ·  ÇEKİRDEK KARARI':'E  ·  TERMİNAL KAYDINI OKU',480,531);ctx.restore()}
  if(endingChoice){ctx.fillStyle=endingChoice==='keep'?'#6bead0':'#ff8693';ctx.textAlign='right';ctx.font='bold 12px ui-monospace,monospace';ctx.fillText(endingChoice==='keep'?'TANIKLAR KORUNUYOR':'ÇEKİRDEK KAPATILIYOR',905,566)}
  if(mode==='playing'){ctx.fillStyle='#53f3d0';ctx.beginPath();ctx.arc(916,30,5,0,Math.PI*2);ctx.fill();ctx.textAlign='right';ctx.font='11px ui-monospace,monospace';ctx.fillStyle='#8ba8b9';ctx.fillText('REC',904,34)}
  // Visual-only interference; collision rules and recorded movement remain untouched.
