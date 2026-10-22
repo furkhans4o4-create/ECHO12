@@ -399,7 +399,7 @@ def main():
             assert page.locator('#authority-chain .authority-node').count()==4
             assert 'kime verildiği' in page.locator('#authority-chain').inner_text().lower()
             assert page.locator('#authority-chain .exposed').count()==1
-            assert 'dışarı' in page.locator('#authority-chain').inner_text().lower()
+            assert 'yayımlandı' in page.locator('#authority-chain').inner_text().lower()
             page.locator('#replay-choice').click()
             verify(page,errors,'KAYIT')
             assert page.locator('#room').inner_text()=='13 / 13'
