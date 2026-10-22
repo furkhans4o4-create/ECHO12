@@ -533,7 +533,7 @@ function showDebrief(improved){
  if(improved)tokens.push(['Yeni kişisel rekor','★']);
  for(const [label,value] of tokens){const tag=document.createElement('span');tag.className='debrief-stat'+(label==='Yeni kişisel rekor'?' best':'');tag.textContent=label+': '+value;d.append(tag)}
 }
-function loadLevel(idx){motionTrail=[];needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=11?'BÖLÜM IV / ':idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8,11].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8,11].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
+function loadLevel(idx){lastProofSignature='';motionTrail=[];needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=11?'BÖLÜM IV / ':idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8,11].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8,11].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
 
 function closeAuditPanel(){$('audit').classList.add('hidden');$('audit').setAttribute('aria-hidden','true')}
 function nearestSensor(){return (level.sensors||[]).find(v=>Math.hypot(player.x-v.x-.5,player.y-v.y-.5)<.72)||null}
@@ -593,7 +593,7 @@ function closeArchive(){if(mode!=='reading')return;$('archive').classList.add('h
 function interactTerminal(){if(mode!=='playing')return;const sensor=nearestSensor();if(sensor){scanSensor(sensor);return}if(nearestAuditConsole()){openAuditPanel();return}const choice=nearestChoice();if(choice){openDecision(choice);return}const terminal=nearestTerminal();if(terminal)openArchive(terminal.entry);else flash('Bir terminale veya konsola yaklaş.')}
 function startGame(){if(wonAll){loadLevel(0)}else if(mode==='menu'){loadLevel(getUnlocked())}else if(mode==='leveldone'){loadLevel(Math.min(levelIndex+1,LVLS.length-1))}else if(mode==='allwon'){loadLevel(0)}else if(mode==='paused'){mode='playing'}hideOverlay();audioBeep(700)}
 function resetPlayer(){motionTrail=[];needsRedraw=true;player={x:level.start[0]+.5,y:level.start[1]+.5};elapsed=0;relayUntil={};record=[{...player}];lastCountdownBeat=-1;}
-function cycleCommit(manual=true){if(mode!=='playing')return;if(clones.length>=MAX_CLONES){if(!manual)resetPlayer();flash('6 yankı sınırı doldu. Z ile son yankıyı sil.');audioBeep(190,.2,'sawtooth');return}const samples=record.map(p=>({...p})),last=samples[samples.length-1];while(samples.length<Math.round(LOOP/DT)+1)samples.push({...last});const order=traceOrder(samples,level.probes);clones.push({samples,color:clones.length,reverse:!!(level.reverseEnabled&&reverseMode),proofOrder:order});if(order){pulseFX(player.x,player.y,'#ffe6aa',1.2)}for(let j=0;j<17;j++)spawnParticle(player.x,player.y,'#ba9dff');pulseFX(player.x,player.y,'#bd9dff',2);rewindWash=.55;playCue('echo');resetPlayer();flash(manual?'Yankın kaydedildi. Yeni döngü başladı.':'12 saniye doldu. Geçmişin kaydedildi.');updateHUD()}
+function cycleCommit(manual=true){if(mode!=='playing')return;if(clones.length>=MAX_CLONES){if(!manual)resetPlayer();flash('6 yankı sınırı doldu. Z ile son yankıyı sil.');audioBeep(190,.2,'sawtooth');return}const samples=record.map(p=>({...p})),last=samples[samples.length-1];while(samples.length<Math.round(LOOP/DT)+1)samples.push({...last});const proofEvents=traceEvents(samples,level.probes),order=traceOrder(samples,level.probes);clones.push({samples,color:clones.length,reverse:!!(level.reverseEnabled&&reverseMode),proofOrder:order,proofEvents});if(order){pulseFX(player.x,player.y,'#ffe6aa',1.2)}for(let j=0;j<17;j++)spawnParticle(player.x,player.y,'#ba9dff');pulseFX(player.x,player.y,'#bd9dff',2);rewindWash=.55;playCue('echo');resetPlayer();flash(manual?'Yankın kaydedildi. Yeni döngü başladı.':'12 saniye doldu. Geçmişin kaydedildi.');updateHUD()}
 function undoEcho(){if(mode!=='playing'||!clones.length)return;clones.pop();resetPlayer();flash('Son yankı silindi. Bu döngü de başa alındı.');audioBeep(390,.12);pulseFX(player.x,player.y,'#f0b8ff');updateHUD()}
 function flash(s){msg=s;msgUntil=wallClock+2.3}
 function restart(){if(!level)return;loadLevel(levelIndex);hideOverlay();audioBeep(400,.1)}
@@ -631,18 +631,43 @@ function platePressed(p){const count=plateOccupancy(p);if(p.needsScan)return sca
 function toggleFrequency(){if(mode!=='playing')return;if(level.phantoms){scannerOn=!scannerOn;flash(scannerOn?'Doğrulayıcı etkin. Sahte imzalar kırmızı işaretlendi.':'Doğrulayıcı kapandı. Sahte imzalar ayırt edilemiyor.')}else if(level.reverseEnabled){reverseMode=!reverseMode;flash(reverseMode?'Sonraki kayıt TERS oynatılacak.':'Sonraki kayıt NORMAL oynatılacak.')}else return;audioBeep(scannerOn||reverseMode?930:440,.11,'sine');updateGateFeedback();updateHUD()}
 function updateRelays(){for(const p of level.plates)if(p.pulse&&platePressed(p))relayUntil[p.key]=Math.max(relayUntil[p.key]||0,elapsed+p.pulse)}
 
-function traceOrder(samples,probes){
- if(!probes||!Array.isArray(samples))return '';
- let first='';
- for(const p of samples){
-  if(!p||!Number.isFinite(p.x)||!Number.isFinite(p.y))continue;
-  for(const probe of probes){
-   if(Math.hypot(p.x-probe.x-.5,p.y-probe.y-.5)>.48)continue;
-   if(!first){first=probe.id;break}
-   if(probe.id!==first)return first+probe.id;
-  }
+function traceEvents(samples,probes){
+ if(!probes||!Array.isArray(samples))return [];
+ const events=[];let inside='';
+ for(let i=0;i<samples.length;i++){
+  const p=samples[i];if(!p||!Number.isFinite(p.x)||!Number.isFinite(p.y))continue;
+  const nearby=probes.find(pr=>Math.hypot(p.x-pr.x-.5,p.y-pr.y-.5)<=.48);
+  const id=nearby?nearby.id:'';
+  if(id&&id!==inside)events.push({id,second:Math.min(LOOP,i*DT)});
+  inside=id;
  }
- return '';
+ return events;
+}
+function traceOrder(samples,probes){
+ const events=traceEvents(samples,probes);
+ const first=events[0]?.id,second=events.find(e=>e.id!==first)?.id;
+ return first&&second?first+second:'';
+}
+
+let lastProofSignature='';
+function updateProofPanel(){
+ const panel=$('proof-panel');if(!panel)return;
+ const enabled=!!level?.probes;panel.hidden=!enabled;
+ if(!enabled)return;
+ const live=traceEvents(record,level.probes);
+ const counts=verifiedTraceCounts();
+ const found=clones.map((c,i)=>({i,order:c.proofOrder,events:c.proofEvents||[]}));
+ const liveSequence=live.length?live.map(x=>x.id+' '+x.second.toFixed(1)+'s').join(' → '):'Henüz A/B noktasına temas yok';
+ const stage=live.length===0?'İlk okuma noktasını bul':live.length===1?live[0].id+' kaydediliyor · karşı noktaya git':traceOrder(record,level.probes)?'Kayıt hazır · BOŞLUK ile kaydet':'Okuma sırası devam ediyor';
+ const signature=[levelIndex,scannerOn,liveSequence,clones.length,counts.forward,counts.backward,found.map(x=>x.order).join('|')].join('~');
+ if(signature===lastProofSignature)return;lastProofSignature=signature;
+ $('proof-live').textContent=liveSequence;
+ const box=$('proof-records');box.replaceChildren();
+ if(!found.length)box.textContent='Henüz kayıt yok';
+ for(const item of found){const tag=document.createElement('span');tag.className='proof-record'+(item.order==='AB'||item.order==='BA'?' verified':' invalid');tag.textContent='E'+String(item.i+1).padStart(2,'0')+' · '+(item.order?item.order[0]+'→'+item.order[1]:'İMZA YOK');box.append(tag)}
+ const required=level.dualProof?'A→B '+Math.min(1,counts.forward)+'/1  ·  B→A '+Math.min(1,counts.backward)+'/1':'A→B '+Math.min(1,counts.forward)+'/1';
+ const isReady=sourceProofValid();$('proof-evidence').textContent=required+(scannerOn?'  ·  TARAMA AÇIK':'  ·  F İLE DOĞRULA');$('proof-evidence').classList.toggle('valid',isReady);
+ $('proof-status').textContent=isReady?'GERÇEK İMZA ONAYLANDI':!scannerOn?'DOĞRULAYICI KAPALI':stage;
 }
 function verifiedTraceCounts(){
  let forward=0,backward=0;
@@ -750,7 +775,7 @@ if(secondLeft<=3&&secondLeft>0&&lastCountdownBeat!==secondLeft){lastCountdownBea
  if(Math.hypot(player.x-level.exit[0]-.5,player.y-level.exit[1]-.5)<.48)victory();if((Math.round(elapsed*10)!==Math.round((elapsed-dt)*10)))updateHUD()
 }
 function updateHUD(){
- const playing=mode==='playing';
+ updateProofPanel();const playing=mode==='playing';
  $('mobile-record').disabled=!playing;
  $('mobile-interact').disabled=!playing||!(nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice());
  $('mobile-undo').disabled=!playing||clones.length===0;
