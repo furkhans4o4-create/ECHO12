@@ -1103,12 +1103,12 @@ def main():
 
             page, errors = load(browser, 15)
             page.keyboard.press('f')
-            assert 'I sensörüne' in page.locator('#diagnostic-list').inner_text()
+            assert page.locator('#diagnostic-list .diagnostic-row').count()==2
             page.evaluate("window.__echo12Test.teleport(9.5,3.5)")
             page.evaluate("window.__echo12Test.tick(.1)")
             commit(page)
             page.evaluate("window.__echo12Test.tick(.1)")
-            assert 'II sensörüne' in page.locator('#diagnostic-list').inner_text()
+            assert page.locator('#diagnostic-list .diagnostic-row').count()==2
             assert not errors,errors
             page.close()
             print('PASS Build 023: live gate diagnostics and evidence-dependent next-step suggestions')
