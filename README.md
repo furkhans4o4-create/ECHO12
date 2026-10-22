@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 020 — Gerçek Oda Tamamlama ve Güvenli Geri Yükleme
+
+**19 oda / 7 bölüm / 35 arşiv** değişmedi. Oyuncu açısından ana iyileştirme, açılmış odalarla gerçekten tamamlanan odaları ayıran güvenilir bir kampanya kaydı; kayıt güvenliği açısından ise yarıda kesilen geri yüklemelerde eski verilerin korunmasıdır.
+
+- **Tamamlama bilgisi:** Her başarılı oda geçişi `echo12-room-clears` listesine kaydedilir. Kampanya ilerleme çubuğunda tamamlanan sektörler ayrı görünür, oda seçimi ekranında **✓ TAMAMLANDI** rozeti taşır. Sadece açılmış ama bitirilmemiş odalar tamamlanmış gibi gösterilmez.
+- **Kasa ilerleme sayacı:** Kayıt kasası artık kaç odanın gerçekten tamamlandığını (örn. 13/19), diğer oda rekorları ve arşiv kayıtlarından ayrı gösterir. Bitirilmiş son oda da hesaplanır.
+- **Taşınabilir kayıt:** `ECHO12_SAVE_V1` biçimi korunur; `clearedRooms` adlı isteğe bağlı yeni alanla hangi odaların tamamlandığı taşınır. Eski v1 yedekleri bozulmaz: bu alan yoksa açılmış ilerlemeden tamamlanan önceki odalar çıkarılır; henüz açılmamış hiçbir odaya rozet verilmez.
+- **Güvenilirlik:** JSON kayıtları geçersiz oda numaralarını reddeder. Geri yükleme başlamadan önce mevcut bütün oyun anahtarları yedeklenir; depolama kota hatası veya yazma sorunu çıkarsa önceki değerler geri yazılmaya çalışılır ve yeni oyun içi durum uygulanmaz. Tam geri alma tarayıcının depolamaya hâlâ yazabilmesine bağlıdır.
+- **Testler:** Gerçek oda tamamlaması, renkli kampanya bölmeleri ve oda seçimi rozetleri, geçerli/invalid yedekler, eski v1 uyumluluğu, ilerleme paneli ve geri yükleme sırasında simüle edilmiş depolama arızası denetlenir.
+
 ## Build 019 — Kayıt Kasası ve Final Arşivi
 
 **19 oynanabilir oda, 7 hikâye bölümü, 35 arşiv girdisi** değişmeden kalır. Bu aşama oyunun bitiş sonrası kullanılabilirliğine, ilerlemenin taşınabilirliğine ve veri güvenilirliğine odaklanır.
