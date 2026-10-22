@@ -193,7 +193,7 @@ def main():
             html=html.replace('window.__echo12Store ??= {};','window.__echo12Store = '+saved+';')
             page.set_content(html,wait_until='load')
             page.locator('#logbook').click()
-            assert '2 / 19' in page.locator('#archive-status').inner_text()
+            assert '2 / 23' in page.locator('#archive-status').inner_text()
             verify(page,errors,'ARŞİV')
             page.close()
             print('PASS persisted endings: both results recoverable from storage')
