@@ -114,6 +114,7 @@ def main():
             assert page.evaluate("window.__echo12Test.hints()")==0
             assert page.evaluate("window.__echo12Test.inspect()")['elapsed']==before['elapsed']
             page.locator('#beacon-toggle').click()
+            page.evaluate("document.activeElement.blur()")
             assert page.evaluate("window.__echo12Test.waypoint()")==first
             assert page.evaluate("localStorage.getItem('echo12-beacon')")=='on'
             page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
