@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 028 — Yankı Laboratuvarı Oynatıcı
+
+**19 oda, 7 bölüm ve 35 arşiv** korunur. Laboratuvardaki kayıtlar artık manuel zaman kaydırma olmadan oynatılıp önemli temas anları incelenebilir.
+
+- **Oynat / duraklat:** 0–12 saniye boyunca kayıtlı yankıları izle; son saniyede dur veya Tekrar ile döngüsel oynat.
+- **Üç hız:** 0,5×, 1× ve 2×. Kaydırıcıyı elle kullanmak ya da yarım saniye adım düğmesine basmak oynatmayı durdurur.
+- **Olay işaretleri:** Her kayıtlı yankının plaka, A/B imza noktası ve I/II tanık sensörlerine değdiği anlar zaman damgalı düğmelere dönüşür. Önceki/sonraki önemli an denetimleriyle olaylara atlanabilir. Ters oynatılan kayıtlar kaynak hareket zamanında değil, **gerçek oynatma sırasındaki zamanlarında** listelenir.
+- **Güvenli inceleme:** Laboratuvar oyunun saatini, röleleri, kapıları, kanıtı veya yankı kayıtlarını değiştirmez. Kapatınca oynatıcı durur. Klavye odağı ve zaman kaydırıcısının yön tuşları korunur.
+- **Testler:** Oynatma hızı, zaman sınırı, tekrar, manuel duraklatma, temas işaretleri, gerçek oyun saatinin donması ve ters kayıt senaryoları mevcut Playwright testlerine eklendi.
+
 ## Build 027 — Plaka Zaman Haritası
 
 19 oda, 7 bölüm ve 35 arşiv korunur. **Plakaların 12 saniyelik zaman haritası** adlı katlanır panel, kayıtlı yankıların herhangi bir odadaki her plakayı hangi zaman aralıklarında etkinleştirebileceğini hesaplar. Eski oynanışı ve kayıt dosyalarını değiştirmez.
