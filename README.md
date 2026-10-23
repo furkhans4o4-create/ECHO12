@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 041 — Rekor Gölgesi / Kendi En İyi Turunla Yarış
+
+**Tekrar oynama motivasyonunu artıran ilk kişisel rota yarışı.** Bir odayı yeni kişisel rekorla bitirdiğinde, son başarılı canlı döngündeki hareketinin seyrek bir izi kaydedilir. Odayı tekrar oynadığında geçmiş koşunun saydam **REKOR** işaretini takip ederek daha akıcı bir güzergâh arayabilirsin.
+
+- **Gerçek kendi hareketin:** En iyi derecenin bağlı olduğu son **canlı döngünün** rotası 0,1 saniye aralıklı örneklerle (maksimum 130 noktada) saklanır. Gölge döngünün 12 saniyelik saatine bağlı oynatılır ve eski koşunun tamamlandığı andan sonra kaybolur. Önceki döngülerde kayıtlı başka yankılar yeniden üretilmez.
+- **Yalnızca yarış, asla fizik değil:** Gölge hafif kesikli turkuaz patika ve içi boş REKOR simgesiyle ayrılır. Ne gerçek yankı sayılır ne de plakaları, tanık sensörlerini, tarayıcıyı, kapıları veya ölçüm istasyonlarını tetikler. Gerçek E01–E06 kayıtları ayrı kalır.
+- **İsteğe bağlı:** O odada rekor rotası bulunuyorsa **Rekor gölgesi** düğmesi görünür. **V** tuşu veya düğme ile kapatıp açabilirsin. Açık/kapalı tercihi cihazda korunur; bu değişim ipucu sayılmaz, başarıyı değiştirmez.
+- **Oda rekorlarıyla aynı zaman:** Var olan performans kuralı (önce daha az yankı, eşitlikte daha az aktif saniye) geçerlidir. Rekor iyileşmediğinde saklanan rota değiştirilmez. Bu yüzden eski rekorunda rota yoksa yeniden rekor kırdığında oluşur.
+- **Taşınabilir ve güvenli:** Gölge verileri tarayıcıya kaydedilir ve mevcut sürüm 1 JSON kayıt yedeğine geriye uyumlu isteğe bağlı `bestGhosts` alanıyla eklenir. Eski yedekler kullanılabilir. İçe alınan zaman, oda koordinatı, sıralama ve örnek sayısı kesin şekilde doğrulanır; bozuk veri mevcut kayıtları değiştirmeden reddedilir.
+- **Tarayıcı testleri:** İlk odada rekorun oluşması, yeniden açılınca gerçek zamana uygun oynatma, V tercihi ve süre bitişi, rekor gölgesinin geçide hiç temas etmemesi, eski yedek uyumu, geçerli içe aktarma, bozuk kayıt reddi ve yalnız-yankı plakasına gölgenin etkisizliği Playwright regresyonlarıyla sınanır.
+
 ## Build 040 — Plaka Tanıkları / Kapıyı Kimin Açtığını Gör
 
 Her plakanın yanında, gerçekten hangi yankının veya canlı karakterin bulunduğunu gösteren küçük iki satırlık tanık rozeti açılır. Etiketler E01–E06 numaralarını kullanır ve Yankı Odağı renkleriyle eşleşir.
