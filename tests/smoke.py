@@ -14,7 +14,7 @@ def commit(page):
     page.keyboard.press("Space")
     page.evaluate('window.__echo12Test.tick(0.01)')
 
-def load(browser, level):
+def load(browser, level, use_user_hud=False):
     # Isolate each level without requiring a previous save.
     html = HTML.replace("loadLevel(getUnlocked())", f"loadLevel({level})")
     html = html.replace("levelIndex=getUnlocked();level=", f"levelIndex={level};level=")
@@ -38,6 +38,13 @@ def load(browser, level):
       removeItem(key){delete window.__echo12Store[key]}
     }});
     </script>"""
+    if not use_user_hud:
+        # Historical browser regressions deliberately inspect complete panes.
+        # Test true first-run onboarding separately with use_user_hud=True.
+        storage_stub=storage_stub.replace(
+            'window.__echo12Store ??= {};',
+            'window.__echo12Store ??= {"echo12-hud-mode":"full"};'
+        )
     html=html.replace('<script>\n(()=>{',storage_stub+'<script>\n(()=>{')
     page = browser.new_page(viewport={"width": 1280, "height": 900})
     errors = []
@@ -100,6 +107,70 @@ def main():
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
             
+            # Build 038: first-time players get the essential screen,
+            # without losing the ability to restore diagnostic tools.
+            page, errors = load(browser,0,use_user_hud=True)
+            assert page.evaluate("document.body.classList.contains('hud-simple')")
+            assert page.locator('#hud-toggle').get_attribute('aria-pressed')=='true'
+            assert page.locator('#hud-quick-guide').is_visible()
+            assert 'A plakasına yürü' in page.locator('#hud-quick-guide').inner_text()
+            for sel in ['#challenge-panel','#echo-editor','#plate-forecast','#diagnostics']:
+                assert page.locator(sel).is_hidden(),sel
+            assert page.locator('#mission-director').is_visible()
+            assert page.locator('#commit').is_visible()
+            assert page.locator('#retry').is_visible()
+            before=page.evaluate("window.__echo12Test.inspect()")
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            page.keyboard.press('c')
+            assert not page.evaluate("document.body.classList.contains('hud-simple')")
+            assert page.locator('#echo-editor').is_visible()
+            assert page.locator('#plate-forecast').is_visible()
+            assert page.locator('#hud-toggle').get_attribute('aria-pressed')=='false'
+            assert page.evaluate("localStorage.getItem('echo12-hud-mode')")=='full'
+            assert page.evaluate("window.__echo12Test.inspect()")==before
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            page.locator('#hud-toggle').click()
+            assert page.evaluate("document.body.classList.contains('hud-simple')")
+            assert page.evaluate("localStorage.getItem('echo12-hud-mode')")=='simple'
+            page.evaluate("document.activeElement.blur()")
+            page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==1
+            assert page.locator('[data-id="pad-A"]').get_attribute('data-done')=='true'
+            page.keyboard.press('c')
+            page.locator('#echo-editor summary').click()
+            assert page.locator('#echo-editor-list .echo-editor-row').count()==1
+            assert not errors,errors
+            page.close()
+            print('PASS Build 038: first-room HUD, toggle, local choice, zero hint and real recording')
+
+            # The default automatically opens the full analysis from room 7.
+            for lvl,simple in [(1,True),(5,True),(6,False),(8,False),(18,False)]:
+                page, errors = load(browser,lvl,use_user_hud=True)
+                assert page.evaluate("document.body.classList.contains('hud-simple')")==simple,lvl
+                assert page.locator('#hud-toggle').get_attribute('aria-pressed')==str(simple).lower()
+                assert not errors,(lvl,errors)
+                page.close()
+            print('PASS Build 038: six-room automatic onboarding transition')
+
+            # The manual compact override works even in advanced rooms.
+            page, errors = load(browser,8,use_user_hud=True)
+            assert not page.evaluate("document.body.classList.contains('hud-simple')")
+            page.locator('#hud-toggle').click()
+            assert page.evaluate("document.body.classList.contains('hud-simple')")
+            assert page.locator('#proof-panel').is_hidden()
+            assert page.evaluate("localStorage.getItem('echo12-hud-mode')")=='simple'
+            page.evaluate("document.activeElement.blur()")
+            page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==1
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 038: advanced compact display keeps physics and medals intact')
+
             # Build 037: a standard controller drives analogue movement and
             # core gameplay using rising edges, never repeated held buttons.
             page, errors = load(browser,0)
