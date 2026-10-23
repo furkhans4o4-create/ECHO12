@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 030 — Faz Kaydırma / Yankıları Yeniden Zamanla
+
+**Yankıların ne zaman ortaya çıktığı artık gerçek bir bulmaca değişkeni.** Bölüm II'den itibaren Yankı Kayıtlarını Yönet panelinde E01–E06 kayıtlarını ayrı ayrı **0–3 saniye** geciktirebilirsin. Gecikme 0,5 saniyelik adımlarla ayarlanır; yeni bir yankı kaydetmeye gerek yoktur.
+
+- **Gerçek fizik:** Faz süresi dolmadan yankı sahnede bulunmaz, plakalara basmaz, I/II tanık sensörlerinde görünmez ve kapı açamaz. Süre dolduğunda gerçek kaydından normal veya ters yönde oynar. 12. saniyede kayıt kesilir.
+- **Kayıt kimliği korunur:** Kaydedilmiş hareketin örnekleri, kaynak imzası ve A/B olaylarının sırası değişmez. Bir yankının fazını düzenlemek, canlı döngüyü başa sarar ve daha önce onaylanmış kayıt-bağımlı delilleri yeniden doğrulatır. Geri getirilen yankı önceki fazını da korur.
+- **Çapraz görünürlük:** Faz miktarı her yankı satırında görülür; ana sahne ve mini harita, laboratuvar oynatıcısı, plaka zaman haritası, tanık çakışma analizi ve zaman çizelgesi aynı fazlı hareketi gösterir.
+- **Sınırlar:** İleri bölüm mekaniğidir; ilk bölümde düğmeler kilitlidir. Oynayan 19 oda, hikâye rotaları, ustalık madalyaları ve mevcut sürüm 1 JSON kayıt yapısı değiştirilmez.
+- **Testler:** Fiziksel kapı açılma anı, faz aralığı sınırları, plaka zamanı, silip aynı fazda geri getirme, ilk bölümde kilit ve ters oynatılan yankının 12 saniye dışındaki teması tarayıcı testlerine eklendi.
+
 ## Build 029 — Operatör Sınamaları
 
 Kampanyanın **19 odası, 7 bölümü ve 35 arşivi** korunur. Her oda için üç bağımsız, isteğe bağlı ustalık hedefi vardır. Rozetler **kalıcıdır**; farklı tekrar oynayışlarda kazanılabilir ve normal bulmaca kurallarını değiştirmez.
