@@ -117,7 +117,7 @@ def main():
             page.locator('#echo-editor-list [data-echo-index="0"] button').click()
             assert page.locator('#echo-editor-list .echo-editor-row').count()==1
             assert page.locator('#echo-restore').is_enabled()
-            assert page.locator('#time').inner_text()=='12.0 sn'
+            assert page.evaluate("window.__echo12Test.inspect().elapsed")<0.5
             assert page.evaluate("window.__echo12Test.sync().clones") == original[1:]
             page.locator('#echo-restore').click()
             assert page.locator('#echo-editor-list .echo-editor-row').count()==2
@@ -130,7 +130,8 @@ def main():
             assert page.locator('#echo-restore').is_disabled()
             page.locator('#echo-editor-list [data-echo-index="0"] button').click()
             assert page.locator('#echo-restore').is_enabled()
-            commit(page)
+            page.locator('#commit').click()
+            page.evaluate("window.__echo12Test.tick(.01)")
             assert page.locator('#echo-restore').is_disabled()
             assert not errors,errors
             page.keyboard.press('r')
