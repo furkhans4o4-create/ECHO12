@@ -24,7 +24,7 @@ def load(browser, level, use_user_hud=False):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, plateReadouts(){return plateReadouts()}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -107,6 +107,79 @@ def main():
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
             
+            # Build 040: stage badges reflect real players, actual recordings
+            # and a plate that explicitly refuses live-only pressure.
+            page, errors = load(browser,4)
+            c=next(x for x in page.evaluate("window.__echo12Test.plateReadouts()") if x['key']=='C')
+            assert c['occupants']==[] and not c['pressed'],c
+            page.evaluate("window.__echo12Test.teleport(4.5,6.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            c=next(x for x in page.evaluate("window.__echo12Test.plateReadouts()") if x['key']=='C')
+            assert c['live'] and not c['pressed'] and c['status']=='YANKI GEREKLİ',c
+            assert 'SEN' in page.locator('#plate-reader').inner_text()
+            commit(page)
+            c=next(x for x in page.evaluate("window.__echo12Test.plateReadouts()") if x['key']=='C')
+            assert c['names']==['E01'] and c['qualified']==[0] and c['pressed'],c
+            assert c['open'] and not c['live'],c
+            assert 'E01' in page.locator('#plate-reader').inner_text()
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 040: real echo contacts, live rejection and accessible announcement')
+
+            # Two independent echoes have to press the same plate together.
+            page, errors = load(browser,6)
+            page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            commit(page)
+            p=next(x for x in page.evaluate("window.__echo12Test.plateReadouts()") if x['key']=='R')
+            assert p['status']=='1/2 YANKI' and not p['pressed'] and p['names']==['E01'],p
+            page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            commit(page)
+            p=next(x for x in page.evaluate("window.__echo12Test.plateReadouts()") if x['key']=='R')
+            assert p['qualified']==[0,1] and p['names']==['E01','E02'] and p['pressed'],p
+            before=page.evaluate("window.__echo12Test.echoIDs()")
+            page.locator('[data-focus-echo="0"]').click()
+            assert page.evaluate("window.__echo12Test.gate('R')")
+            assert page.evaluate("window.__echo12Test.echoIDs()")==before
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 040: two real simultaneous echoes and visual focus isolation')
+
+            # Phantoms must never be counted as real captured recordings.
+            page, errors = load(browser,8)
+            p=next(x for x in page.evaluate("window.__echo12Test.plateReadouts()") if x['key']=='T')
+            assert p['occupants']==[] and not p['pressed'],p
+            page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            commit(page)
+            p=next(x for x in page.evaluate("window.__echo12Test.plateReadouts()") if x['key']=='T')
+            assert p['qualified']==[0] and not p['pressed'] and p['status']=='F GEREKLİ',p
+            page.keyboard.press('f')
+            p=next(x for x in page.evaluate("window.__echo12Test.plateReadouts()") if x['key']=='T')
+            assert p['pressed'] and p['status']=='ETKİN',p
+            assert page.evaluate("window.__echo12Test.gate('T')")
+            assert not errors,errors
+            page.close()
+            print('PASS Build 040: F scanner truth and phantom separation')
+
+            # Pulse-memory stays open after all living/echo contacts leave.
+            page, errors = load(browser,3)
+            page.evaluate("window.__echo12Test.teleport(4.5,2.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            page.evaluate("window.__echo12Test.teleport(2.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            p=next(x for x in page.evaluate("window.__echo12Test.plateReadouts()") if x['key']=='A')
+            assert p['open'] and not p['pressed'] and not p['occupants'] and p['status']=='RÖLE',p
+            page.evaluate("window.__echo12Test.tick(2.2)")
+            p=next(x for x in page.evaluate("window.__echo12Test.plateReadouts()") if x['key']=='A')
+            assert not p['open'] and p['status']=='BEKLİYOR',p
+            assert not errors,errors
+            page.close()
+            print('PASS Build 040: relay tail distinguished from contact and expires on time')
+
             # Build 039: every ghost has a stable color/ID and visual focus
             # never mutates samples, gate states, or hint counters.
             page, errors = load(browser,1)

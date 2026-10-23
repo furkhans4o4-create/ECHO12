@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 040 — Plaka Tanıkları / Kapıyı Kimin Açtığını Gör
+
+Her plakanın yanında, gerçekten hangi yankının veya canlı karakterin bulunduğunu gösteren küçük iki satırlık tanık rozeti açılır. Etiketler E01–E06 numaralarını kullanır ve Yankı Odağı renkleriyle eşleşir.
+
+- **Fiziksel temas:** Canlı oyuncu için SEN, gerçek kayıtlar için E01 / E02 etiketleri görünür. Birden fazla yankı üst üste gelirse fazlası +N olarak kısaltılır. Sahte fantomlar gerçek tanık olarak sayılmaz.
+- **Doğru kural:** Çifte baskıda 1/2 veya 2/2; yalnız-yankı ve yalnız-canlı koşullarında YANKI GEREKLİ veya CANLI GEREKLİ; yanlış oynatma yönünde TERS / İLERİ GEREKLİ, kapalı F doğrulayıcısında F GEREKLİ uyarısı gösterilir.
+- **Röle ayrımı:** Süreli geçit plaka boşalsa bile açık kaldığında tanık etiketi RÖLE olur. Bu geçici açıklık yeni bir yankı temasıyla karıştırılmaz.
+- **Sade ve erişilebilir:** Yalnızca temas edilen veya açık rölesi bulunan plakalarda etiket çıkar. Görme engelli oyuncular için aynı olayların erişilebilir kısa açıklaması yalnızca durum değiştiğinde güncellenir. Oyun fizik ve kayıt kuralları hiç değişmez.
+- **Testler:** Gerçek yankı teması, iki bağımsız yankının eşzamanlı baskısı, odak değişimi, fantomun hariç tutulması, F tarayıcısı, röle kuyruğu ve ekran okuyucu güncellemesi Chromium otomasyonuyla doğrulanır.
+
 ## Build 039 — Yankı Odağı / Altı Geçmişi Birbirinden Ayır
 
 **Birden fazla yankı artık tek bir mor kütle gibi görünmüyor.** E01–E06 kayıtları sahne, mini harita, zaman çizelgesi, Yankı Laboratuvarı ve kayıt editöründe aynı renge ve numaraya sahiptir.

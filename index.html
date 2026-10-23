@@ -475,11 +475,14 @@ body.high-contrast.hud-simple #hud-toggle,body.high-contrast.hud-simple .hud-qui
 .echo-focus-help{font:650 10px ui-monospace,Consolas,monospace;color:#9db7c8}
 body.high-contrast .echo-focus-chip[aria-pressed="true"]{border:2px solid #fff}
 @media(max-width:540px){.echo-focus-bar{padding:8px}.echo-focus-title,.echo-focus-help{flex:1 1 100%}.echo-focus-chip{min-height:39px}}
+
+/* Build 040: physical plate contacts, accessible equivalent */
+.plate-reader{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 039</div></header>
+<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 040</div></header>
 <div class="topbar">
  <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 19</div></div>
  <div class="stat"><div class="label">Döngüye kalan</div><div class="value teal" id="time">12.0 sn</div><div class="meters"><div class="meter"><i id="timefill"></i></div></div></div>
@@ -487,7 +490,7 @@ body.high-contrast .echo-focus-chip[aria-pressed="true"]{border:2px solid #fff}
  <div class="stat"><div class="label">Durum</div><div class="value" id="mode" style="font-size:16px;padding-top:4px">HAZIR</div></div>
 </div>
 <div class="campaign-strip" aria-label="Kampanya ilerlemesi"><span class="campaign-label" id="chapter-label">BÖLÜM I · HAFIZA</span><div class="campaign-segments" id="campaign-segments" aria-hidden="true"></div><span class="campaign-counter" id="campaign-counter">01 / 11</span></div>
-<div class="stage"><canvas id="scene" width="960" height="610" aria-label="ECHO/12 oyun sahnesi"></canvas><div class="impact-notice" id="impact-notice" hidden role="status" aria-live="polite"><span id="impact-title"></span><small id="impact-detail"></small></div>
+<div class="stage"><canvas id="scene" width="960" height="610" aria-label="ECHO/12 oyun sahnesi"></canvas><div id="plate-reader" class="plate-reader" role="status" aria-live="polite" aria-atomic="true"></div><div class="impact-notice" id="impact-notice" hidden role="status" aria-live="polite"><span id="impact-title"></span><small id="impact-detail"></small></div>
  <div class="scene-banner" id="scene-banner" aria-hidden="true"><strong id="scene-banner-title"></strong><span id="scene-banner-detail"></span></div><div class="overlay" id="overlay"><div class="dialog"><div class="kicker" id="kicker">SAAT SIFIRLANACAK</div><h2 id="dialog-title">Geçmişin seninle kalır.</h2><p id="dialog-text">Her <strong>12 saniyede</strong> zaman başa sarar. Ama önceki hareketlerini tekrar eden bir <strong>yankın</strong> geride kalır. Baskı plakalarını yankılarınla tut ve çıkışa ulaş.</p><div class="chapter-recap" id="chapter-recap" aria-label="Bölüm özeti"></div><div class="authority-chain" id="authority-chain" aria-label="Operatör 00 yetki zinciri"></div><div class="debrief" id="debrief" aria-label="Oda performansı"></div><button class="primary" id="start">SİSTEME GİR →</button><button class="secondary replay-choice" id="replay-choice">SON KARARI YENİDEN OYNA ↺</button></div></div>
 <div class="archive-overlay hidden" id="archive" aria-hidden="true"><div class="archive-panel" role="dialog" aria-modal="true" aria-labelledby="archive-title" tabindex="-1"><div class="archive-toolbar"><div><div class="kicker">TESİS ARŞİVİ // ERİŞİM SINIRLI</div><h2 id="archive-title">Hatırlananlar</h2></div><button class="secondary" id="archive-close" aria-label="Arşivi kapat">Kapat ✕</button></div><div class="archive-grid"><div id="archive-list" class="archive-list" aria-label="Bulunan kayıtlar"></div><article id="archive-body" class="archive-body" aria-live="polite"></article></div><div id="archive-status" class="archive-status"></div></div></div>
 <div class="decision-overlay hidden" id="decision" aria-hidden="true"><div class="decision-panel" id="decision-panel" role="dialog" aria-modal="true" aria-labelledby="decision-title"><div class="kicker" id="decision-kicker">ÇEKİRDEK YÖNERGESİ</div><h2 id="decision-title"></h2><p id="decision-story"></p><div class="decision-effect" id="decision-effect"></div><div class="decision-actions"><button class="secondary" id="decision-cancel">Vazgeç</button><button class="primary" id="decision-confirm">KARARI VER →</button></div></div></div></div>
@@ -513,7 +516,7 @@ body.high-contrast .echo-focus-chip[aria-pressed="true"]{border:2px solid #fff}
 <section class="protocol-status" aria-label="Geçit hedefleri"><div class="protocol-status-head"><strong>ANLIK GEÇİT DURUMU</strong><small id="gate-counter">0 / 0 açık</small></div><div class="gate-status-grid" id="gate-status"></div></section>
 <section class="proof-panel" id="proof-panel" hidden aria-label="Sıralı kayıt doğrulama paneli"><div class="protocol-status-head"><strong>İMZA DOĞRULAMA / A VE B GEÇİŞLERİ</strong><small id="proof-status" role="status" aria-live="polite">Kayıt bekleniyor</small></div><p class="proof-help">Parlak A ve B noktalarına <strong>aynı döngü içinde</strong> sırayla dokun. Gerçek yankıyı kaydet; F doğrulayıcısı sahte görüntüleri ayırır.</p><div class="proof-grid"><div><span class="proof-label">BU DÖNGÜDE</span><div id="proof-live" class="proof-sequence">—</div></div><div><span class="proof-label">KAYDEDİLMİŞ İMZALAR</span><div id="proof-records" class="proof-record-list">Henüz yok</div></div></div><div id="proof-evidence" class="proof-evidence">A→B: 0/1</div></section>
 <section id="sync-panel" class="sync-panel" hidden aria-label="İki tanık senkronizasyonu"><div class="protocol-status-head"><strong>ÇİFTE TANIKLIK / AYRI KAYITLAR</strong><small id="sync-verdict" role="status" aria-live="polite">İmza bekleniyor</small></div><div class="sync-grid"><div id="sync-left">I · YANKI BEKLENİYOR</div><div id="sync-right">II · YANKI BEKLENİYOR</div></div><p id="sync-rule">İki farklı yankı aynı anda gerekli.</p></section>
-<footer>BUILD 039 · YANKI ODAĞI</footer>
+<footer>BUILD 040 · PLAKA TANIKLARI</footer>
 </div>
 <script>
 (()=>{
@@ -1577,7 +1580,7 @@ function toggleHudMode(){
  applyHudMode();needsRedraw=true;
  return hudIsSimple();
 }
-function loadLevel(idx){focusedEcho=null;lastEchoFocusSignature='';clearImpactTrace();guardThreatActive=false;lastGuardCueWall=-Infinity;guardWarningChirps=0;$('guard-warning').hidden=true;objectiveWaypoint=null;lastMissionSignature='';lastMissionMemoKey='';missionMemo=null;newlyEarnedChallenges=[];lastChallengeSignature='';lastPlateForecastSignature='';removedEcho=null;echoRevision++;lastEchoEditorSignature='';lastSyncTimelineSignature='';lastDiagnosticSignature='';witnessVerified=false;lastSyncStatus='';lastProofSignature='';motionTrail=[];needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];applyHudMode();$('timeline-legend').textContent=level.probes?'Mor: yankı · Yeşil: canlı · A/B: sıralı okuma anları':'Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas';scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=17?'BÖLÜM VII / ':idx>=15?'BÖLÜM VI / ':idx>=13?'BÖLÜM V / ':idx>=11?'BÖLÜM IV / ':idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8,11,13,15,17].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8,11,13,15,17].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
+function loadLevel(idx){lastPlateReaderSignature='';$('plate-reader').textContent='';focusedEcho=null;lastEchoFocusSignature='';clearImpactTrace();guardThreatActive=false;lastGuardCueWall=-Infinity;guardWarningChirps=0;$('guard-warning').hidden=true;objectiveWaypoint=null;lastMissionSignature='';lastMissionMemoKey='';missionMemo=null;newlyEarnedChallenges=[];lastChallengeSignature='';lastPlateForecastSignature='';removedEcho=null;echoRevision++;lastEchoEditorSignature='';lastSyncTimelineSignature='';lastDiagnosticSignature='';witnessVerified=false;lastSyncStatus='';lastProofSignature='';motionTrail=[];needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];applyHudMode();$('timeline-legend').textContent=level.probes?'Mor: yankı · Yeşil: canlı · A/B: sıralı okuma anları':'Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas';scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx>=17?'BÖLÜM VII / ':idx>=15?'BÖLÜM VI / ':idx>=13?'BÖLÜM V / ':idx>=11?'BÖLÜM IV / ':idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8,11,13,15,17].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8,11,13,15,17].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
 
 function closeAuditPanel(){$('audit').classList.add('hidden');$('audit').setAttribute('aria-hidden','true')}
 function nearestSensor(){return (level.sensors||[]).find(v=>Math.hypot(player.x-v.x-.5,player.y-v.y-.5)<.72)||null}
@@ -1927,6 +1930,65 @@ function ghostAt(c,t=elapsed){
  const local=echoSourceTime(c,t),moment=c.reverse?LOOP-local:local;
  const index=Math.max(0,Math.min(c.samples.length-1,Math.round(moment/DT)));
  return c.samples[index];
+}
+
+/* Build 040: explain real physical contacts without changing collision rules.
+   Wrong-direction or live-only contacts never qualify as real echo owners.
+   Phantoms have no recordings and cannot be reported as witnesses. */
+let lastPlateReaderSignature='';
+function plateReadout(p){
+ const x=p.x+.5,y=p.y+.5,live=Math.hypot(player.x-x,player.y-y)<.46;
+ const permitsEcho=!p.selfOnly&&(!p.routeMode||sourceVerdict==='publish');
+ const qualified=[],ignored=[],occupants=[];
+ for(const [i,c] of clones.entries()){
+  if(!echoActive(c))continue;
+  const g=ghostAt(c);if(Math.hypot(g.x-x,g.y-y)>=.46)continue;
+  occupants.push(i);
+  if(permitsEcho&&(!p.reverseOnly||c.reverse)&&(!p.forwardOnly||!c.reverse))qualified.push(i);
+  else ignored.push(i);
+ }
+ const pressed=platePressed(p),open=gateOpen(p.key);
+ let status='BEKLİYOR';
+ if(pressed)status='ETKİN';
+ else if(p.pulse&&open)status='RÖLE';
+ else if(p.needsScan&&qualified.length&&!scannerOn)status='F GEREKLİ';
+ else if(p.echoCount)status=qualified.length+'/'+p.echoCount+' YANKI';
+ else if(p.routeMode&&sourceVerdict==='publish')status=qualified.length+'/2 YANKI';
+ else if(p.selfOnly||p.routeMode&&sourceVerdict!=='publish')status='CANLI GEREKLİ';
+ else if(p.reverseOnly&&ignored.length)status='TERS GEREKLİ';
+ else if(p.forwardOnly&&ignored.length)status='İLERİ GEREKLİ';
+ else if(p.echoOnly&&live)status='YANKI GEREKLİ';
+ const names=occupants.map(i=>'E'+String(i+1).padStart(2,'0'));
+ return {key:p.key,x,y,live,occupants,qualified,ignored,pressed,open,status,names};
+}
+function plateReadouts(){return level?level.plates.map(plateReadout):[]}
+function updatePlateReader(){
+ const touched=plateReadouts().filter(r=>r.live||r.occupants.length||r.open);
+ const signature=touched.map(r=>[r.key,r.live?1:0,r.occupants.join(','),r.qualified.join(','),r.pressed?1:0,r.open?1:0,r.status].join(':')).join('|');
+ if(signature===lastPlateReaderSignature)return;
+ lastPlateReaderSignature=signature;
+ $('plate-reader').textContent=touched.length?touched.map(r=>
+   r.key+' plakası: '+[r.live?'SEN':null,...r.names].filter(Boolean).join(', ')+
+   ', '+r.status.toLocaleLowerCase('tr-TR')+(r.open&&!r.pressed?', geçit açık':'')
+ ).join('. '):'Plakalarda aktif temas yok.';
+}
+function drawPlateReadouts(){
+ for(const r of plateReadouts()){
+  if(!r.live&&!r.occupants.length&&!r.open)continue;
+  const px=r.x*T,py=r.y*T,kind=r.pressed?'#78ecd0':r.open?'#f7d28d':'#ffb7a5';
+  const all=(r.live?['SEN']:[]).concat(r.names);
+  const label=(all.slice(0,2).join(' · ')+(all.length>2?' +'+(all.length-2):''))||'RÖLE';
+  ctx.save();ctx.textAlign='center';
+  ctx.font='bold 10px ui-monospace,Consolas,monospace';
+  const width=Math.max(78,Math.min(166,ctx.measureText(label).width+18),ctx.measureText(r.status).width+17);
+  const top=py+45,atX=Math.max(width/2+5,Math.min(W*T-width/2-5,px));
+  ctx.fillStyle='#0b2134ed';ctx.strokeStyle=kind;ctx.lineWidth=1.3;
+  ctx.beginPath();ctx.roundRect(atX-width/2,top,width,32,5);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#fff';ctx.fillText(label,atX,top+12);
+  ctx.fillStyle=kind;ctx.font='bold 9px ui-monospace,Consolas,monospace';
+  ctx.fillText(r.status,atX,top+25);
+  ctx.restore();
+ }
 }
 function plateOccupancy(p){const x=p.x+.5,y=p.y+.5;return {live:Math.hypot(player.x-x,player.y-y)<.46,echoes:clones.reduce((n,c)=>{if(!echoActive(c)||p.reverseOnly&&!c.reverse||p.forwardOnly&&c.reverse)return n;const g=ghostAt(c);return n+(Math.hypot(g.x-x,g.y-y)<.46?1:0)},0)}}
 function platePressed(p){if(p.routeMode)return sourceVerdict==='publish'?liveRelayCount(p)>=2:plateOccupancy(p).live;const count=plateOccupancy(p);if(p.needsScan)return scannerOn&&count.echoes>0;if(p.reverseOnly||p.forwardOnly)return count.echoes>0;if(p.selfOnly)return count.live;if(p.echoCount)return count.echoes>=p.echoCount;if(p.echoOnly)return count.echoes>0;return count.live||count.echoes>0}
@@ -2452,7 +2514,7 @@ function updateHUD(){
  $('retry').disabled=!playing;$('mobile-retry').disabled=!playing;
  $('mobile-pause').disabled=!(playing||mode==='paused');
  $('mobile-pause').textContent=mode==='paused'?'▶ Devam':'Ⅱ Duraklat';
- updateCampaignUI();updateProtocolStatus();updateMissionDirector();updateGuardWarning();if(levelIndex===0)$('hint').textContent=currentObjective();$('frequency').disabled=mode!=='playing'||!(level.phantoms||level.reverseEnabled);$('frequency').textContent=level.phantoms?'F · DOĞRULA '+(scannerOn?'AÇIK':'KAPALI'):level.reverseEnabled?'F · '+(reverseMode?'TERS':'NORMAL'):'F · KAPALI';const canInteract=!!(nearWitnessConsole()||nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice());$('interact').disabled=mode!=='playing'||!canInteract;$('interact').textContent=nearWitnessConsole()?'⌁ Kora tanıklığını onayla':nearestSensor()?'⌁ Kanıt topla':nearestAuditConsole()?'⌁ Kanıtları karşılaştır':nearestChoice()?'⌁ Çekirdek kararı':'⌁ Terminali oku';refreshArchiveCount();$('room').textContent=`${String(levelIndex+1).padStart(2,'0')} / ${String(LVLS.length).padStart(2,'0')}`;$('time').textContent=`${Math.max(0,LOOP-elapsed).toFixed(1)} sn`;$('timefill').style.width=(100*elapsed/LOOP)+'%';$('clones').textContent=`${clones.length} / ${MAX_CLONES}`;$('mode').textContent={menu:'HAZIR',playing:'KAYIT',paused:'DURDU',leveldone:'BAŞARILI',allwon:'TAMAMLANDI',reading:'ARŞİV',decision:'KARAR',auditing:'KANIT',inspecting:'YANKI İNCELEME',vaulting:'KAYIT KASASI',investigating:'DELİL PANOSU',selecting:'ODA SEÇİMİ'}[mode]||mode;
+ updateCampaignUI();updateProtocolStatus();updateMissionDirector();updateGuardWarning();updatePlateReader();if(levelIndex===0)$('hint').textContent=currentObjective();$('frequency').disabled=mode!=='playing'||!(level.phantoms||level.reverseEnabled);$('frequency').textContent=level.phantoms?'F · DOĞRULA '+(scannerOn?'AÇIK':'KAPALI'):level.reverseEnabled?'F · '+(reverseMode?'TERS':'NORMAL'):'F · KAPALI';const canInteract=!!(nearWitnessConsole()||nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice());$('interact').disabled=mode!=='playing'||!canInteract;$('interact').textContent=nearWitnessConsole()?'⌁ Kora tanıklığını onayla':nearestSensor()?'⌁ Kanıt topla':nearestAuditConsole()?'⌁ Kanıtları karşılaştır':nearestChoice()?'⌁ Çekirdek kararı':'⌁ Terminali oku';refreshArchiveCount();$('room').textContent=`${String(levelIndex+1).padStart(2,'0')} / ${String(LVLS.length).padStart(2,'0')}`;$('time').textContent=`${Math.max(0,LOOP-elapsed).toFixed(1)} sn`;$('timefill').style.width=(100*elapsed/LOOP)+'%';$('clones').textContent=`${clones.length} / ${MAX_CLONES}`;$('mode').textContent={menu:'HAZIR',playing:'KAYIT',paused:'DURDU',leveldone:'BAŞARILI',allwon:'TAMAMLANDI',reading:'ARŞİV',decision:'KARAR',auditing:'KANIT',inspecting:'YANKI İNCELEME',vaulting:'KAYIT KASASI',investigating:'DELİL PANOSU',selecting:'ODA SEÇİMİ'}[mode]||mode;
 const rem=LOOP-elapsed,critical=mode==='playing'&&rem<=3,anyOpen=level.barriers.some(b=>gateOpen(b.key));
 $('signal-value').textContent=critical?'SON '+Math.ceil(rem)+' SANİYE':mode==='playing'?(level.phantoms&&!scannerOn?'SİNYAL DOĞRULANMADI':level.reverseEnabled&&reverseMode?'TERS KAYIT HAZIR':anyOpen?'GEÇİŞ AÇIK':'KAYIT ALINIYOR'):mode==='allwon'?'PROTOKOL TAMAMLANDI':mode==='decision'?'ONAY BEKLENİYOR':mode==='auditing'?'KANIT DENETİMİ':mode==='reading'?'ARŞİV OKUNUYOR':'SİSTEM BEKLEMEDE';
 $('signal-strip').classList.toggle('critical',critical);syncAtmos();}
@@ -2610,6 +2672,7 @@ function draw(){if(cameraMode==='focus')cameraFocusOrigin();ctx.clearRect(0,0,96
  }
  // plates
  for(const p of level.plates){let px=(p.x+.5)*T,py=(p.y+.5)*T,active=p.pulse?gateOpen(p.key):platePressed(p);ctx.save();ctx.translate(px,py);ctx.rotate(Math.PI/4);ctx.fillStyle=p.routeMode?(active?'#386a60':'#2b3f59'):p.echoCount?(active?'#53335b':'#302344'):p.selfOnly?(active?'#655023':'#564025'):p.echoOnly?(active?'#273d71':'#182d55'):(p.pulse?(active?'#655023':'#564025'):(active?'#1b685b':'#254b50'));ctx.strokeStyle=p.routeMode?'#f9d38b':p.echoCount?'#dfacff':p.selfOnly?'#ffcf71':p.echoOnly?'#7cb9ff':(p.pulse?'#ffcf71':(active?'#5cfde1':'#579f9b'));ctx.lineWidth=3;ctx.shadowColor=active?'#53f3d0':'transparent';ctx.shadowBlur=active?22:0;round(-14,-14,28,28,5);ctx.fill();ctx.stroke();ctx.restore();ctx.fillStyle=active?'#d4fff5':'#a0d6d1';ctx.font='bold 13px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(p.key,px,py+5);if(p.needsScan||p.reverseOnly||p.forwardOnly){ctx.font='bold 9px ui-monospace,monospace';ctx.fillStyle=p.reverseOnly?'#ffc895':p.forwardOnly?'#b9adff':scannerOn?'#91f9ce':'#f6adad';ctx.fillText(p.reverseOnly?'TERS':p.forwardOnly?'İLERİ':scannerOn?'ONAYLI':'TARAMA',px,py+33)}if(p.routeMode){ctx.font='bold 10px ui-monospace,monospace';ctx.fillStyle='#ffe2a9';ctx.fillText(sourceVerdict==='publish'?Math.min(2,liveRelayCount(p))+'/2':'CANLI',px,py+33)}if(p.echoCount){ctx.fillStyle=active?'#ead0ff':'#c8a0ed';ctx.font='bold 10px ui-monospace,monospace';ctx.fillText(Math.min(p.echoCount,plateOccupancy(p).echoes)+'/'+p.echoCount,px,py+32)}if(p.selfOnly){ctx.fillStyle='#ffd595';ctx.font='bold 9px ui-monospace,monospace';ctx.fillText('CANLI',px,py+34)}if(p.pulse){const remaining=Math.max(0,(relayUntil[p.key]||0)-elapsed);ctx.beginPath();ctx.strokeStyle='#ffd77f';ctx.lineWidth=3;ctx.arc(px,py,20,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.min(1,remaining/p.pulse));ctx.stroke()}}
+ drawPlateReadouts();
  drawObjectiveBeacon();
  // choice nodes behind last barriers; both routes are legible before committing
  for(const c of (levelIndex===5?CHOICES:levelIndex===12?SOURCE_CHOICES:levelIndex===18?FINAL_CHOICES:[])){const x=(c.x+.5)*T,y=(c.y+.5)*T,chosen=endingChoice===c.id;ctx.save();ctx.translate(x,y);ctx.shadowColor=c.color;ctx.shadowBlur=chosen?25:11;ctx.fillStyle=chosen?c.color+'70':'#15334a';ctx.strokeStyle=c.color;ctx.lineWidth=3;round(-18,-18,36,36,5);ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.textAlign='center';ctx.font='bold 11px ui-monospace,monospace';ctx.fillStyle='#f3fcff';ctx.fillText(c.id==='keep'?'T':c.id==='cut'?'S':c.id==='publish'?'Y':c.id==='seal'?'K':c.id==='revoke'?'X':c.id==='preserve'?'P':'D',0,4);ctx.restore();ctx.fillStyle=c.color;ctx.textAlign='center';ctx.font='bold 9px ui-monospace,monospace';ctx.fillText(c.label||(c.id==='keep'?'KORU':c.id==='cut'?'SUSTUR':c.id==='publish'?'YAYIN':'KARANTİNA'),x,y+33)}
