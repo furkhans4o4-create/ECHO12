@@ -1558,7 +1558,7 @@ function cleanBestGhosts(raw,runs=null){
  const valid=Object.create(null);
  for(const [key,points] of Object.entries(raw)){
   const index=Number(key);
-  if(!/^\\d+$/.test(key)||!Number.isInteger(index)||index<0||index>=LVLS.length||
+  if(!/^\d+$/.test(key)||!Number.isInteger(index)||index<0||index>=LVLS.length||
    runs&&!Object.hasOwn(runs,key)||!Array.isArray(points)||!points.length||points.length>BEST_GHOST_LIMIT)
    throw Error('Rekor gölgesinin oda anahtarı geçersiz.');
   let previous=-1;
