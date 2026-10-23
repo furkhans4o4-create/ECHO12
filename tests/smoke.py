@@ -150,7 +150,9 @@ def main():
             page, errors = load(browser, 3)
             page.locator('#plate-forecast summary').click()
             page.evaluate("window.__echo12Test.teleport(4.5,2.5)")
-            page.evaluate("window.__echo12Test.tick(.1)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            page.evaluate("window.__echo12Test.teleport(2.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
             commit(page)
             assert page.locator('[data-plate="A"] [data-kind="contact"]').count()>0
             assert page.locator('[data-plate="A"] [data-kind="relay"]').count()>0
