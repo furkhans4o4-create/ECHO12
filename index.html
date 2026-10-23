@@ -1316,6 +1316,7 @@ function gateCondition(barrier){
  if(key==='STAMP')return {open:false,reason:!scannerOn?'F · doğrulayıcı kapalı':'Zaman damgası '+Math.min(1,timedSignatureCount())+'/1'};
  if(key==='ROUTE'){const p=level.plates.find(p=>p.key===key);return {open:false,reason:sourceVerdict==='publish'?'Yankı '+Math.min(2,liveRelayCount(p))+'/2 · 3 sn röle':'Canlı temas · 3 sn röle'};}
  if(!p)return {open:false,reason:'Kayıt bekleniyor'};
+ if(p.tension){const c=tensionState(p);return {open:false,reason:'Zaman Sigortası '+Math.min(p.holdSeconds,c.seconds).toFixed(1)+'/'+p.holdSeconds.toFixed(2)+' sn'};}
  if(p.echoCount)return {open:false,reason:'Yankı '+Math.min(p.echoCount,plateOccupancy(p).echoes)+'/'+p.echoCount};
  if(p.needsScan)return {open:false,reason:scannerOn?'Doğrulanmış yankı gerekli':'F · doğrulayıcı kapalı'};
  if(p.reverseOnly)return {open:false,reason:'Ters kayıt gerekli'};
@@ -1680,7 +1681,7 @@ function toggleHudMode(){
  applyHudMode();needsRedraw=true;
  return hudIsSimple();
 }
-function loadLevel(idx){lastPlateReaderSignature='';$('plate-reader').textContent='';focusedEcho=null;lastEchoFocusSignature='';clearImpactTrace();guardThreatActive=false;lastGuardCueWall=-Infinity;guardWarningChirps=0;$('guard-warning').hidden=true;objectiveWaypoint=null;lastMissionSignature='';lastMissionMemoKey='';missionMemo=null;newlyEarnedChallenges=[];lastChallengeSignature='';lastPlateForecastSignature='';removedEcho=null;echoRevision++;lastEchoEditorSignature='';lastSyncTimelineSignature='';lastDiagnosticSignature='';witnessVerified=false;lastSyncStatus='';lastProofSignature='';motionTrail=[];needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];activeBestGhost=bestGhosts[levelIndex]||null;updateBestGhostButton();applyHudMode();$('timeline-legend').textContent=level.probes?'Mor: yankı · Yeşil: canlı · A/B: sıralı okuma anları':'Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas';scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx===19?'EK PROTOKOL / ':idx>=17?'BÖLÜM VII / ':idx>=15?'BÖLÜM VI / ':idx>=13?'BÖLÜM V / ':idx>=11?'BÖLÜM IV / ':idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8,11,13,15,17,19].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8,11,13,15,17,19].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
+function loadLevel(idx){tensionCharge=Object.create(null);lastPlateReaderSignature='';$('plate-reader').textContent='';focusedEcho=null;lastEchoFocusSignature='';clearImpactTrace();guardThreatActive=false;lastGuardCueWall=-Infinity;guardWarningChirps=0;$('guard-warning').hidden=true;objectiveWaypoint=null;lastMissionSignature='';lastMissionMemoKey='';missionMemo=null;newlyEarnedChallenges=[];lastChallengeSignature='';lastPlateForecastSignature='';removedEcho=null;echoRevision++;lastEchoEditorSignature='';lastSyncTimelineSignature='';lastDiagnosticSignature='';witnessVerified=false;lastSyncStatus='';lastProofSignature='';motionTrail=[];needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];activeBestGhost=bestGhosts[levelIndex]||null;updateBestGhostButton();applyHudMode();$('timeline-legend').textContent=level.probes?'Mor: yankı · Yeşil: canlı · A/B: sıralı okuma anları':'Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas';scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx===19?'EK PROTOKOL / ':idx>=17?'BÖLÜM VII / ':idx>=15?'BÖLÜM VI / ':idx>=13?'BÖLÜM V / ':idx>=11?'BÖLÜM IV / ':idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8,11,13,15,17,19].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8,11,13,15,17,19].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
 
 function closeAuditPanel(){$('audit').classList.add('hidden');$('audit').setAttribute('aria-hidden','true')}
 function nearestSensor(){return (level.sensors||[]).find(v=>Math.hypot(player.x-v.x-.5,player.y-v.y-.5)<.72)||null}
@@ -1792,7 +1793,7 @@ function drawImpactTrace(){
  }else{ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle=color;ctx.fill()}
  ctx.restore();
 }
-function resetPlayer(){guardThreatActive=false;$('guard-warning').hidden=true;motionTrail=[];needsRedraw=true;player={x:level.start[0]+.5,y:level.start[1]+.5};elapsed=0;relayUntil={};record=[{...player}];lastCountdownBeat=-1;}
+function resetPlayer(){tensionCharge=Object.create(null);guardThreatActive=false;$('guard-warning').hidden=true;motionTrail=[];needsRedraw=true;player={x:level.start[0]+.5,y:level.start[1]+.5};elapsed=0;relayUntil={};record=[{...player}];lastCountdownBeat=-1;}
 /* Build 025: recordings are immutable; editing only changes the in-room roster. */
 /* Build 039: One shared palette and reference-stable visual selection. */
 const ECHO_PALETTE=['#c7a6ff','#6cd5ff','#ffc384','#ffa6cf','#84ebbb','#f2e083'];
@@ -2052,6 +2053,7 @@ function plateReadout(p){
  if(pressed)status='ETKİN';
  else if(p.pulse&&open)status='RÖLE';
  else if(p.needsScan&&qualified.length&&!scannerOn)status='F GEREKLİ';
+ else if(p.tension){const c=tensionState(p);status='ÇİVİ '+Math.min(c.seconds,p.holdSeconds).toFixed(1)+'/'+p.holdSeconds.toFixed(2)+' SN';}
  else if(p.echoCount)status=qualified.length+'/'+p.echoCount+' YANKI';
  else if(p.routeMode&&sourceVerdict==='publish')status=qualified.length+'/2 YANKI';
  else if(p.selfOnly||p.routeMode&&sourceVerdict!=='publish')status='CANLI GEREKLİ';
@@ -2091,7 +2093,35 @@ function drawPlateReadouts(){
  }
 }
 function plateOccupancy(p){const x=p.x+.5,y=p.y+.5;return {live:Math.hypot(player.x-x,player.y-y)<.46,echoes:clones.reduce((n,c)=>{if(!echoActive(c)||p.reverseOnly&&!c.reverse||p.forwardOnly&&c.reverse)return n;const g=ghostAt(c);return n+(Math.hypot(g.x-x,g.y-y)<.46?1:0)},0)}}
-function platePressed(p){if(p.routeMode)return sourceVerdict==='publish'?liveRelayCount(p)>=2:plateOccupancy(p).live;const count=plateOccupancy(p);if(p.needsScan)return scannerOn&&count.echoes>0;if(p.reverseOnly||p.forwardOnly)return count.echoes>0;if(p.selfOnly)return count.live;if(p.echoCount)return count.echoes>=p.echoCount;if(p.echoOnly)return count.echoes>0;return count.live||count.echoes>0}
+/* Build 042 — temporal-tension fuse.
+   An immutable recording must physically cross a fuse pad and leave it
+   within the specified short source time. Only stretching this real transit
+   with an echo's time nail can sustain the required replay occupancy. */
+let tensionCharge=Object.create(null);
+function sourceTensionCandidate(c,p){
+ if(!p.tension||!c?.samples?.length)return false;
+ let streak=0,best=0,seen=false,departed=false;
+ for(const sample of c.samples){
+  const inside=Math.hypot(sample.x-p.x-.5,sample.y-p.y-.5)<.46;
+  if(inside){seen=true;streak++;best=Math.max(best,streak)}
+  else if(seen){departed=true;streak=0}
+ }
+ return seen&&departed&&best*DT<=p.sourceMaxDwell+1e-8;
+}
+function tensionState(p){
+ const state=tensionCharge[p.key];
+ return {seconds:state?.seconds||0,owner:state?.owner?clones.indexOf(state.owner):-1,needed:p.holdSeconds};
+}
+function updateTensionCharge(dt){
+ for(const p of level.plates){
+  if(!p.tension)continue;
+  const owner=clones.find(c=>sourceTensionCandidate(c,p)&&echoActive(c)&&
+   Math.hypot(ghostAt(c).x-p.x-.5,ghostAt(c).y-p.y-.5)<.46);
+  const old=tensionCharge[p.key];
+  tensionCharge[p.key]=owner?{owner,seconds:(old?.owner===owner?old.seconds:0)+dt}:{owner:null,seconds:0};
+ }
+}
+function platePressed(p){if(p.tension)return tensionState(p).seconds+1e-8>=p.holdSeconds;if(p.routeMode)return sourceVerdict==='publish'?liveRelayCount(p)>=2:plateOccupancy(p).live;const count=plateOccupancy(p);if(p.needsScan)return scannerOn&&count.echoes>0;if(p.reverseOnly||p.forwardOnly)return count.echoes>0;if(p.selfOnly)return count.live;if(p.echoCount)return count.echoes>=p.echoCount;if(p.echoOnly)return count.echoes>0;return count.live||count.echoes>0}
 function toggleFrequency(){if(mode!=='playing')return;if(level.phantoms){scannerOn=!scannerOn;flash(scannerOn?'Doğrulayıcı etkin. Sahte imzalar kırmızı işaretlendi.':'Doğrulayıcı kapandı. Sahte imzalar ayırt edilemiyor.')}else if(level.reverseEnabled){reverseMode=!reverseMode;flash(reverseMode?'Sonraki kayıt TERS oynatılacak.':'Sonraki kayıt NORMAL oynatılacak.')}else return;audioBeep(scannerOn||reverseMode?930:440,.11,'sine');updateGateFeedback();updateHUD()}
 function updateRelays(){for(const p of level.plates)if(p.pulse&&platePressed(p))relayUntil[p.key]=Math.max(relayUntil[p.key]||0,elapsed+p.pulse)}
 
@@ -2224,7 +2254,7 @@ function plateForecastData(p){
  const liveOnly=!!p.selfOnly||!!p.routeMode&&sourceVerdict!=='publish';
  const needed=p.echoCount||((p.routeMode&&sourceVerdict==='publish')?2:1);
  const allowed=clones.filter(c=>(!p.reverseOnly||c.reverse)&&(!p.forwardOnly||!c.reverse));
- const direct=[],extended=[];let maxCount=0,until=-1;
+ const direct=[],extended=[];let maxCount=0,until=-1;const tensionOwners=new Map();
  const ticks=Math.round(LOOP/DT);
  for(let k=0;k<=ticks;k++){
   const second=k*DT;
@@ -2235,7 +2265,17 @@ function plateForecastData(p){
    if(Math.hypot(g.x-p.x-.5,g.y-p.y-.5)<.46)count++;
   }
   maxCount=Math.max(maxCount,count);
-  const pressed=!liveOnly&&count>=needed;
+  let pressed=!liveOnly&&count>=needed;
+  if(p.tension){
+   pressed=false;
+   for(const c of allowed){
+    const inside=sourceTensionCandidate(c,p)&&echoActive(c,second)&&
+     Math.hypot(ghostAt(c,second).x-p.x-.5,ghostAt(c,second).y-p.y-.5)<.46;
+    const duration=inside?(tensionOwners.get(c)||0)+DT:0;
+    tensionOwners.set(c,duration);
+    if(duration+1e-8>=p.holdSeconds)pressed=true;
+   }
+  }
   direct.push(pressed);
   if(pressed&&p.pulse)until=second+p.pulse;
   extended.push(!pressed&&!!p.pulse&&!liveOnly&&until>=second-DT/2);
@@ -2603,7 +2643,7 @@ for(const t of motionTrail)t.life-=dt;motionTrail=motionTrail.filter(t=>t.life>0
 if(mode!=='playing')return;decayImpactTrace(dt);roomActiveSeconds+=dt;elapsed+=dt;if(elapsed>=LOOP){cycleCommit(false);return}
  let dx=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0),dy=(keys.has('KeyS')||keys.has('ArrowDown')?1:0)-(keys.has('KeyW')||keys.has('ArrowUp')?1:0);dx+=gamepadMove.x;dy+=gamepadMove.y;let len=Math.hypot(dx,dy);if(len){const active=document.activeElement;if(active?.closest?.('.controls'))active.blur();dx=dx/Math.max(1,len)*SPEED*dt;dy=dy/Math.max(1,len)*SPEED*dt;if(!collides(player.x+dx,player.y))player.x+=dx;if(!collides(player.x,player.y+dy))player.y+=dy}record.push({...player});
 if(!reducedMotion&&len>0){const last=motionTrail[motionTrail.length-1];if(!last||Math.hypot(player.x-last.x,player.y-last.y)>.14){motionTrail.push({x:player.x,y:player.y,life:.25});if(motionTrail.length>14)motionTrail.shift()}}
-updateRelays();updateGateFeedback();
+updateTensionCharge(dt);updateRelays();updateGateFeedback();
 const secondLeft=Math.ceil(LOOP-elapsed);
 if(secondLeft<=3&&secondLeft>0&&lastCountdownBeat!==secondLeft){lastCountdownBeat=secondLeft;playCue('critical');pulseFX(player.x,player.y,'#ff8693',.55)}
  for(const g of level.guards){const pos=guardPos(g);if(Math.hypot(player.x-pos.x,player.y-pos.y)<GUARD_TOUCH_RADIUS){for(let i=0;i<20;i++)spawnParticle(player.x,player.y,'#ff6a7c');audioBeep(140,.28,'sawtooth');rememberImpactTrace('guard',pos);resetPlayer();flash('Güvenlik sensörüne yakalandın. Mevcut döngü silindi.');updateHUD();return}}
@@ -2774,7 +2814,7 @@ function draw(){if(cameraMode==='focus')cameraFocusOrigin();ctx.clearRect(0,0,96
   ctx.stroke();ctx.restore();
  }
  // plates
- for(const p of level.plates){let px=(p.x+.5)*T,py=(p.y+.5)*T,active=p.pulse?gateOpen(p.key):platePressed(p);ctx.save();ctx.translate(px,py);ctx.rotate(Math.PI/4);ctx.fillStyle=p.routeMode?(active?'#386a60':'#2b3f59'):p.echoCount?(active?'#53335b':'#302344'):p.selfOnly?(active?'#655023':'#564025'):p.echoOnly?(active?'#273d71':'#182d55'):(p.pulse?(active?'#655023':'#564025'):(active?'#1b685b':'#254b50'));ctx.strokeStyle=p.routeMode?'#f9d38b':p.echoCount?'#dfacff':p.selfOnly?'#ffcf71':p.echoOnly?'#7cb9ff':(p.pulse?'#ffcf71':(active?'#5cfde1':'#579f9b'));ctx.lineWidth=3;ctx.shadowColor=active?'#53f3d0':'transparent';ctx.shadowBlur=active?22:0;round(-14,-14,28,28,5);ctx.fill();ctx.stroke();ctx.restore();ctx.fillStyle=active?'#d4fff5':'#a0d6d1';ctx.font='bold 13px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(p.key,px,py+5);if(p.needsScan||p.reverseOnly||p.forwardOnly){ctx.font='bold 9px ui-monospace,monospace';ctx.fillStyle=p.reverseOnly?'#ffc895':p.forwardOnly?'#b9adff':scannerOn?'#91f9ce':'#f6adad';ctx.fillText(p.reverseOnly?'TERS':p.forwardOnly?'İLERİ':scannerOn?'ONAYLI':'TARAMA',px,py+33)}if(p.routeMode){ctx.font='bold 10px ui-monospace,monospace';ctx.fillStyle='#ffe2a9';ctx.fillText(sourceVerdict==='publish'?Math.min(2,liveRelayCount(p))+'/2':'CANLI',px,py+33)}if(p.echoCount){ctx.fillStyle=active?'#ead0ff':'#c8a0ed';ctx.font='bold 10px ui-monospace,monospace';ctx.fillText(Math.min(p.echoCount,plateOccupancy(p).echoes)+'/'+p.echoCount,px,py+32)}if(p.selfOnly){ctx.fillStyle='#ffd595';ctx.font='bold 9px ui-monospace,monospace';ctx.fillText('CANLI',px,py+34)}if(p.pulse){const remaining=Math.max(0,(relayUntil[p.key]||0)-elapsed);ctx.beginPath();ctx.strokeStyle='#ffd77f';ctx.lineWidth=3;ctx.arc(px,py,20,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.min(1,remaining/p.pulse));ctx.stroke()}}
+ for(const p of level.plates){let px=(p.x+.5)*T,py=(p.y+.5)*T,active=p.pulse?gateOpen(p.key):platePressed(p);ctx.save();ctx.translate(px,py);ctx.rotate(Math.PI/4);ctx.fillStyle=p.routeMode?(active?'#386a60':'#2b3f59'):p.echoCount?(active?'#53335b':'#302344'):p.selfOnly?(active?'#655023':'#564025'):p.echoOnly?(active?'#273d71':'#182d55'):(p.pulse?(active?'#655023':'#564025'):(active?'#1b685b':'#254b50'));ctx.strokeStyle=p.routeMode?'#f9d38b':p.echoCount?'#dfacff':p.selfOnly?'#ffcf71':p.echoOnly?'#7cb9ff':(p.pulse?'#ffcf71':(active?'#5cfde1':'#579f9b'));ctx.lineWidth=3;ctx.shadowColor=active?'#53f3d0':'transparent';ctx.shadowBlur=active?22:0;round(-14,-14,28,28,5);ctx.fill();ctx.stroke();ctx.restore();ctx.fillStyle=active?'#d4fff5':'#a0d6d1';ctx.font='bold 13px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(p.key,px,py+5);if(p.needsScan||p.reverseOnly||p.forwardOnly){ctx.font='bold 9px ui-monospace,monospace';ctx.fillStyle=p.reverseOnly?'#ffc895':p.forwardOnly?'#b9adff':scannerOn?'#91f9ce':'#f6adad';ctx.fillText(p.reverseOnly?'TERS':p.forwardOnly?'İLERİ':scannerOn?'ONAYLI':'TARAMA',px,py+33)}if(p.routeMode){ctx.font='bold 10px ui-monospace,monospace';ctx.fillStyle='#ffe2a9';ctx.fillText(sourceVerdict==='publish'?Math.min(2,liveRelayCount(p))+'/2':'CANLI',px,py+33)}if(p.echoCount){ctx.fillStyle=active?'#ead0ff':'#c8a0ed';ctx.font='bold 10px ui-monospace,monospace';ctx.fillText(Math.min(p.echoCount,plateOccupancy(p).echoes)+'/'+p.echoCount,px,py+32)}if(p.selfOnly){ctx.fillStyle='#ffd595';ctx.font='bold 9px ui-monospace,monospace';ctx.fillText('CANLI',px,py+34)}if(p.tension){const state=tensionState(p),ratio=Math.min(1,state.seconds/p.holdSeconds);ctx.beginPath();ctx.strokeStyle='#b6ffee';ctx.lineWidth=4;ctx.arc(px,py,23,-Math.PI/2,-Math.PI/2+Math.PI*2*ratio);ctx.stroke();ctx.fillStyle='#b6ffee';ctx.font='bold 9px ui-monospace,monospace';ctx.fillText(state.seconds.toFixed(1)+' / '+p.holdSeconds.toFixed(2)+'sn',px,py-26)}if(p.pulse){const remaining=Math.max(0,(relayUntil[p.key]||0)-elapsed);ctx.beginPath();ctx.strokeStyle='#ffd77f';ctx.lineWidth=3;ctx.arc(px,py,20,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.min(1,remaining/p.pulse));ctx.stroke()}}
  drawPlateReadouts();
  drawObjectiveBeacon();
  // choice nodes behind last barriers; both routes are legible before committing
