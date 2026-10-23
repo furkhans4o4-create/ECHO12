@@ -104,6 +104,12 @@ def main():
             # reset live progress, and expire the restore window on a new recording.
             page, errors = load(browser, 0)
             assert page.locator('#echo-editor-count').inner_text() == '0 / 6'
+            page.locator('#echo-editor summary').focus()
+            page.keyboard.press('Space')
+            assert page.locator('#echo-editor').get_attribute('open') is not None
+            assert page.locator('#clones').inner_text()=='0 / 6'
+            page.keyboard.press('Space')
+            assert page.locator('#echo-editor').get_attribute('open') is None
             page.locator('#echo-editor summary').click()
             assert 'henüz' in page.locator('#echo-editor-list').inner_text()
             page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
