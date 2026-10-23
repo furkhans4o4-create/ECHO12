@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 035 — Devriye Öngörüsü / Tehlikeyi Önceden Gör
+
+Kör Nokta odasının kırmızı güvenlik devriyesine gerçek hareket güzergâhı ve güvenli karar vermeyi kolaylaştıran kısa vadeli uyarılar eklendi.
+
+- **Gerçek devriye hattı:** Devriyenin dikey hareket koridoru, döndüğü uç noktalar ve öldürücü 0,46 karelik temas sınırı sahnede çizilir. Görselleştirme gerçek hareket formülünden hesaplanır, yapay bir rota üretmez.
+- **Yakın gelecek:** **0,8** ve **1,6 saniye** sonraki fiziksel devriye konumları hafif noktalarla gösterilir. Tahmin 12 saniyelik döngü sonunu geçerse yeni döngünün başından hesaplanır.
+- **Tehlike uyarısı:** Oyuncu devriyeye 1,25 kare yakınsa yalnızca o sırada görünen uyarı alanı açılır. Girişte tek uyarı sesi çıkar; sesler arası en az 1,5 saniye vardır. Ekran okuyucusuna sürekli değişen rakamlar okutulmaz.
+- **Küçük harita:** Yakın takip modunun mini haritası devriyenin hareket hattını ve mevcut konumunu gösterir.
+- **Kurallar değişmedi:** Devriyenin hızı ve 0,46 karelik ölüm eşiği aynı kalır. Yakalanınca sadece o andaki canlı deneme sıfırlanır; kayıtlı yankılar korunur. Devriyesi olmayan odalarda sahte uyarı gösterilmez. Hareketi azaltma tercihi korunur.
+- **Testler:** Güncel ve gelecek devriye konumları, dönme noktası, güvenli yakın mesafe, tekrarsız uyarı, fiziksel çarpışma sonrası sıfırlama ve beş devriyesiz oda Playwright testlerine eklendi.
+
 ## Build 034 — Sinyal Hatları / Görsel Kapı Geri Bildirimi
 
 Kapıları ilgili plakalara bağlayan, sahnenin döşemesine işlenmiş ince elektrik hatları eklendi. Böylece oyuncu haritadaki kapının hangi fiziksel plaka tarafından beslendiğini ek bir kontrol paneline bakmadan görebilir.
