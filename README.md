@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 039 — Yankı Odağı / Altı Geçmişi Birbirinden Ayır
+
+**Birden fazla yankı artık tek bir mor kütle gibi görünmüyor.** E01–E06 kayıtları sahne, mini harita, zaman çizelgesi, Yankı Laboratuvarı ve kayıt editöründe aynı renge ve numaraya sahiptir.
+
+- **Numaralı sahne varlıkları:** Her kayıtlı yankının üstünde E01, E02… E06 etiketi bulunur. Ters oynatma ↶ sembolü ve kesikli rota çizgisiyle ayrılır. Renk göremeyen oyuncular da numarayla kayıtları izleyebilir.
+- **Gerçek oynatmayı izleyen rota:** Çizgiler yalnızca eski hareket örneklerini değil, güncel oynatma zamanını gösterir. Faz Kaydırma, Zaman Çivisi ve ters oynatma gibi değişiklikler rotanın görünürlüğüne ve uzunluğuna yansır; plaka fiziği değişmez.
+- **Yankı Odağı:** Hareket çizelgesinin altında, sade arayüzde de görünen küçük E01–E06 renkli düğmeler vardır. Bir yankıyı seçince onun izi ve çizelgesi belirginleşir, diğerleri soluklaşır ama sahnedeki fiziksel etkileri sürer. HEPSİ düğmesi veya aynı düğmeye tekrar basmak bütün yankıları gösterir.
+- **Klavye ve laboratuvar:** 1–6 tuşları ilgili yankıyı vurgular; 0 bütün yankıları gösterir. Laboratuvar açılırken odaklanmış yankı önceden seçilir. Hiç kayıt yoksa odak düğmeleri gizlidir.
+- **Güvenli düzenleme:** Hedef nesne referansıyla tutulur: Önceki yankı silinirse seçim yanlış bir kayda atlamaz. Seçili yankı silinince veya oda değişince odak temizlenir; geri yükleme sonrasında mevcut seçili kayıt nesnesi korunur. Bu yalnızca görselleştirmedir; kayıt parmak izleri, kapı kuralları, ipucu sayısı ve JSON kaydı etkilenmez.
+- **Tarayıcı testleri:** İki farklı yankının rengi ve numarası, odak seçme ve kaldırma, klavye kısayolları, laboratuvar ile eşleşme, silme/geri yükleme sırasında kararlılık, ters ve gecikmeli kaydın görsel varlığı Playwright ile sınanır.
+
 ## Build 038 — Sade Görünüm / Oyuncuyu Önce Oyunla Tanıştır
 
 Oyunun ilk dakikalarında karmaşık analiz araçları oyuncunun dikkatini dağıtmasın diye **Sade / Ayrıntılı** arayüz ayrımı eklendi.
