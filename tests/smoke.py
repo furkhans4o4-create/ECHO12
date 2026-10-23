@@ -132,7 +132,7 @@ def main():
             page.evaluate("window.__echo12Test.tick(2.5)")
             assert page.evaluate("window.__echo12Test.fuse('N')")['seconds']==0
             assert not page.evaluate("window.__echo12Test.gate('N')")
-            assert page.evaluate("window.__echo12Test.forecast('N')['contact']==[]")
+            assert page.evaluate("window.__echo12Test.forecast('N').contact")==[]
             assert page.evaluate("window.__echo12Test.inspect()['echoes']")==1
             assert not errors,errors
             page.close()
@@ -149,7 +149,7 @@ def main():
             page.evaluate("window.__echo12Test.tick(.2)")
             commit(page)
             assert page.evaluate("window.__echo12Test.sourceFuse(0,'N')")
-            assert page.evaluate("window.__echo12Test.forecast('N')['contact']==[]")
+            assert page.evaluate("window.__echo12Test.forecast('N').contact")==[]
             page.evaluate("window.__echo12Test.tick(2)")
             assert not page.evaluate("window.__echo12Test.gate('N')")
             page.keyboard.press('x')
