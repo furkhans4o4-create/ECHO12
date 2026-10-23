@@ -24,7 +24,7 @@ def load(browser, level):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -100,6 +100,68 @@ def main():
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
             
+            # Build 036: discarded live movement is a temporary visual trace,
+            # not a committed echo or permanent performance modification.
+            page, errors = load(browser,0)
+            assert page.evaluate("window.__echo12Test.impact()") is None
+            move(page,'d',.5)
+            before=page.evaluate("window.__echo12Test.inspect()")
+            assert before['record']>10
+            page.keyboard.press('x')
+            trace=page.evaluate("window.__echo12Test.impact()")
+            assert trace and trace['reason']=='retry',trace
+            assert abs(trace['time']-before['elapsed'])<.15,trace
+            assert len(trace['points'])>=3,trace
+            assert trace['guard'] is None
+            assert page.locator('#impact-notice').is_visible()
+            assert page.locator('#impact-notice').get_attribute('data-type')=='retry'
+            assert page.evaluate("window.__echo12Test.inspect()['elapsed']")==0
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==0
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            page.keyboard.press('i')
+            frozen=page.evaluate("window.__echo12Test.impact()")['remaining']
+            page.evaluate("window.__echo12Test.tick(2)")
+            assert page.evaluate("window.__echo12Test.impact()")['remaining']==frozen
+            page.keyboard.press('Escape')
+            page.evaluate("window.__echo12Test.tick(5)")
+            assert page.evaluate("window.__echo12Test.impact()") is not None
+            page.evaluate("window.__echo12Test.tick(1.2)")
+            assert page.evaluate("window.__echo12Test.impact()") is None
+            assert page.locator('#impact-notice').is_hidden()
+            move(page,'d',.3)
+            page.keyboard.press('x')
+            assert page.evaluate("window.__echo12Test.impact()") is not None
+            commit(page)
+            assert page.evaluate("window.__echo12Test.impact()") is None
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==1
+            assert not errors,errors
+            page.close()
+            print('PASS Build 036: retry afterimage, frozen inspector, lifetime and recording reset')
+
+            # Patrol hit keeps previously saved ghosts yet marks the true
+            # impact position and exact failed-loop time.
+            page, errors = load(browser,2)
+            page.evaluate("window.__echo12Test.tick(.2)")
+            commit(page)
+            saved=page.evaluate("window.__echo12Test.echoIDs()")
+            page.evaluate("window.__echo12Test.tick(.5)")
+            p=page.evaluate("window.__echo12Test.guardPreview()")[0]['position']
+            page.evaluate("([x,y])=>window.__echo12Test.teleport(x,y)",[p['x'],p['y']])
+            page.evaluate("window.__echo12Test.tick(.02)")
+            trace=page.evaluate("window.__echo12Test.impact()")
+            assert trace and trace['reason']=='guard' and trace['guard'],trace
+            assert trace['time']>=.5 and trace['remaining']>5.9,trace
+            assert page.locator('#impact-notice').get_attribute('data-type')=='guard'
+            assert page.locator('#impact-notice').is_visible()
+            assert page.evaluate("window.__echo12Test.echoIDs()")==saved
+            assert page.evaluate("window.__echo12Test.inspect()['elapsed']")==0
+            page.keyboard.press('r')
+            assert page.evaluate("window.__echo12Test.impact()") is None
+            assert page.locator('#impact-notice').is_hidden()
+            assert not errors,errors
+            page.close()
+            print('PASS Build 036: patrol-impact trace and preserved recorded roster')
+
             # Build 035: guard trajectory preview exactly matches physical
             # bounce motion and predicts the next-second patrol correctly.
             page, errors = load(browser,2)
