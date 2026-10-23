@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 027 — Plaka Zaman Haritası
+
+19 oda, 7 bölüm ve 35 arşiv korunur. **Plakaların 12 saniyelik zaman haritası** adlı katlanır panel, kayıtlı yankıların herhangi bir odadaki her plakayı hangi zaman aralıklarında etkinleştirebileceğini hesaplar. Eski oynanışı ve kayıt dosyalarını değiştirmez.
+
+- **Bütün plakalarda zaman tahmini:** Mavi şeritler yalnızca geçerli türde ve yeterli sayıda yankının bulunduğu anlarda görünür; mor iki-yankı plakalarında bir kayıt tek başına başarı sayılmaz. Ters/normal kayıt kısıtları hesaba katılır.
+- **Kısa süreli röleler:** Altın şeritler, kayıtlı yankı teması sona erdikten sonra açık kalması öngörülen röle sürelerini gösterir. Hesap sıfırdan başlayan bir döngü içindir; canlı oyuncunun henüz atmadığı adımları tahmin etmez.
+- **Canlı ve F koşulları:** Yalnızca canlı oyuncunun etkinleştirebildiği plakalar ayrı işaretlenir. F doğrulayıcısına bağımlı plakalar, yankı zamanlaması uygun olsa bile F kapalıyken hazır görünmez.
+- **Anlık güncelleme:** Yankı ekleme/silme/geri getirme, oda değiştirme, F açma ve zaman ilerlemesinde görünüm yenilenir; beyaz çizgi döngü saatini takip eder.
+- **Testler:** Sıfır ve bir kayıt, seçili yankıyı silip geri getirme, aynı plakada iki kayıt, altın röle uzantısı ve tarayıcı geçerliliği tarayıcı testlerine eklendi.
+
 ## Build 026 — Hızlı Deneme / Yankıları Koru
 
 **19 oda, 7 bölüm ve 35 arşiv** korunur. Denemede yanlış yöne yürüdüğünde artık yankıları silmeden yeni bir 12 saniyelik başlangıç yapabilirsin.

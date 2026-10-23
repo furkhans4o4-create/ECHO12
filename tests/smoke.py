@@ -100,6 +100,75 @@ def main():
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
             
+            # Build 027: read-only plate forecast follows immutable echo recordings.
+            page, errors = load(browser, 0)
+            page.locator('#plate-forecast summary').click()
+            assert page.locator('#plate-forecast-list .plate-forecast-item').count()==1
+            assert page.locator('[data-plate="A"]').get_attribute('data-ready')=='false'
+            assert page.locator('[data-plate="A"] .plate-forecast-band').count()==0
+            page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            assert page.locator('[data-plate="A"]').get_attribute('data-ready')=='true'
+            assert '1 / 1' in page.locator('[data-plate="A"]').inner_text()
+            assert page.locator('[data-plate="A"] [data-kind="contact"]').count()>0
+            intervals=page.locator('[data-plate="A"] [data-kind="contact"]').evaluate_all(
+                "(els)=>els.map(e=>e.getAttribute('title'))")
+            page.keyboard.press('z')
+            assert page.locator('[data-plate="A"]').get_attribute('data-ready')=='false'
+            assert page.locator('[data-plate="A"] [data-kind="contact"]').count()==0
+            page.keyboard.press('Shift+z')
+            assert page.locator('[data-plate="A"]').get_attribute('data-ready')=='true'
+            assert page.locator('[data-plate="A"] [data-kind="contact"]').evaluate_all(
+                "(els)=>els.map(e=>e.getAttribute('title'))")==intervals
+            page.keyboard.press('r')
+            assert page.locator('[data-plate="A"] [data-kind="contact"]').count()==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 027: plate timing forecast, selective undo/redo, full restart')
+
+            # Two copies must overlap on the echo-only dual pressure plate.
+            page, errors = load(browser, 6)
+            page.locator('#plate-forecast summary').click()
+            assert page.locator('[data-plate="R"]').get_attribute('data-ready')=='false'
+            page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            assert '1 / 2' in page.locator('[data-plate="R"]').inner_text()
+            assert page.locator('[data-plate="R"] [data-kind="contact"]').count()==0
+            page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            assert '2 / 2' in page.locator('[data-plate="R"]').inner_text()
+            assert page.locator('[data-plate="R"]').get_attribute('data-ready')=='true'
+            assert page.locator('[data-plate="R"] [data-kind="contact"]').count()>0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 027: two-record simultaneous pressure prediction')
+
+            # Pulse extension is displayed, and scanner dependency is explicit.
+            page, errors = load(browser, 3)
+            page.locator('#plate-forecast summary').click()
+            page.evaluate("window.__echo12Test.teleport(4.5,2.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            assert page.locator('[data-plate="A"] [data-kind="contact"]').count()>0
+            assert page.locator('[data-plate="A"] [data-kind="relay"]').count()>0
+            assert not errors,errors
+            page.close()
+            page, errors = load(browser, 8)
+            page.locator('#plate-forecast summary').click()
+            page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            assert page.locator('[data-plate="T"]').get_attribute('data-ready')=='false'
+            assert 'F doğrulayıcısı kapalı' in page.locator('[data-plate="T"]').inner_text()
+            page.keyboard.press('f')
+            assert page.locator('[data-plate="T"]').get_attribute('data-ready')=='true'
+            assert not errors,errors
+            page.close()
+            print('PASS Build 027: relay extension and scanner-conditioned predictions')
+
             # Build 026: quick retry discards only the current live path, not
             # previous recordings, their order, or a pending restore candidate.
             page, errors = load(browser, 0)
