@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 029 — Operatör Sınamaları
+
+Kampanyanın **19 odası, 7 bölümü ve 35 arşivi** korunur. Her oda için üç bağımsız, isteğe bağlı ustalık hedefi vardır. Rozetler **kalıcıdır**; farklı tekrar oynayışlarda kazanılabilir ve normal bulmaca kurallarını değiştirmez.
+
+- **Az Yankı:** Odaya özel yankı bütçesini aşmadan tamamla. Bütçeler her odanın ihtiyaçlarına göre ayarlanmıştır.
+- **İpucusuz:** Odayı hiçbir aşamalı ipucu açmadan bitir. İpucu kullanmak diğer rozetleri etkilemez.
+- **Zaman:** Yankı bütçesi hesaba katılarak belirlenen aktif süre sınırını geçme. Menüde, laboratuvarda veya duraklatma ekranında geçen süre sayılmaz.
+- **Rozetler:** Her odada katlanır hedef paneli, sonuç ekranında yeni kazanılan rozetler, oda seçiminde **SINAMA x/3** ve Kayıt Kasası'nda toplam **57 rozet** sayacı bulunur.
+- **Kayıt uyumluluğu:** Rozetler tarayıcıda otomatik saklanır ve mevcut sürüm 1 JSON yedeğinde isteğe bağlı alan olarak taşınır. Build 028 ve önceki yedekler geçerlidir; bilinmeyen, çift veya tamamlanmamış oda madalyaları doğrulamada reddedilir.
+- **Testler:** Gerçek oda çözümüyle üç rozet, sonuç ekranı, oda seçimi, yedek, eski sürüm uyumluluğu ve bozuk verilerin reddi Playwright testlerine eklendi.
+
 ## Build 028 — Yankı Laboratuvarı Oynatıcı
 
 **19 oda, 7 bölüm ve 35 arşiv** korunur. Laboratuvardaki kayıtlar artık manuel zaman kaydırma olmadan oynatılıp önemli temas anları incelenebilir.

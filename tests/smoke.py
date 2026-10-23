@@ -175,6 +175,55 @@ def main():
             page.close()
             print('PASS Build 027: relay extension and scanner-conditioned predictions')
 
+            # Build 029: operator mastery medals persist after real room completion.
+            page, errors = load(browser, 0)
+            page.locator('#challenge-panel summary').click()
+            assert page.locator('#challenge-list .challenge-item').count()==3
+            assert page.locator('#challenge-score').inner_text().startswith('0 / 3')
+            page.evaluate("document.activeElement.blur()")
+            move(page,'d',.99);move(page,'w',.49);commit(page)
+            move(page,'d',3.4)
+            verify(page,errors,'BAŞARILI')
+            medals=page.evaluate("JSON.parse(localStorage.getItem('echo12-room-challenges'))")
+            assert set(medals['0'])=={'precise','focus','speed'},medals
+            assert page.locator('#debrief').inner_text().count('Yeni sınama')==3
+            assert page.locator('#challenge-score').inner_text().startswith('3 / 3')
+            saved=page.evaluate("window.__echo12Test.save()")
+            assert set(saved['progress']['challenges']['0'])=={'precise','focus','speed'}
+            page.locator('#room-select').click()
+            assert 'SINAMA 3/3' in page.locator('[data-room="0"]').inner_text()
+            page.keyboard.press('Escape')
+            assert not errors,errors
+            page.close()
+            print('PASS Build 029: three earned medals, debrief, room selector and export')
+
+            # Existing backup version 1 works without the optional challenges field.
+            page, errors = load(browser, 0)
+            prior=page.evaluate("window.__echo12Test.save()")
+            assert prior['progress']['challenges']=={}
+            legacy=page.evaluate("window.__echo12Test.save()")
+            legacy['progress'].pop('challenges')
+            assert page.evaluate("(raw)=>window.__echo12Test.validate(raw).challenges",legacy)=={}
+            invalid=page.evaluate("window.__echo12Test.save()")
+            invalid['progress']['challenges']={'0':['precise']}
+            try:
+                page.evaluate("(raw)=>window.__echo12Test.validate(raw)",invalid)
+                raise AssertionError('Uncleared room medals should not be accepted')
+            except Exception as ex:
+                assert 'Operatör' in str(ex)
+            invalid=page.evaluate("window.__echo12Test.save()")
+            invalid['progress']['challenges']={'19':['speed']}
+            try:
+                page.evaluate("(raw)=>window.__echo12Test.validate(raw)",invalid)
+                raise AssertionError('Out-of-range room medal was accepted')
+            except Exception as ex:
+                assert 'Operatör' in str(ex)
+            page.evaluate("(raw)=>window.__echo12Test.restore(raw)",legacy)
+            assert page.evaluate("localStorage.getItem('echo12-room-challenges')")=='{}'
+            assert not errors,errors
+            page.close()
+            print('PASS Build 029: old save import, achievement validation and safe restore')
+
             # Build 026: quick retry discards only the current live path, not
             # previous recordings, their order, or a pending restore candidate.
             page, errors = load(browser, 0)
