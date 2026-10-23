@@ -162,10 +162,10 @@ def main():
             assert segments==[],segments  # The nail clips this late reverse contact after 12 s.
             page.keyboard.press('i')
             assert 'ÇİVİ' in page.locator('#inspector-status').inner_text()
-            assert page.locator('#inspector-marker-list .inspector-marker').count()>=1
+            assert page.locator('#inspector-marker-list .inspector-marker').count()==0, 'Clipped event must not appear as a replay marker'
             assert not errors,errors
             page.close()
-            print('PASS Build 031: reversed holds, forecast and inspector annotations')
+            print('PASS Build 031: reversed holds, late-contact clipping and inspector annotations')
 
             # Until the TERS IZ sector, the advanced nail editor is locked and
             # existing levels retain their unmodified time course.
