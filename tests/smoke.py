@@ -24,7 +24,7 @@ def load(browser, level, use_user_hud=False):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -107,6 +107,77 @@ def main():
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
             
+            # Build 039: every ghost has a stable color/ID and visual focus
+            # never mutates samples, gate states, or hint counters.
+            page, errors = load(browser,1)
+            assert page.locator('#echo-focus-bar').is_hidden()
+            page.evaluate("window.__echo12Test.tick(.2)")
+            commit(page)
+            page.evaluate("window.__echo12Test.tick(.2)")
+            commit(page)
+            assert page.locator('#echo-focus-bar').is_visible()
+            assert page.locator('#echo-focus-buttons button').count()==3
+            meta=page.evaluate("window.__echo12Test.echoVisuals()")
+            assert [x['label'] for x in meta]==['E01','E02'],meta
+            assert meta[0]['color']!=meta[1]['color'],meta
+            assert all(x['active'] and x['position'] for x in meta),meta
+            hashes=page.evaluate("window.__echo12Test.echoIDs()")
+            before=page.evaluate("window.__echo12Test.inspect()")
+            assert page.locator('[data-focus-echo="-1"]').get_attribute('aria-pressed')=='true'
+            page.locator('[data-focus-echo="1"]').click()
+            assert page.locator('[data-focus-echo="1"]').get_attribute('aria-pressed')=='true'
+            assert page.evaluate("window.__echo12Test.echoVisuals()[1]['selected']")
+            assert not page.evaluate("window.__echo12Test.echoVisuals()[0]['selected']")
+            assert page.evaluate("window.__echo12Test.echoIDs()")==hashes
+            assert page.evaluate("window.__echo12Test.inspect()")==before
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            page.keyboard.press('i')
+            assert page.locator('#inspector-echo').input_value()=='1'
+            page.keyboard.press('Escape')
+            page.evaluate("document.activeElement.blur()")
+            page.keyboard.press('1')
+            assert page.evaluate("window.__echo12Test.focusIndex()")==0
+            page.keyboard.press('0')
+            assert page.evaluate("window.__echo12Test.focusIndex()")==-1
+            page.keyboard.press('2')
+            assert page.evaluate("window.__echo12Test.focusIndex()")==1
+            assert page.evaluate("window.__echo12Test.echoIDs()")==hashes
+            page.locator('#echo-editor summary').click()
+            page.locator('[data-echo-index="0"] > button').click()
+            assert page.evaluate("window.__echo12Test.focusIndex()")==0
+            assert page.evaluate("window.__echo12Test.echoVisuals()[0]['color']")==meta[0]['color']
+            page.locator('#echo-restore').click()
+            assert page.evaluate("window.__echo12Test.focusIndex()")==1
+            page.locator('[data-focus-echo="1"]').click()
+            assert page.evaluate("window.__echo12Test.focusIndex()")==-1
+            assert page.evaluate("window.__echo12Test.echoIDs()")==hashes
+            assert not errors,errors
+            page.close()
+            print('PASS Build 039: numbered echo identity, visual focus, shortcuts, and deletion stability')
+
+            # Phase-delayed reverse playback remains inactive until it appears
+            # even while its numbered focus chip can be selected.
+            page, errors = load(browser,9)
+            page.evaluate("window.__echo12Test.tick(.2)")
+            page.keyboard.press('f')
+            commit(page)
+            page.locator('#echo-editor summary').click()
+            page.evaluate("document.activeElement.blur()")
+            page.locator('[data-echo-index="0"] .echo-phase-controls button').last.click()
+            assert page.evaluate("window.__echo12Test.echoVisuals()[0]['active']")==False
+            assert page.evaluate("window.__echo12Test.echoVisuals()[0]['position']") is None
+            page.keyboard.press('1')
+            assert page.evaluate("window.__echo12Test.focusIndex()")==0
+            page.evaluate("window.__echo12Test.tick(.7)")
+            assert page.evaluate("window.__echo12Test.echoVisuals()[0]['active']")
+            assert page.locator('[data-focus-echo="0"]').get_attribute('aria-pressed')=='true'
+            page.keyboard.press('z')
+            assert page.locator('#echo-focus-bar').is_hidden()
+            assert page.evaluate("window.__echo12Test.focusIndex()")==-1
+            assert not errors,errors
+            page.close()
+            print('PASS Build 039: reverse echo phase, focus selection and clearing')
+
             # Build 038: first-time players get the essential screen,
             # without losing the ability to restore diagnostic tools.
             page, errors = load(browser,0,use_user_hud=True)
