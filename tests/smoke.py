@@ -1536,7 +1536,7 @@ def main():
 
             # Build 013: a forged silhouette and a wrong-order trace cannot certify identity.
             page, errors = load(browser, 11)
-            assert page.locator('#room').inner_text()=='12 / 19'
+            assert page.locator('#room').inner_text()=='12 / 20'
             assert 'BÖLÜM IV' in page.locator('#chapter-label').inner_text()
             assert page.locator('#frequency').is_enabled()
             assert page.locator('#proof-panel').is_visible()
@@ -1570,7 +1570,7 @@ def main():
 
             # Build 013: two independently recorded opposite directions, then a lasting choice.
             page, errors = load(browser, 12)
-            assert page.locator('#room').inner_text()=='13 / 19'
+            assert page.locator('#room').inner_text()=='13 / 20'
             assert not page.evaluate("window.__echo12Test.gate('PROOF')")
             move(page,'d',.493);move(page,'w',.493);commit(page)
             move(page,'d',1.73);move(page,'w',.493);move(page,'d',.247);move(page,'s',.986);commit(page)
@@ -1604,7 +1604,7 @@ def main():
 
             # Build 015: correct order with insufficient travel time cannot be signed.
             page, errors = load(browser, 13)
-            assert page.locator('#room').inner_text()=='14 / 19'
+            assert page.locator('#room').inner_text()=='14 / 20'
             assert 'BÖLÜM V' in page.locator('#chapter-label').inner_text()
             move(page,'d',.493);move(page,'w',.493);commit(page)
             move(page,'d',1.729);move(page,'w',.493);move(page,'d',.247);move(page,'s',.986);commit(page)
@@ -1630,7 +1630,7 @@ def main():
             # Build 015: previous publication vs quarantine creates genuinely distinct gate rules.
             page, errors = load(browser, 14)
             page.evaluate("window.__echo12Test.setRoute('publish')")
-            assert page.locator('#room').inner_text()=='15 / 19'
+            assert page.locator('#room').inner_text()=='15 / 20'
             assert 'Yankı 0/2' in page.locator('#gate-status').inner_text()
             assert not page.evaluate("window.__echo12Test.gate('ROUTE')")
             page.evaluate("window.__echo12Test.teleport(14.5,5.5)")
@@ -1671,7 +1671,7 @@ def main():
 
             # Build 016: two separate recorded witnesses, not one clone or a forged image.
             page, errors = load(browser, 15)
-            assert page.locator('#room').inner_text()=='16 / 19'
+            assert page.locator('#room').inner_text()=='16 / 20'
             assert 'BÖLÜM VI' in page.locator('#chapter-label').inner_text()
             assert page.locator('#sync-panel').is_visible()
             assert page.locator('#sync-timeline').is_visible()
@@ -1717,7 +1717,7 @@ def main():
             for route in ['publish','seal']:
                 page, errors = load(browser, 16)
                 page.evaluate("window.__echo12Test.setRoute('"+route+"')")
-                assert page.locator('#room').inner_text()=='17 / 19'
+                assert page.locator('#room').inner_text()=='17 / 20'
                 page.keyboard.press('f')
                 page.evaluate("window.__echo12Test.teleport(9.5,3.5)")
                 page.evaluate("window.__echo12Test.tick(.1)")
@@ -1751,7 +1751,7 @@ def main():
             # Build 018: penultimate room combines an authenticated timestamp and two distinct
             # simultaneous witnesses. A single real trace cannot stand in for both.
             page, errors = load(browser, 17)
-            assert page.locator('#room').inner_text() == '18 / 19'
+            assert page.locator('#room').inner_text() == '18 / 20'
             assert 'BÖLÜM VII' in page.locator('#chapter-label').inner_text()
             page.keyboard.press('f')
             page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
@@ -1855,7 +1855,7 @@ def main():
             assert page.locator('[data-room="10"]').is_enabled()
             page.locator('[data-room="6"]').click()
             verify(page,errors,'KAYIT')
-            assert page.locator('#room').inner_text()=='07 / 19'
+            assert page.locator('#room').inner_text()=='07 / 20'
             assert page.locator('#hint-assist').is_hidden()
             assert page.evaluate("localStorage.getItem('echo12-unlocked')")=='10'
             page.keyboard.press('h')
@@ -1863,7 +1863,7 @@ def main():
             page.keyboard.press('o')
             page.locator('[data-room="0"]').click()
             verify(page,errors,'KAYIT')
-            assert page.locator('#room').inner_text()=='01 / 19'
+            assert page.locator('#room').inner_text()=='01 / 20'
             assert not errors, errors
             page.close()
             print('PASS Build 009: hints, room navigation, simulation pause, focus-safe Space and save integrity')
@@ -2072,7 +2072,7 @@ def main():
             }""",backup), 'Partial quota failures must be fully rolled back'
             page.evaluate("data=>window.__echo12Test.restore(data)",backup)
             verify(page,errors,'KAYIT')
-            assert page.locator('#room').inner_text()=='05 / 19'
+            assert page.locator('#room').inner_text()=='05 / 20'
             assert page.locator('#case-board-count').inner_text()=='1/3'
             assert page.locator('#archive-count').inner_text()=='4/35'
             assert page.evaluate("JSON.parse(localStorage.getItem('echo12-room-clears'))")==[0,1,3]
@@ -2086,7 +2086,7 @@ def main():
             assert page.evaluate("JSON.parse(localStorage.getItem('echo12-best-runs'))['0'].echoes")==2
             page.keyboard.press('b')
             assert page.locator('#vault-endings .vault-ending.earned').count()==1
-            assert '3/19 TAMAMLANDI' in page.locator('#vault-progress').inner_text()
+            assert '3/20 TAMAMLANDI' in page.locator('#vault-progress').inner_text()
             assert 'Bağımsız incelemeye aktar' in page.locator('#vault-endings').inner_text()
             page.keyboard.press('Escape')
             verify(page,errors,'KAYIT')
