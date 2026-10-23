@@ -24,7 +24,7 @@ def load(browser, level, use_user_hud=False):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, plateReadouts(){return plateReadouts()}, bestGhost(){return bestGhostStatus()}, openRoom(index){loadLevel(index)}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, plateReadouts(){return plateReadouts()}, bestGhost(){return bestGhostStatus()}, fuse(key){return tensionState(level.plates.find(p=>p.key===key))}, sourceFuse(index,key){return sourceTensionCandidate(clones[index],level.plates.find(p=>p.key===key))}, nail(index,at,hold){return configureEchoAnchor(index,at,hold)}, forecast(key){return plateForecastData(level.plates.find(p=>p.key===key))}, openRoom(index){loadLevel(index)}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -76,7 +76,7 @@ def main():
             print('PASS sound toggle, local setting and sector title')
             # Build 010: contextual onboarding and chapter pacing are visible from start.
             assert page.locator('#chapter-label').inner_text() == 'BÖLÜM I · HAFIZA'
-            assert page.locator('#campaign-segments .campaign-cell').count() == 19
+            assert page.locator('#campaign-segments .campaign-cell').count() == 20
             assert page.locator('#campaign-segments .campaign-cell.active').count() == 1
             assert page.locator('#gate-counter').inner_text() == '0 / 1 açık'
             assert 'WASD' in page.locator('#hint').inner_text()
@@ -107,6 +107,88 @@ def main():
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
             
+            # Build 042: optional post-finale room keeps the main story's
+            # nineteen-room ending but adds a twentieth playable calibration.
+            page, errors = load(browser,19)
+            assert page.locator('#mission').inner_text().endswith('ZAMAN SİGORTASI')
+            assert page.locator('#room').inner_text()=='20 / 20'
+            assert page.locator('#campaign-segments .campaign-cell').count()==20
+            assert 'EK PROTOKOL' in page.locator('#chapter-label').inner_text()
+            assert page.locator('#mission-task-list li').count()==3
+            assert not page.evaluate("window.__echo12Test.gate('N')")
+            assert page.evaluate("window.__echo12Test.fuse('N')")['seconds']==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 042: 20th playable optional chapter and correct campaign numbering')
+
+            # Standing on N throughout a SOURCE recording is invalid even when
+            # its echo occupies the pad in every frame. The source must depart.
+            page, errors = load(browser,19)
+            page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.3)")
+            commit(page)
+            assert not page.evaluate("window.__echo12Test.sourceFuse(0,'N')")
+            assert page.evaluate("window.__echo12Test.nail(0,.5,1.5)")
+            page.evaluate("window.__echo12Test.tick(2.5)")
+            assert page.evaluate("window.__echo12Test.fuse('N')")['seconds']==0
+            assert not page.evaluate("window.__echo12Test.gate('N')")
+            assert page.evaluate("window.__echo12Test.forecast('N')['contact']==[]")
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==1
+            assert not errors,errors
+            page.close()
+            print('PASS Build 042: static source contact cannot counterfeit a calibrated transit')
+
+            # A brief visit plus departure is a legitimate source, but by
+            # itself is too short to charge N. A 1.5s nail physically lengthens
+            # the original .5s visit and activates a 2.8s relay.
+            page, errors = load(browser,19)
+            page.evaluate("window.__echo12Test.tick(.3)")
+            page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.25)")
+            page.evaluate("window.__echo12Test.teleport(10.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            commit(page)
+            assert page.evaluate("window.__echo12Test.sourceFuse(0,'N')")
+            assert page.evaluate("window.__echo12Test.forecast('N')['contact']==[]")
+            page.evaluate("window.__echo12Test.tick(2)")
+            assert not page.evaluate("window.__echo12Test.gate('N')")
+            page.keyboard.press('x')
+            assert page.evaluate("window.__echo12Test.nail(0,.5,1.5)")
+            after=page.evaluate("window.__echo12Test.forecast('N')")
+            assert after['contact'] and after['relay'],after
+            assert page.evaluate("window.__echo12Test.fuse('N')")['seconds']==0
+            page.evaluate("window.__echo12Test.tick(1)")
+            partial=page.evaluate("window.__echo12Test.fuse('N')")
+            assert 0.6<partial['seconds']<1 and not page.evaluate("window.__echo12Test.gate('N')"),partial
+            page.evaluate("window.__echo12Test.tick(.7)")
+            charged=page.evaluate("window.__echo12Test.fuse('N')")
+            assert charged['seconds']>=1.25 and charged['owner']==0,charged
+            assert page.evaluate("window.__echo12Test.gate('N')")
+            assert page.locator('[data-id="tension-N"]').get_attribute('data-done')=='true'
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==1
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            page.evaluate("window.__echo12Test.tick(.5)")
+            assert page.evaluate("window.__echo12Test.fuse('N')")['seconds']==0
+            assert page.evaluate("window.__echo12Test.gate('N')")
+            assert page.evaluate("window.__echo12Test.plateReadouts()[1]['status']")=='RÖLE'
+            page.evaluate("window.__echo12Test.tick(3)")
+            assert not page.evaluate("window.__echo12Test.gate('N')")
+            page.keyboard.press('x')
+            assert page.evaluate("window.__echo12Test.fuse('N')")['seconds']==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 042: source-bound time nail charges 1.25s, timed N gate and reset')
+
+            # The new optional level has its own three mastery challenges, and
+            # the historic nineteenth room remains the narrative final.
+            page, errors = load(browser,18)
+            assert page.locator('#mission').inner_text().endswith('SON YETKİ')
+            assert page.locator('#room').inner_text()=='19 / 20'
+            assert not page.evaluate("window.__echo12Test.gate('FINAL')")
+            assert not errors,errors
+            page.close()
+            print('PASS Build 042: narrative final does not shift when calibration sector is added')
+
             # Build 041: clear once to record a device-local time-trial
             # ghost and replay it as an explicitly nonphysical shadow.
             page, errors = load(browser,0)
@@ -1700,7 +1782,7 @@ def main():
             # earlier publish/seal outcome, and only grant independent review after 3 deductions.
             for choice in ['revoke','preserve','review']:
                 page, errors = load(browser, 18)
-                assert page.locator('#room').inner_text()=='19 / 19'
+                assert page.locator('#room').inner_text()=='19 / 20'
                 assert not page.evaluate("window.__echo12Test.gate('FINAL')")
                 page.keyboard.press('f')
                 page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
