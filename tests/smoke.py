@@ -124,10 +124,11 @@ def main():
             assert page.evaluate("window.__echo12Test.inspect().elapsed")<0.15
             assert page.evaluate("window.__echo12Test.echoIDs()")==first
             move(page,'d',.25)
-            page.locator('#mobile-retry').click(force=True)
+            page.locator('#mobile-retry').evaluate('(e)=>e.click()')
             assert page.evaluate("window.__echo12Test.inspect().elapsed")<0.15
             assert page.evaluate("window.__echo12Test.echoIDs()")==first
             page.locator('#undo').click()
+            page.locator('#echo-editor summary').click()
             assert page.locator('#echo-restore').is_enabled()
             page.locator('#retry').click()
             assert page.locator('#echo-restore').is_enabled(), 'Retry must not erase the last deleted recording'
