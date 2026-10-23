@@ -137,6 +137,9 @@ def main():
             page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
             page.evaluate("window.__echo12Test.tick(.2)")
             commit(page)
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==2
+            # Both full trails reach the pad after the beginning of the replay.
+            page.evaluate("window.__echo12Test.tick(.3)")
             p=next(x for x in page.evaluate("window.__echo12Test.plateReadouts()") if x['key']=='R')
             assert p['qualified']==[0,1] and p['names']==['E01','E02'] and p['pressed'],p
             before=page.evaluate("window.__echo12Test.echoIDs()")
