@@ -100,6 +100,77 @@ def main():
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
             
+            # Build 032: the operation director tracks real recorded plate
+            # occupancy and ephemeral gate state without granting hint penalties.
+            page, errors = load(browser, 0)
+            assert page.locator('#mission-progress').inner_text()=='0 / 3 ADIM'
+            assert 'A plakasının kaydını' in page.locator('#mission-next').inner_text()
+            page.locator('#mission-details summary').click()
+            assert page.locator('#mission-task-list li').count()==3
+            assert page.locator('#mission-task-list li[data-current="true"]').count()==1
+            page.evaluate("document.activeElement.blur()")
+            # A mere empty echo does not satisfy the actual pressure plate.
+            commit(page)
+            assert page.locator('#mission-progress').inner_text()=='0 / 3 ADIM'
+            page.keyboard.press('z')
+            page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            assert page.locator('#mission-progress').inner_text().startswith('1 / 3')
+            assert page.locator('[data-id="pad-A"]').get_attribute('data-done')=='true'
+            page.evaluate("window.__echo12Test.tick(.15)")
+            assert page.locator('[data-id="gate"]').get_attribute('data-done')=='true'
+            assert page.locator('#mission-next').inner_text().startswith('ŞİMDİ: Çıkışa ulaş')
+            page.keyboard.press('z')
+            assert page.locator('#mission-progress').inner_text()=='0 / 3 ADIM'
+            assert page.locator('[data-id="gate"]').get_attribute('data-done')=='false'
+            assert page.evaluate("window.__echo12Test.save()['progress']['bestRuns']=={}") is not None
+            assert not errors,errors
+            page.close()
+            print('PASS Build 032: dynamic introductory objectives, actual physical proof and undo')
+
+            # The scanner is a separate stage, and mission tracking never counts
+            # as using any of the three paid hint levels.
+            page, errors = load(browser, 8)
+            page.locator('#mission-details summary').click()
+            page.evaluate("document.activeElement.blur()")
+            assert page.locator('#mission-task-list li').count()==4
+            page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            page.evaluate("window.__echo12Test.teleport(10.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            assert page.locator('#mission-progress').inner_text()=='2 / 4 ADIM'
+            assert page.locator('#mission-next').inner_text().startswith('ŞİMDİ: F doğrulayıcısını')
+            page.keyboard.press('f')
+            assert page.locator('#mission-progress').inner_text()=='3 / 4 ADIM'
+            assert page.locator('[data-id="scanner"]').get_attribute('data-done')=='true'
+            page.keyboard.press('f')
+            assert page.locator('[data-id="scanner"]').get_attribute('data-done')=='false'
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==2
+            assert page.locator('[data-id="exit"]').get_attribute('data-done')=='false'
+            assert not errors,errors
+            page.close()
+            print('PASS Build 032: scanner-dependent stage and reversible state')
+
+            # Special-case branches expose the correct named rules without
+            # providing a shortcut to solving timing or verdict puzzles.
+            for lvl, expected in [(6,['pad-Q','pad-R','exit']), (10,['pad-B','scanner','audit-evidence','audit-verdict','exit']),
+                                  (12,['pad-M','proof-AB','proof-BA','scanner','decision','exit']),
+                                  (15,['pad-M','witness','scanner','exit']),
+                                  (16,['pad-M','witness','witness-scan','witness-authorize','exit']),
+                                  (17,['pad-M','timed','witness','scanner','exit']),
+                                  (18,['pad-M','proof-AB','proof-BA','scanner','decision','exit'])]:
+                page, errors = load(browser,lvl)
+                page.locator('#mission-details summary').click()
+                ids=page.locator('#mission-task-list li').evaluate_all("(els)=>els.map(e=>e.dataset.id)")
+                assert ids==expected,(lvl,ids)
+                assert page.locator('#mission-progress').inner_text().endswith(f'/ {len(expected)} ADIM')
+                assert not errors,(lvl,errors)
+                page.close()
+            print('PASS Build 032: seven advanced room objective plans')
+
             # Build 031: physical time nail freezes a recorded position while the
             # ordinary source movement and fingerprint remain unchanged.
             page, errors = load(browser, 11)

@@ -2,6 +2,15 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 032 — Dinamik Görev Rehberi
+
+Oyunun ilk anlarını ve ileri bulmacalarını daha okunur hâle getirdim. Her odada üstte **Operatör / Aktif Hedef** satırı, güncel hedef ve küçük bir ilerleme şeridi vardır. Oyuncu isterse **Tüm görev adımlarını göster** bölümünü açabilir.
+
+- **19 odaya özel plan:** Baskı plakası için gerçekten kaydedilmiş yankı, A/B imza sırası, zaman aralığı, F doğrulaması, kanıt karşılaştırması, I/II ortak tanık zamanı ve konsol kararları gibi oda kurallarından türeyen hedefler. Toplam kayıt sayısı tek başına plaka başarısı sayılmaz.
+- **Çözümü ele vermeden yönlendirir:** Hedefler sıradaki somut işi gösterir; ayrıntılı bulmaca ipuçları ayrı kalır. Görev panelini kullanmak ipucu sayacını artırmaz ve İpucusuz ustalık rozetini bozmaz.
+- **Gerçek anlık durum:** Oda içindeki plaka geçidi veya kısa süreli P rölesi kapanırsa görev durumu da değişir. Kayıt, tarayıcı, denetim ve hikâye kararları gerçek oyun durumuyla senkron kalır. Yankı silme, faz ve zaman çivisi düzenleme sonrası tekrar hesaplanır.
+- **Daha temiz ekran:** Yalnızca bir satırlık mevcut hedef her zaman görünür; uzun kontrol listesi kapalıdır. Mobil cihazlar ve klavye erişimi desteklenir. Oyun fiziği, kaydetme biçimi, hikâye rotaları, üç final, 57 ustalık rozeti değiştirilmedi.
+
 ## Build 031 — Zaman Çivisi / Yankının İçinde Bir Anı Dondur
 
 **Yeni gerçek oynanış mekaniği:** 10. oda (*Ters İz*) ve sonrasında her kayıtlı yankıya bir zaman çivisi eklenebilir. Oyuncu yankının oynatma akışı içinde **0,5–11,5 saniye** arası duraklayacağı anı, **0 / 0,5 / 1 / 1,5 saniye** bekleme süresini belirler.
