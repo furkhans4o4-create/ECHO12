@@ -474,6 +474,9 @@ def main():
             assert page.locator('#room').inner_text()=='16 / 19'
             assert 'BÖLÜM VI' in page.locator('#chapter-label').inner_text()
             assert page.locator('#sync-panel').is_visible()
+            assert page.locator('#sync-timeline').is_visible()
+            assert page.locator('#sync-timeline-tracks .sync-timeline-row').count()==2
+            assert 'İki farklı' in page.locator('#sync-timeline-result').inner_text()
             assert not page.evaluate("window.__echo12Test.gate('XSYNC')")
             page.keyboard.press('f')
             assert not page.evaluate("window.__echo12Test.gate('XSYNC')"), 'Hologram cannot operate both sensors'
@@ -486,14 +489,22 @@ def main():
             page.evaluate("window.__echo12Test.tick(.09)")
             commit(page)
             assert not page.evaluate("window.__echo12Test.gate('XSYNC')"), 'Two clones on same pad are insufficient'
+            assert page.locator('#sync-timeline-tracks .sync-timeline-row').count()==3
+            assert 'ortak zamanı yok' in page.locator('#sync-timeline-result').inner_text()
             page.evaluate("window.__echo12Test.teleport(10.5,7.5)")
             page.evaluate("window.__echo12Test.tick(.09)")
             commit(page)
             page.evaluate("window.__echo12Test.tick(.1)")
             assert page.evaluate("window.__echo12Test.gate('XSYNC')"), page.evaluate('window.__echo12Test.sync()')
+            assert page.locator('#sync-timeline-tracks .sync-timeline-row').count()==4
+            assert page.locator('#sync-timeline .sync-timeline-segment[data-pad="ORTAK"]').count()>=1
+            assert 'aynı anda' in page.locator('#sync-timeline-result').inner_text()
+            assert page.locator('#sync-timeline-result').get_attribute('data-ready')=='true'
             assert 'E3' in page.locator('#sync-right').inner_text()
             page.keyboard.press('f')
             assert not page.evaluate("window.__echo12Test.gate('XSYNC')"), 'Scanner required for authenticity'
+            assert page.locator('#sync-timeline-result').get_attribute('data-ready')=='false'
+            assert 'F ile' in page.locator('#sync-timeline-result').inner_text()
             page.keyboard.press('f')
             page.evaluate("window.__echo12Test.teleport(15.5,5.5)")
             page.evaluate("window.__echo12Test.tick(.04)")
@@ -1079,6 +1090,7 @@ def main():
 
             # Build 023: gate explanations follow live occupancy and actual proof state.
             page, errors = load(browser, 0)
+            assert not page.locator('#sync-timeline').is_visible()
             panel=page.locator('#diagnostics')
             assert panel.count()==1
             panel.locator('summary').click()

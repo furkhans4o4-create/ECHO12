@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 024 — İki Tanığın Zaman Haritası
+
+**19 oda, 7 bölüm ve 35 arşiv** değişmedi. Ayrı tanıklık isteyen odalarda, kayıtlı yankıların I ve II sensörlerini **12 saniyenin hangi aralıklarında** tuttuğunu gösteren yeni bir eşzamanlılık haritası bulunur.
+
+- **Kayıt başına gerçek zaman aralıkları:** Her yankının I (mavi) ve II (lila) üzerindeki temasları, ters oynatılan kayıtlar da dahil olmak üzere oynatma saatine göre çizilir. Beyaz çizgi o anki saniyeyi gösterir.
+- **Bağımsız eşzamanlılık:** Yeşil **ORTAK** satırı, yalnızca *farklı* yankıların I ve II üzerinde çakışan zaman aralıklarını gösterir. İki yankının aynı I noktasında bulunması yanlışlıkla kabul edilmez.
+- **Gerçeklik kontrolü ayrı:** Ortak zamanı bulmak, F tarayıcısını otomatik açmaz. Harita gerçek kayıtlardan hesaplanır; sahte siluetler sayılmaz ve bulmacanın kapı mantığı değiştirilmez.
+- **Okunabilir alternatif:** Şeritlerin yanında E01/E02 gibi kimlikler ve saniye aralığı metni vardır. Kayıt yoksa veya ortak pencere oluşmamışsa sebebi açıkça belirtilir. Diğer odalarda panel gizlidir.
+- **Test:** Sıfır/bir/iki/üç yankı, aynı sensöre yığılma, ayrı sensörlerde çakışma ve F doğrulayıcısının açık-kapalı durumları mevcut tarayıcı testlerinde denetlenir.
+
 ## Build 023 — Klavye Odağı ve Pencere Güvenliği
 
 **19 oda, 7 bölüm ve 35 arşiv kaydı** korunur. Geliştirme bu kez oyunun bütün büyük pencerelerinde tek ve tutarlı bir klavye sözleşmesi kurar.
@@ -262,4 +272,4 @@ Testler tüm **on bir odayı** oynanış kurallarıyla çözerek denetler. Build
 
 Tamamen bağımsız HTML / CSS / JavaScript ve Canvas 2D. Oyun kaynak kodu `index.html` içindedir; `tests/smoke.py` testleri ve `.github/workflows/smoke.yml` otomatik doğrulamayı sağlar.
 
-**Yön:** Build 014: kanıt sıralaması için anlaşılır görsel geri bildirim, mobil oynanış ve bağımsız kanıt kaynakları arasında daha büyük anlatı sonuçları.
+**Yön:** Sonraki aşamalarda tekrar oynanabilirlik, öğretici akış ve son bölüm zorluk dengesini iyileştirmek; 19 odalık kampanyayı ve kayıt biçimini korumak.
