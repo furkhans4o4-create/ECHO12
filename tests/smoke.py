@@ -24,7 +24,7 @@ def load(browser, level):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -100,6 +100,52 @@ def main():
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
             
+            # Build 035: guard trajectory preview exactly matches physical
+            # bounce motion and predicts the next-second patrol correctly.
+            page, errors = load(browser,2)
+            at0=page.evaluate("window.__echo12Test.guardPreview(0)")
+            assert len(at0)==1,at0
+            assert at0[0]['position']=={'x':14.5,'y':2.5},at0
+            assert at0[0]['radius']==.46,at0
+            assert abs(at0[0]['future'][0]['position']['y']-3.82)<.001,at0
+            at4=page.evaluate("window.__echo12Test.guardPreview(4)")[0]['position']
+            assert abs(at4['y']-7.9)<.001,at4
+            assert page.locator('#guard-warning').is_hidden()
+            page.evaluate("window.__echo12Test.teleport(14.5,3.7)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            danger=page.evaluate("window.__echo12Test.guardPreview()")[0]
+            assert danger['danger'] and .46<danger['distance']<1.25,danger
+            assert page.locator('#guard-warning').is_visible()
+            assert page.evaluate("window.__echo12Test.guardCueCount()")==1
+            page.evaluate("window.__echo12Test.tick(.1)")
+            assert page.evaluate("window.__echo12Test.guardCueCount()")==1
+            assert page.evaluate("window.__echo12Test.inspect().elapsed")>.15
+            page.evaluate("window.__echo12Test.teleport(2.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            assert page.locator('#guard-warning').is_hidden()
+            assert page.evaluate("window.__echo12Test.guardCueCount()")==1
+            # Lethal collision still resets only the live loop.
+            guard=page.evaluate("window.__echo12Test.guardPreview()")[0]['position']
+            page.evaluate("([x,y])=>window.__echo12Test.teleport(x,y)",[guard['x'],guard['y']])
+            page.evaluate("window.__echo12Test.tick(.02)")
+            assert page.evaluate("window.__echo12Test.position()")=={'x':2.5,'y':7.5}
+            assert page.evaluate("window.__echo12Test.inspect().elapsed")==0
+            assert page.locator('#guard-warning').is_hidden()
+            assert not errors,errors
+            page.close()
+            print('PASS Build 035: true patrol forecasts, proximity alert and unchanged collision')
+
+            # Non-patrol rooms have no warning or phantom risk.
+            for lvl in [0,3,6,9,18]:
+                page, errors = load(browser,lvl)
+                assert page.evaluate("window.__echo12Test.guardPreview()")==[]
+                assert page.locator('#guard-warning').is_hidden()
+                page.evaluate("window.__echo12Test.tick(.2)")
+                assert page.evaluate("window.__echo12Test.guardCueCount()")==0
+                assert not errors,(lvl,errors)
+                page.close()
+            print('PASS Build 035: no phantom warnings in patrol-free rooms')
+
             # Build 034: signal cabling follows true physical pressure.
             page, errors = load(browser,0)
             wires=page.evaluate("window.__echo12Test.conduits()")
