@@ -24,7 +24,7 @@ def load(browser, level, use_user_hud=False):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, plateReadouts(){return plateReadouts()}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, plateReadouts(){return plateReadouts()}, bestGhost(){return bestGhostStatus()}, openRoom(index){loadLevel(index)}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -107,6 +107,101 @@ def main():
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
             
+            # Build 041: clear once to record a device-local time-trial
+            # ghost and replay it as an explicitly nonphysical shadow.
+            page, errors = load(browser,0)
+            assert page.locator('#best-ghost-toggle').is_hidden()
+            assert not page.evaluate("window.__echo12Test.bestGhost()['available']")
+            move(page,'d',.4)
+            page.evaluate("window.__echo12Test.teleport(15.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            assert page.evaluate("window.__echo12Test.padState()['mode']")=='leveldone'
+            payload=page.evaluate("window.__echo12Test.save()")
+            saved=payload['progress']['bestGhosts']
+            assert '0' in saved and len(saved['0'])>=3,saved
+            assert saved['0'][0][0]==0
+            assert saved['0'][-1][1]==15.5 and saved['0'][-1][2]==5.5
+            assert page.evaluate("JSON.parse(localStorage.getItem('echo12-best-ghosts'))['0']") is not None
+            page.evaluate("window.__echo12Test.openRoom(0)")
+            ghost=page.evaluate("window.__echo12Test.bestGhost()")
+            assert ghost['available'] and ghost['enabled'] and ghost['points']==len(saved['0']),ghost
+            assert page.locator('#best-ghost-toggle').is_visible()
+            assert page.locator('#best-ghost-toggle').get_attribute('aria-pressed')=='true'
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==0
+            page.evaluate("window.__echo12Test.tick(.2)")
+            ghost=page.evaluate("window.__echo12Test.bestGhost()")
+            assert ghost['position'] and ghost['position']['x']>2.5,ghost
+            assert not page.evaluate("window.__echo12Test.gate('A')")
+            before=page.evaluate("window.__echo12Test.inspect()")
+            page.keyboard.press('v')
+            assert page.locator('#best-ghost-toggle').get_attribute('aria-pressed')=='false'
+            assert page.evaluate("localStorage.getItem('echo12-best-ghost-off')")=='1'
+            assert page.evaluate("window.__echo12Test.bestGhost()['position']") is None
+            assert page.evaluate("window.__echo12Test.inspect()")==before
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            page.locator('#best-ghost-toggle').click()
+            assert page.evaluate("window.__echo12Test.bestGhost()['position']")
+            assert page.evaluate("localStorage.getItem('echo12-best-ghost-off')")=='0'
+            page.evaluate("document.activeElement.blur()")
+            page.evaluate("window.__echo12Test.tick(.8)")
+            assert page.evaluate("window.__echo12Test.bestGhost()['position']") is None
+            assert not page.evaluate("window.__echo12Test.gate('A')")
+            assert not errors,errors
+            page.close()
+            print('PASS Build 041: winning-loop ghost, V toggle, replay cutoff and nonphysical gates')
+
+            # Build 041: reject corrupted imported ghost coordinates and
+            # retain backwards compatibility with older v1 saves.
+            page, errors = load(browser,0)
+            legacy=page.evaluate("window.__echo12Test.save()")
+            legacy['progress'].pop('bestGhosts',None)
+            restored=page.evaluate("data=>window.__echo12Test.validate(data)",legacy)
+            assert len(restored['bestGhosts'])==0
+            restored=page.evaluate("data=>window.__echo12Test.restore(data)",legacy)
+            assert len(restored['bestGhosts'])==0
+            assert page.evaluate("window.__echo12Test.bestGhost()['available']")==False
+            valid=page.evaluate("window.__echo12Test.save()")
+            valid['progress']['bestRuns']['0']={'echoes':1,'seconds':2,'hints':0}
+            valid['progress']['bestGhosts']={'0':[[0,2.5,5.5],[0.5,6.5,3.5]]}
+            accepted=page.evaluate("data=>window.__echo12Test.validate(data)",valid)
+            assert accepted['bestGhosts']['0'][1]==[0.5,6.5,3.5]
+            page.evaluate("data=>window.__echo12Test.restore(data)",valid)
+            assert page.evaluate("window.__echo12Test.bestGhost()['available']")
+            assert page.evaluate("window.__echo12Test.bestGhost()['points']")==2
+            bad=page.evaluate("window.__echo12Test.save()")
+            bad['progress']['bestGhosts']['0'][1][0]=0
+            message=page.evaluate("""data=>{
+              try{window.__echo12Test.validate(data);return 'accepted'}
+              catch(error){return error.message}
+            }""",bad)
+            assert message!='accepted' and 'Rekor' in message,message
+            bad['progress']['bestGhosts']['0'][1][0]=.5
+            bad['progress']['bestGhosts']['0'][1][1]=99999
+            message=page.evaluate("""data=>{
+              try{window.__echo12Test.validate(data);return 'accepted'}
+              catch(error){return error.message}
+            }""",bad)
+            assert message!='accepted' and 'Rekor' in message,message
+            assert page.evaluate("window.__echo12Test.bestGhost()['points']")==2
+            assert not errors,errors
+            page.close()
+            print('PASS Build 041: old save compatibility, portable record ghosts and corruption rejection')
+
+            # Personal-best shadows must not satisfy echo-only plates.
+            page, errors = load(browser,4)
+            packed=page.evaluate("window.__echo12Test.save()")
+            packed['progress']['unlocked']=4
+            packed['progress']['bestRuns']['4']={'echoes':1,'seconds':1.5,'hints':0}
+            packed['progress']['bestGhosts']={'4':[[0,4.5,6.5],[1,4.5,6.5]]}
+            page.evaluate("data=>window.__echo12Test.restore(data)",packed)
+            assert page.evaluate("window.__echo12Test.bestGhost()['available']")
+            page.evaluate("window.__echo12Test.tick(.4)")
+            assert not page.evaluate("window.__echo12Test.gate('C')")
+            assert page.evaluate("window.__echo12Test.plateReadouts()[0]['occupants']")==[]
+            assert not errors,errors
+            page.close()
+            print('PASS Build 041: record shadow never opens physical echo-only doors')
+
             # Build 040: stage badges reflect real players, actual recordings
             # and a plate that explicitly refuses live-only pressure.
             page, errors = load(browser,4)
