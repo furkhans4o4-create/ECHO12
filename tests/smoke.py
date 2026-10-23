@@ -159,7 +159,7 @@ def main():
             page.locator('#plate-forecast summary').click()
             segments=page.locator('[data-plate="V"] [data-kind="contact"]').evaluate_all(
                 "(els)=>els.map(e=>e.getAttribute('title'))")
-            assert segments,segments
+            assert segments==[],segments  # The nail clips this late reverse contact after 12 s.
             page.keyboard.press('i')
             assert 'ÇİVİ' in page.locator('#inspector-status').inner_text()
             assert page.locator('#inspector-marker-list .inspector-marker').count()>=1

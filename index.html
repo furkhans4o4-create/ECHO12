@@ -2106,6 +2106,7 @@ function drawTimeline(){
   const samples=track.samples;
   // The timeline follows physical playback, including skipped phase and held samples.
   for(let k=5;k<=Math.round(LOOP/DT);k+=5){
+   if(track.live&&k>=samples.length)break;
    const clock=k*DT;
    if(track.echo&&!echoActive(track.echo,clock))continue;
    const sampleAt=(seconds)=>{
