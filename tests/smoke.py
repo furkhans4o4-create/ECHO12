@@ -136,7 +136,7 @@ def main():
             assert page.locator('[data-echo-index="0"] .echo-phase-controls output').get_attribute('data-phase')=='3'
             assert page.locator('[data-echo-index="0"] .echo-phase-controls button').last.is_disabled()
             assert page.evaluate("window.__echo12Test.gate('Q')")==False
-            page.locator('[data-echo-index="0"] button:last-child').click()
+            page.locator('[data-echo-index="0"] > button').click()
             assert page.locator('#echo-restore').is_enabled()
             page.locator('#echo-restore').click()
             assert page.locator('[data-echo-index="0"] .echo-phase-controls output').get_attribute('data-phase')=='3'
@@ -371,7 +371,7 @@ def main():
             commit(page)
             assert page.locator('#echo-editor-list .echo-editor-row').count()==2
             original=page.evaluate("window.__echo12Test.echoIDs()")
-            page.locator('#echo-editor-list [data-echo-index="0"] button:last-child').click()
+            page.locator('#echo-editor-list [data-echo-index="0"] > button').click()
             assert page.locator('#echo-editor-list .echo-editor-row').count()==1
             assert page.locator('#echo-restore').is_enabled()
             assert page.evaluate("window.__echo12Test.inspect().elapsed")<0.5
@@ -385,7 +385,7 @@ def main():
             page.keyboard.press('Shift+z')
             assert page.locator('#echo-editor-list .echo-editor-row').count()==2
             assert page.locator('#echo-restore').is_disabled()
-            page.locator('#echo-editor-list [data-echo-index="0"] button:last-child').click()
+            page.locator('#echo-editor-list [data-echo-index="0"] > button').click()
             assert page.locator('#echo-restore').is_enabled()
             page.locator('#commit').click()
             page.evaluate("window.__echo12Test.tick(.01)")
@@ -408,7 +408,7 @@ def main():
             page.locator('#echo-editor summary').click()
             assert 'A→B' in page.locator('#echo-editor-list').inner_text()
             assert 'B→A' in page.locator('#echo-editor-list').inner_text()
-            page.locator('#echo-editor-list [data-echo-index="1"] button:last-child').click()
+            page.locator('#echo-editor-list [data-echo-index="1"] > button').click()
             assert not page.evaluate("window.__echo12Test.gate('PROOF')")
             assert 'A→B 0/1' in page.locator('#proof-evidence').inner_text()
             page.locator('#echo-restore').click()
