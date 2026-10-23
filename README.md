@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 038 — Sade Görünüm / Oyuncuyu Önce Oyunla Tanıştır
+
+Oyunun ilk dakikalarında karmaşık analiz araçları oyuncunun dikkatini dağıtmasın diye **Sade / Ayrıntılı** arayüz ayrımı eklendi.
+
+- **İlk altı oda sade başlar:** Yeni oyuncuya önce gerçek oyun sahnesi, 12 saniyelik zaman çizelgesi, görev hedefi, kapı durumu, yankı kaydetme, denemeyi yenileme ve diğer temel kontroller sunulur. İleriye yönelik plaka tahmini, zaman çivisi editörü, imza doğrulaması, teşhis ve ustalık panelleri başlangıçta gizlenir. Birinci odada A plakasına gidip ilk yankıyı kaydetme akışını hatırlatan kısa bir temel kontrol satırı bulunur.
+- **Yedinci odada ayrıntılı görünüme geçilir:** Bölüm II ile yeni mekanikler başlarken analiz ekranları varsayılan olarak açık görünür. Oyuncunun elle seçtiği mod bu otomatik geçişle değiştirilmez.
+- **Tek tuşla geri alma:** Kontrollerin yanındaki **Görünüm: sade / ayrıntılı** düğmesine veya **C** tuşuna basarak görünümü değiştir. El ile seçilen görünüm tarayıcıda echo12-hud-mode altında tutulur; sonraki oturumlarda aynı tercih kullanılır.
+- **Sadece sunum:** Oda, yankılar, plaka fiziği, ipucu kullanımı ve JSON yedek biçimi değişmez. Gizli teknik paneller gerekli durumları hesaplamaya devam eder; yeniden açıldığında bilgiler kaybolmaz. Sade moda geçiş ipucu sayılmaz veya İpucusuz ustalık rozeti hakkını bozmaz.
+- **Testler:** Yeni oyuncuda sade başlangıç, C kısayoluyla tam görünüm, butonla geri dönüş, kalıcı tercih, gerçek yankı kaydı, ipucu sayısının korunması, ilk altı odanın otomatik sade oluşu ve ileri odada isteğe bağlı sade moda geçiş Playwright regresyonlarına eklendi.
+
 ## Build 037 — Oyun Kolu / Analog Kontrol Desteği
 
 Artık ECHO/12 bir standart oyun koluyla da oynanabilir. Yeni kontrol sistemi mevcut fizik, 12 saniyelik döngü ve kayıt kurallarını değiştirmez; oyundaki normal komutları kullanır.
