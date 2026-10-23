@@ -2,6 +2,18 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 042 — Zaman Sigortası / Final Sonrası 20. Oda
+
+ECHO/12'nin yedinci bölüm sonunda tamamlanan özgün hikâyesine dokunmadan **oynanabilir, isteğe bağlı bir 20. oda** eklendi. Bu özel kalibrasyon odası, 10. odadan beri kullanılabilen Zaman Çivisi mekaniğine ilk kez **zorunlu fiziksel bir bulmaca görevi** verir.
+
+- **Özel oda: ZAMAN SİGORTASI.** Ana finalin ardından EK PROTOKOL olarak açılır; oyuncu final ekranında devam ederek veya oda seçicisinden girebilir. Hikâye kararları ve üç final aynen 19. odada tamamlanır. 20. odanın da kendi 3 ustalık madalyası vardır: toplam **60**.
+- **Yeni mekanik: kısa iz / uzun etki.** Önce M plakasını kayıtlı yankıyla etkinleştir. N plakasına kısa süreliğine dokunup **ondan ayrıldığın** ikinci kaynak hareketini kaydet. N plakası, kaynağında 0,75 saniyeden daha kısa (veya eşit) temas içeren gerçek hareketi tanır fakat açılmak için **aynı fiziksel yankının 1,25 saniye kesintisiz durmasını** ister. Dolayısıyla yalnızca N üzerinde uzunca bekleyerek kaydedilen bir yankı işe yaramaz.
+- **Zaman Çivisini kullan:** İkinci yankının kısa N temasına Zaman Çivisi yerleştir; çivi o anı 1,5 saniye dondurduğunda N yavaş yavaş dolar. Tam dolunca kapı **2,8 saniyelik** geçiş rölesini etkinleştirir. Oyuncu bu süre içinde doğudaki çıkışa koşar. Faz kaydırmasıyla açılma zamanını önceden planlamak da mümkündür.
+- **Gerçek simülasyon:** Şarj aynı yankı fiziksel olarak plakada durduğu sürece birikir. Çekilince anında sıfırlanır; yankı değiştirilirse aynı şarj devralınmaz. Kapı açıldıktan sonra zaman rölesi bağımsız çalışır. Çiviyi değiştirmek, canlı denemeyi yenilemek, kaydı silmek ve oda değiştirmek şarjı temizler.
+- **Sahnede okunur:** N plakasının dolumu çevresinde halka olarak çizilir, kapı geri bildirimi kalan şarjı saniye cinsinden gösterir, tanık etiketi gerçek E01–E06 baskısını ve doluluk durumunu ayırır. Plaka zaman tahminleri yalnızca kaynak geçiş koşulunu karşılayan ve çivisiyle yeterince uzun duran yankıyı geçerli sayar.
+- **Geriye uyumluluk:** Önceki 19 odanın bulmaca kuralları değişmedi. Önceki JSON kayıt sürümü, rozetler ve finaller korunur. Eski oyuncuların 19. oda tamamlama kaydı yanlışlıkla yeni 20. oda tamamlama olarak okunmaz.
+- **Tarayıcı testleri:** İsteğe bağlı odanın açılması, uzun kaynak temasının reddi, kısa temasın çivisiz reddi, kaynak ayrılışının kontrolü, çiviyle fiziksel 1,25 saniyelik şarj, 2,8 saniyelik rölenin sona ermesi, yenilemede sıfırlama ve hikâye finalinin 19. odada kalması Chromium testlerine eklendi.
+
 ## Build 041 — Rekor Gölgesi / Kendi En İyi Turunla Yarış
 
 **Tekrar oynama motivasyonunu artıran ilk kişisel rota yarışı.** Bir odayı yeni kişisel rekorla bitirdiğinde, son başarılı canlı döngündeki hareketinin seyrek bir izi kaydedilir. Odayı tekrar oynadığında geçmiş koşunun saydam **REKOR** işaretini takip ederek daha akıcı bir güzergâh arayabilirsin.
