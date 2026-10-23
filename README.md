@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 033 — Sahne Pusulası / Hedefi Haritanın İçinde Bul
+
+**Yeni bir panel yerine doğrudan oynanış sahnesine küçük bir hedef pusulası eklendi.** Build 032'deki dinamik görev rehberinin henüz tamamlanmamış adımı, varsa tek bir oyun içi konuma bağlanır. Oyuncunun çevresinde o konumu işaret eden küçük bir ok görünür; hedefte hafif bir halka ve yakın takip haritasında işaret bulunur.
+
+- **Somut, değişken hedefler:** Plaka, açık kapı zamanı, canlı röle, çıkış, A/B okuma noktası, iki tanığın eksik sensörü, ölçümü yapılmamış en yakın kanıt istasyonu, denetim/kora konsolu gibi gerçek dünya nesnelerine yön verir. Bir A/B kaydında önce A'ya, A'ya dokunduktan sonra B'ye yönelir.
+- **Oyuncunun yerine karar vermez:** F ile tarama, seçilecek hikâye kararı ve diğer oyuncu eylemleri için sahte harita konumu gösterilmez. Pusula engellerin içinden hayalî bir rota çizmez, yalnızca yönü gösterir.
+- **Tercih ve erişilebilirlik:** **G** tuşu veya yakın takip yanındaki **Görev pusulası** düğmesiyle aç/kapat. Tercih tarayıcıda saklanır. Azaltılmış hareket açıkken halka sabit kalır; mini haritadaki hedef işareti aynı tercihe bağlıdır.
+- **Ödün vermeyen yönlendirme:** Pusula mevcut görevi ve oyuncu konumunu okur; yankıları, kapıları, kanıtları, zamanlayıcıları ve kayıt dosyalarını değiştirmez. H ile verilen ipucundan bağımsızdır; İpucusuz ustalık ödülünü etkilemez.
+- **Testler:** İlk oda hedefi, geçide ve çıkışa geçiş, geri alma, aç/kapat ve saklanan tercih, A/B olay sırasıyla yön değiştirme, tarayıcı bekleme durumu ve eksik kanıt istasyonu tarayıcı testlerinde doğrulanır.
+
 ## Build 032 — Dinamik Görev Rehberi
 
 Oyunun ilk anlarını ve ileri bulmacalarını daha okunur hâle getirdim. Her odada üstte **Operatör / Aktif Hedef** satırı, güncel hedef ve küçük bir ilerleme şeridi vardır. Oyuncu isterse **Tüm görev adımlarını göster** bölümünü açabilir.

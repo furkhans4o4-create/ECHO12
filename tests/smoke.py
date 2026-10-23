@@ -24,7 +24,7 @@ def load(browser, level):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -100,6 +100,86 @@ def main():
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
             
+            # Build 033: scene waypoint follows active task, is non-spoiling
+            # and never modifies hint count or gameplay state when toggled.
+            page, errors = load(browser,0)
+            first=page.evaluate("window.__echo12Test.waypoint()")
+            assert first=={'id':'pad-A','kind':'plaka','x':6.5,'y':3.5},first
+            assert page.locator('#beacon-toggle').get_attribute('aria-pressed')=='true'
+            before=page.evaluate("window.__echo12Test.inspect()")
+            page.keyboard.press('g')
+            assert page.locator('#beacon-toggle').get_attribute('aria-pressed')=='false'
+            assert page.evaluate("localStorage.getItem('echo12-beacon')")=='off'
+            assert page.evaluate("window.__echo12Test.waypoint()") is None
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert page.evaluate("window.__echo12Test.inspect()")['elapsed']==before['elapsed']
+            page.locator('#beacon-toggle').click()
+            assert page.evaluate("window.__echo12Test.waypoint()")==first
+            assert page.evaluate("localStorage.getItem('echo12-beacon')")=='on'
+            page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            page.evaluate("window.__echo12Test.tick(.15)")
+            target=page.evaluate("window.__echo12Test.waypoint()")
+            assert target=={'id':'exit','kind':'çıkış','x':15.5,'y':5.5},target
+            page.keyboard.press('z')
+            target=page.evaluate("window.__echo12Test.waypoint()")
+            assert target==first,target
+            assert not errors,errors
+            page.close()
+            print('PASS Build 033: optional scene compass, persisted toggle, no hint penalty and live target')
+
+            # A/B path marker changes as the live attempt visits the first
+            # signature point without revealing a complete solution.
+            page, errors = load(browser,11)
+            page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            wp=page.evaluate("window.__echo12Test.waypoint()")
+            assert wp=={'id':'proof-AB','kind':'iz A','x':9.5,'y':3.5},wp
+            page.evaluate("window.__echo12Test.teleport(9.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            wp=page.evaluate("window.__echo12Test.waypoint()")
+            assert wp=={'id':'proof-AB','kind':'iz B','x':10.5,'y':7.5},wp
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 033: waypoint switches from A to B during real recording')
+
+            # A scanner is a local keyboard action, not an invented location.
+            page, errors = load(browser,8)
+            assert page.evaluate("window.__echo12Test.waypoint()")['id']=='pad-T'
+            page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            page.evaluate("window.__echo12Test.teleport(10.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            assert page.evaluate("window.__echo12Test.waypoint()") is None
+            page.keyboard.press('f')
+            assert page.evaluate("window.__echo12Test.waypoint()")=={'id':'exit','kind':'çıkış','x':15.5,'y':5.5}
+            assert not errors,errors
+            page.close()
+            print('PASS Build 033: scan action never points to fictitious map coordinate')
+
+            # The audit waypoint selects the nearest uncollected station; no
+            # verdict option is favored by the director.
+            page, errors = load(browser,10)
+            page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            assert page.evaluate("window.__echo12Test.waypoint()") is None
+            page.keyboard.press('f')
+            wp=page.evaluate("window.__echo12Test.waypoint()")
+            assert wp and wp['id']=='audit-evidence' and wp['kind']=='ölçüm',wp
+            page.evaluate("window.__echo12Test.teleport(9.5,2.5)")
+            page.keyboard.press('e')
+            wp2=page.evaluate("window.__echo12Test.waypoint()")
+            assert wp2 and wp2['y']!=2.5,wp2
+            assert not errors,errors
+            page.close()
+            print('PASS Build 033: nearest missing evidence re-targeting')
+
             # Build 032: the operation director tracks real recorded plate
             # occupancy and ephemeral gate state without granting hint penalties.
             page, errors = load(browser, 0)
