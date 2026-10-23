@@ -100,6 +100,86 @@ def main():
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
             
+            # Build 030: the phase shift is a real new physical constraint.
+            # A delayed echo cannot open its gate until materialization time.
+            page, errors = load(browser, 6)
+            page.locator('#echo-editor summary').click()
+            page.evaluate("document.activeElement.blur()")
+            page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            commit(page)
+            baseline=page.evaluate("window.__echo12Test.echoIDs()")
+            assert page.locator('[data-echo-index="0"] .echo-phase-controls output').get_attribute('data-phase')=='0'
+            assert page.locator('[data-echo-index="0"] .echo-phase-controls button').first.is_disabled()
+            assert page.evaluate("window.__echo12Test.gate('Q')")==False
+            page.evaluate("window.__echo12Test.tick(.2)")
+            assert page.evaluate("window.__echo12Test.gate('Q')")==True
+            page.locator('[data-echo-index="0"] .echo-phase-controls button').last.click()
+            assert page.locator('[data-echo-index="0"] .echo-phase-controls output').get_attribute('data-phase')=='0.5'
+            assert page.evaluate("window.__echo12Test.inspect().elapsed")==0
+            assert page.evaluate("window.__echo12Test.echoIDs()")==baseline
+            assert page.evaluate("window.__echo12Test.gate('Q')")==False
+            page.evaluate("window.__echo12Test.tick(.3)")
+            assert page.evaluate("window.__echo12Test.gate('Q')")==False
+            page.evaluate("window.__echo12Test.tick(.4)")
+            assert page.evaluate("window.__echo12Test.gate('Q')")==True
+            page.locator('#plate-forecast summary').click()
+            assert page.locator('[data-plate="Q"] [data-kind="contact"]').count()>0
+            starts=page.locator('[data-plate="Q"] [data-kind="contact"]').first.evaluate(
+                "e=>parseFloat(e.style.left)")
+            assert starts>=4,starts
+            page.locator('[data-echo-index="0"] .echo-phase-controls button').first.click()
+            assert page.locator('[data-echo-index="0"] .echo-phase-controls output').get_attribute('data-phase')=='0'
+            assert page.locator('[data-echo-index="0"] .echo-phase-controls button').first.is_disabled()
+            for i in range(6):
+                page.locator('[data-echo-index="0"] .echo-phase-controls button').last.click()
+            assert page.locator('[data-echo-index="0"] .echo-phase-controls output').get_attribute('data-phase')=='3'
+            assert page.locator('[data-echo-index="0"] .echo-phase-controls button').last.is_disabled()
+            assert page.evaluate("window.__echo12Test.gate('Q')")==False
+            page.locator('[data-echo-index="0"] button:last-child').click()
+            assert page.locator('#echo-restore').is_enabled()
+            page.locator('#echo-restore').click()
+            assert page.locator('[data-echo-index="0"] .echo-phase-controls output').get_attribute('data-phase')=='3'
+            assert page.evaluate("window.__echo12Test.echoIDs()")==baseline
+            page.keyboard.press('r')
+            assert page.locator('#echo-editor-list .echo-editor-row').count()==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 030: delayed materialization, real gate, phase bounds and restore')
+
+            # The first chapter retains original movement and has phase locked.
+            page, errors = load(browser, 0)
+            page.locator('#echo-editor summary').click()
+            page.evaluate("document.activeElement.blur()")
+            page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            assert page.locator('[data-echo-index="0"] .echo-phase-controls').get_attribute('aria-disabled')=='true'
+            assert page.locator('[data-echo-index="0"] .echo-phase-controls button').first.is_disabled()
+            assert page.locator('[data-echo-index="0"] .echo-phase-controls button').last.is_disabled()
+            assert not errors,errors
+            page.close()
+            print('PASS Build 030: introductory chapter cannot phase-shift recordings')
+
+            # Reverse records must be timed from their actual reverse appearance:
+            # moving the near-end event past 12 seconds removes its plate contact.
+            page, errors = load(browser, 9)
+            page.locator('#echo-editor summary').click()
+            page.evaluate("document.activeElement.blur()")
+            page.keyboard.press('f')
+            page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            page.evaluate("window.__echo12Test.teleport(2.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.3)")
+            commit(page)
+            page.locator('#plate-forecast summary').click()
+            assert page.locator('[data-plate="V"] [data-kind="contact"]').count()>0
+            page.locator('[data-echo-index="0"] .echo-phase-controls button').last.click()
+            assert page.locator('[data-plate="V"] [data-kind="contact"]').count()==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 030: reverse contacts are clipped when phased beyond 12 seconds')
+
             # Build 027: read-only plate forecast follows immutable echo recordings.
             page, errors = load(browser, 0)
             page.locator('#plate-forecast summary').click()
@@ -291,7 +371,7 @@ def main():
             commit(page)
             assert page.locator('#echo-editor-list .echo-editor-row').count()==2
             original=page.evaluate("window.__echo12Test.echoIDs()")
-            page.locator('#echo-editor-list [data-echo-index="0"] button').click()
+            page.locator('#echo-editor-list [data-echo-index="0"] button:last-child').click()
             assert page.locator('#echo-editor-list .echo-editor-row').count()==1
             assert page.locator('#echo-restore').is_enabled()
             assert page.evaluate("window.__echo12Test.inspect().elapsed")<0.5
@@ -305,7 +385,7 @@ def main():
             page.keyboard.press('Shift+z')
             assert page.locator('#echo-editor-list .echo-editor-row').count()==2
             assert page.locator('#echo-restore').is_disabled()
-            page.locator('#echo-editor-list [data-echo-index="0"] button').click()
+            page.locator('#echo-editor-list [data-echo-index="0"] button:last-child').click()
             assert page.locator('#echo-restore').is_enabled()
             page.locator('#commit').click()
             page.evaluate("window.__echo12Test.tick(.01)")
@@ -328,7 +408,7 @@ def main():
             page.locator('#echo-editor summary').click()
             assert 'A→B' in page.locator('#echo-editor-list').inner_text()
             assert 'B→A' in page.locator('#echo-editor-list').inner_text()
-            page.locator('#echo-editor-list [data-echo-index="1"] button').click()
+            page.locator('#echo-editor-list [data-echo-index="1"] button:last-child').click()
             assert not page.evaluate("window.__echo12Test.gate('PROOF')")
             assert 'A→B 0/1' in page.locator('#proof-evidence').inner_text()
             page.locator('#echo-restore').click()
