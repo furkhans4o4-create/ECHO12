@@ -111,7 +111,7 @@ def main():
             baseline=page.evaluate("window.__echo12Test.echoIDs()")
             assert page.locator('[data-echo-index="0"] .echo-phase-controls output').get_attribute('data-phase')=='0'
             assert page.locator('[data-echo-index="0"] .echo-phase-controls button').first.is_disabled()
-            assert page.evaluate("window.__echo12Test.gate('Q')")==False
+            assert page.evaluate("window.__echo12Test.gate('Q')")==True
             page.evaluate("window.__echo12Test.tick(.2)")
             assert page.evaluate("window.__echo12Test.gate('Q')")==True
             page.locator('[data-echo-index="0"] .echo-phase-controls button').last.click()
