@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 031 — Zaman Çivisi / Yankının İçinde Bir Anı Dondur
+
+**Yeni gerçek oynanış mekaniği:** 10. oda (*Ters İz*) ve sonrasında her kayıtlı yankıya bir zaman çivisi eklenebilir. Oyuncu yankının oynatma akışı içinde **0,5–11,5 saniye** arası duraklayacağı anı, **0 / 0,5 / 1 / 1,5 saniye** bekleme süresini belirler.
+
+- **Fiziksel duraklama:** Yankı seçilen anda gerçekten durur. Üzerinde bulunduğu plaka veya I/II sensörü baskıyı kaybetmez; süre bitince hareket kayıtlı kaldığı noktadan devam eder. 12. saniyeyi aşan son kısım gösterilmez. Faz Kaydırma ile birleşebilir; faz boyunca yankı henüz yoktur.
+- **Değişmeyen geçmiş:** Hareket örnekleri, A/B kaynak imzaları ve yankı parmak izleri aynıdır. Zaman çivisi kurmak veya süresini değiştirmek güncel döngüyü sıfırlar; kanıt ve yetki kilitleri gerçek zamanlamaya göre yeniden doğrulanır. Silinen kayıt geri getirilirse faz ve çivi birlikte geri gelir.
+- **Oyuna yansıması:** İki fiziksel yankının aynı anda baskı uyguladığı bulmacalarda hareketleri tekrar kaydetmek yerine kısa bir anı uzatabilirsin. Ana sahne, mini harita, yankı laboratuvarı, olay işaretleri, plaka zaman tahmini ve 12 saniyelik zaman çizelgesi aynı fiziksel oynatma zamanını kullanır.
+- **Kapsam:** İlk dokuz oda aynı kalır; ileri odalar yeni bir alternatif çözüm yolu kazanır. Kampanya, ilerleme kaydı, 57 ustalık rozeti ve mevcut JSON yedek biçimi değişmez.
+- **Kontroller:** Yankı Kayıtlarını Yönet → **Durak Noktası** ve **Bekleme**. Bekleme Kapalı seçilirse çivi kaldırılır. Tüm kontroller klavye ve dokunmatik girişe uygundur.
+
 ## Build 030 — Faz Kaydırma / Yankıları Yeniden Zamanla
 
 **Yankıların ne zaman ortaya çıktığı artık gerçek bir bulmaca değişkeni.** Bölüm II'den itibaren Yankı Kayıtlarını Yönet panelinde E01–E06 kayıtlarını ayrı ayrı **0–3 saniye** geciktirebilirsin. Gecikme 0,5 saniyelik adımlarla ayarlanır; yeni bir yankı kaydetmeye gerek yoktur.

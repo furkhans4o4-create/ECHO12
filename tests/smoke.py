@@ -100,6 +100,87 @@ def main():
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
             
+            # Build 031: physical time nail freezes a recorded position while the
+            # ordinary source movement and fingerprint remain unchanged.
+            page, errors = load(browser, 11)
+            page.locator('#echo-editor summary').click()
+            page.evaluate("document.activeElement.blur()")
+            page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.8)")
+            page.evaluate("window.__echo12Test.teleport(2.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.3)")
+            commit(page)
+            hash_before=page.evaluate("window.__echo12Test.echoIDs()")
+            assert page.locator('[data-echo-index="0"] [data-anchor-at]').input_value()=='0.5'
+            assert page.locator('[data-echo-index="0"] [data-anchor-hold]').input_value()=='0'
+            page.evaluate("window.__echo12Test.tick(1.15)")
+            assert not page.evaluate("window.__echo12Test.gate('M')")
+            page.locator('[data-echo-index="0"] [data-anchor-hold]').select_option('1')
+            assert page.evaluate("window.__echo12Test.inspect().elapsed")==0
+            assert page.evaluate("window.__echo12Test.echoIDs()")==hash_before
+            assert page.evaluate("window.__echo12Test.gate('M')")==False
+            page.evaluate("window.__echo12Test.tick(1.15)")
+            assert page.evaluate("window.__echo12Test.gate('M')")
+            page.evaluate("window.__echo12Test.tick(1)")
+            assert not page.evaluate("window.__echo12Test.gate('M')")
+            page.locator('#plate-forecast summary').click()
+            spans=page.locator('[data-plate="M"] [data-kind="contact"]').evaluate_all(
+                "(els)=>els.map(e=>({left:parseFloat(e.style.left),width:parseFloat(e.style.width)}))")
+            assert any(x['width']>10 for x in spans),spans
+            page.locator('[data-echo-index="0"] [data-anchor-at]').select_option('1')
+            assert not page.evaluate("window.__echo12Test.gate('M')")
+            assert page.evaluate("window.__echo12Test.inspect().elapsed")==0
+            assert page.evaluate("window.__echo12Test.echoIDs()")==hash_before
+            page.locator('[data-echo-index="0"] > button').click()
+            page.locator('#echo-restore').click()
+            assert page.locator('[data-echo-index="0"] [data-anchor-hold]').input_value()=='1'
+            assert page.locator('[data-echo-index="0"] [data-anchor-at]').input_value()=='1'
+            page.keyboard.press('r')
+            assert page.locator('#echo-editor-list .echo-editor-row').count()==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 031: replay-local hold, source identity, gate physics and restore')
+
+            # A reverse echo freezes in its reversed replay position, not the
+            # original recording's chronological location.
+            page, errors = load(browser, 9)
+            page.locator('#echo-editor summary').click()
+            page.evaluate("document.activeElement.blur()")
+            page.keyboard.press('f')
+            page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            page.evaluate("window.__echo12Test.teleport(2.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.3)")
+            commit(page)
+            initial=page.evaluate("window.__echo12Test.echoIDs()")
+            page.locator('[data-echo-index="0"] [data-anchor-hold]').select_option('0.5')
+            page.locator('[data-echo-index="0"] [data-anchor-at]').select_option('11')
+            assert page.evaluate("window.__echo12Test.echoIDs()")==initial
+            page.locator('#plate-forecast summary').click()
+            segments=page.locator('[data-plate="V"] [data-kind="contact"]').evaluate_all(
+                "(els)=>els.map(e=>e.getAttribute('title'))")
+            assert segments,segments
+            page.keyboard.press('i')
+            assert 'ÇİVİ' in page.locator('#inspector-status').inner_text()
+            assert page.locator('#inspector-marker-list .inspector-marker').count()>=1
+            assert not errors,errors
+            page.close()
+            print('PASS Build 031: reversed holds, forecast and inspector annotations')
+
+            # Until the TERS IZ sector, the advanced nail editor is locked and
+            # existing levels retain their unmodified time course.
+            page, errors = load(browser, 6)
+            page.locator('#echo-editor summary').click()
+            page.evaluate("document.activeElement.blur()")
+            page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            commit(page)
+            assert page.locator('[data-echo-index="0"] [data-anchor-at]').is_disabled()
+            assert page.locator('[data-echo-index="0"] [data-anchor-hold]').is_disabled()
+            assert not errors,errors
+            page.close()
+            print('PASS Build 031: first nine rooms retain original recording mechanics')
+
             # Build 030: the phase shift is a real new physical constraint.
             # A delayed echo cannot open its gate until materialization time.
             page, errors = load(browser, 6)
