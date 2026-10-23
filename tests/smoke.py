@@ -24,7 +24,7 @@ def load(browser, level):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -100,6 +100,105 @@ def main():
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
             
+            # Build 037: a standard controller drives analogue movement and
+            # core gameplay using rising edges, never repeated held buttons.
+            page, errors = load(browser,0)
+            page.evaluate("""() => {
+                window.__mockPad = {
+                  connected:true,mapping:'standard',axes:[0,0],
+                  buttons:Array.from({length:16},()=>({pressed:false,value:0}))
+                };
+                Object.defineProperty(navigator,'getGamepads',{
+                  configurable:true,value:()=>[window.__mockPad]
+                });
+            }""")
+            page.evaluate("window.__echo12Test.pollPad()")
+            assert page.locator('#gamepad-status').is_visible()
+            assert page.evaluate("window.__echo12Test.padState()['connected']")
+            # Input below the analogue deadzone must not move the player.
+            page.evaluate("window.__mockPad.axes[0]=0.1")
+            page.evaluate("window.__echo12Test.pollPad()")
+            before=page.evaluate("window.__echo12Test.position()")
+            page.evaluate("window.__echo12Test.tick(.3)")
+            assert page.evaluate("window.__echo12Test.position()")==before
+            page.evaluate("window.__mockPad.axes[0]=0.8")
+            page.evaluate("window.__echo12Test.pollPad()")
+            page.evaluate("window.__echo12Test.tick(.4)")
+            after=page.evaluate("window.__echo12Test.position()")
+            assert 1.3<after['x']-before['x']<1.8,(before,after)
+            # Holding X for multiple polls records exactly once.
+            page.evaluate("window.__mockPad.axes[0]=0")
+            page.evaluate("window.__mockPad.buttons[2].pressed=true")
+            page.evaluate("window.__echo12Test.pollPad()")
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==1
+            page.evaluate("window.__echo12Test.pollPad()")
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==1
+            page.evaluate("window.__mockPad.buttons[2].pressed=false")
+            page.evaluate("window.__echo12Test.pollPad()")
+            page.evaluate("window.__mockPad.buttons[3].pressed=true")
+            page.evaluate("window.__echo12Test.pollPad()")
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==0
+            page.evaluate("window.__mockPad.buttons[3].pressed=false")
+            page.evaluate("window.__echo12Test.pollPad()")
+            # Controller start pauses and returns without advancing the loop.
+            page.evaluate("window.__mockPad.buttons[9].pressed=true")
+            page.evaluate("window.__echo12Test.pollPad()")
+            assert page.evaluate("window.__echo12Test.padState()['mode']")=='paused'
+            frozen=page.evaluate("window.__echo12Test.inspect()['elapsed']")
+            page.evaluate("window.__echo12Test.tick(.3)")
+            assert page.evaluate("window.__echo12Test.inspect()['elapsed']")==frozen
+            page.evaluate("window.__mockPad.buttons[9].pressed=false")
+            page.evaluate("window.__echo12Test.pollPad()")
+            page.evaluate("window.__mockPad.buttons[9].pressed=true")
+            page.evaluate("window.__echo12Test.pollPad()")
+            assert page.evaluate("window.__echo12Test.padState()['mode']")=='playing'
+            page.evaluate("window.__mockPad.buttons[9].pressed=false")
+            page.evaluate("window.__echo12Test.pollPad()")
+            # D-pad travel works separately from left analog.
+            page.evaluate("window.__mockPad.buttons[15].pressed=true")
+            page.evaluate("window.__echo12Test.pollPad()")
+            old=page.evaluate("window.__echo12Test.position()['x']")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            assert page.evaluate("window.__echo12Test.position()['x']")>old+.6
+            page.evaluate("window.__mockPad.buttons[15].pressed=false")
+            page.evaluate("window.__echo12Test.pollPad()")
+            page.evaluate("window.__mockPad.connected=false")
+            page.evaluate("window.__echo12Test.pollPad()")
+            assert page.locator('#gamepad-status').is_hidden()
+            assert page.evaluate("window.__echo12Test.padState()['move']")=={'x':0,'y':0}
+            assert not errors,errors
+            page.close()
+            print('PASS Build 037: analog deadzone, controller movement, recording, undo, pause, disconnect')
+
+            # Gamepad B closes a real modal, LB respects room-specific F rules,
+            # and view/option events remain independent of keyboard shortcuts.
+            page, errors = load(browser,9)
+            page.evaluate("""() => {
+                window.__mockPad={connected:true,mapping:'standard',axes:[0,0],
+                  buttons:Array.from({length:16},()=>({pressed:false,value:0}))};
+                Object.defineProperty(navigator,'getGamepads',{configurable:true,value:()=>[window.__mockPad]});
+            }""")
+            page.evaluate("window.__echo12Test.pollPad()")
+            def tap_pad(btn):
+                page.evaluate("""(n)=>{
+                    window.__mockPad.buttons[n].pressed=true;window.__echo12Test.pollPad();
+                    window.__mockPad.buttons[n].pressed=false;window.__echo12Test.pollPad();
+                }""",btn)
+            assert page.locator('#frequency').inner_text().endswith('NORMAL')
+            tap_pad(4)
+            assert page.locator('#frequency').inner_text().endswith('TERS')
+            tap_pad(5)
+            assert page.evaluate("window.__echo12Test.padState()['mode']")=='inspecting'
+            tap_pad(1)
+            assert page.evaluate("window.__echo12Test.padState()['mode']")=='playing'
+            tap_pad(8)
+            assert page.evaluate("window.__echo12Test.padState()['mode']")=='reading'
+            tap_pad(1)
+            assert page.evaluate("window.__echo12Test.padState()['mode']")=='playing'
+            assert not errors,errors
+            page.close()
+            print('PASS Build 037: context-sensitive gamepad modal and playback shortcuts')
+
             # Build 036: discarded live movement is a temporary visual trace,
             # not a committed echo or permanent performance modification.
             page, errors = load(browser,0)

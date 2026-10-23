@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 037 — Oyun Kolu / Analog Kontrol Desteği
+
+Artık ECHO/12 bir standart oyun koluyla da oynanabilir. Yeni kontrol sistemi mevcut fizik, 12 saniyelik döngü ve kayıt kurallarını değiştirmez; oyundaki normal komutları kullanır.
+
+- **Hareket:** Sol analog çubuk analog hızla yürütür. %22 ölü bölgede karakter yerinde kalır; tam eğim standart klavye hareketiyle aynı en yüksek hıza ulaşır. D-pad ile dört/çapraz yön yürünebilir. Klavye, dokunmatik ve oyun kolu birlikte çalışır; ortak hız sınırı aşılamaz.
+- **Oyun eylemleri:** **A** etkileşim / ana menüde başla, **B** canlı denemeyi yenile / açık pencereden çık, **X** yankıyı kaydet, **Y** son yankıyı sil. **LB** F doğrulayıcı veya ters kayıt, **RB** Yankı Laboratuvarı, **Back** arşiv, **Start** duraklat/devam et. Analog çubuk tıklamaları kamera/görev pusulasını açıp kapatır.
+- **Pencerelerde gezinme:** Denetim, arşiv ve laboratuvar gibi pencerelerde D-pad ile odak ilerletilir, A odaktaki düğmeyi seçer, B kapatır. Klavye ve dokunmatik kontroller olduğu gibi korunur.
+- **Bağlantı işareti:** Uyumlu, tarayıcı tarafından algılanmış standart kol varsa küçük bağlantı etiketi görünür; çıkarıldığında kaybolur. Tarayıcının oyun kolu API'si yoksa oyun normal klavye modunda çalışır.
+- **Düğme güvenliği:** Her oyun kolu düğmesine sadece ilk basışta eylem uygulanır. Uzun süre X basmak onlarca yankı kaydetmez, Start basmak hızlıca tekrar duraklatmaz. Menü veya duraklatma açıkken analog çubuk karakteri hareket ettirmez.
+- **Testler:** Gerçek tarayıcıda sahte Gamepad API ile analog deadzone, hareket hızı, D-pad, tek basış kaydı, geri alma, pause/unpause, bağlantı kopması, F ters kayıt modu ve laboratuvar/arşiv açma-kapatma doğrulanır.
+
 ## Build 036 — Hata İzi / Başarısız Denemeyi Gör
 
 **Son hatanın nerede olduğunu artık hatırlamak zorunda değilsin.** Canlı deneme başarısız olduğunda o denemedeki hareket, yeni döngünün zemininde kısa süreli bir iz olarak kalır. Bu iz kayıtlı yankı değildir: plaka veya geçitleri açmaz.
