@@ -112,6 +112,8 @@ def main():
             assert page.locator('#echo-editor').get_attribute('open') is None
             page.locator('#echo-editor summary').click()
             assert 'henüz' in page.locator('#echo-editor-list').inner_text()
+            # Give gameplay focus back before using Space to record.
+            page.evaluate("document.activeElement.blur()")
             page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
             page.evaluate("window.__echo12Test.tick(.1)")
             commit(page)
