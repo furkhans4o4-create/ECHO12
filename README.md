@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 036 — Hata İzi / Başarısız Denemeyi Gör
+
+**Son hatanın nerede olduğunu artık hatırlamak zorunda değilsin.** Canlı deneme başarısız olduğunda o denemedeki hareket, yeni döngünün zemininde kısa süreli bir iz olarak kalır. Bu iz kayıtlı yankı değildir: plaka veya geçitleri açmaz.
+
+- **Devriye teması:** Devriyeye yakalanınca önceki hareketin **kırmızı kesikli rota**, çarpışma noktası ise **kırmızı çarpı** olarak görünür. Bildirim, hangi saniyede yakalandığını ve kayıtlı yankıların korunduğunu açıklar. Devriyenin gerçek hızı ve çarpışma mesafesi değişmez.
+- **Denemeyi yenile (X):** İptal edilen canlı yol **mavi kesikli rota** olarak gösterilir. Önceki yankılar, deliller ve ilerleme korunur; boş döngüyü yenileyince sahneye gereksiz iz çizilmez.
+- **Kendiliğinden temizlenir:** Son tek bir iz tutulur; **6 saniye aktif oyun süresi** sonunda kaybolur. Laboratuvar, arşiv veya duraklatma modunda süre ilerlemez. Yeni yankı kaydı, oda değişimi veya tam yeniden başlatma izi hemen temizler.
+- **Hafif ve erişilebilir:** İz, Canvas üzerinde az örnekli bir çizimdir; bir kerelik okunabilir yazılı açıklaması da vardır. Sadece renge dayanmaz. Kaydedilen asıl hareketleri, bulmaca fiziğini veya kayıt dosyası biçimini değiştirmez.
+- **Testler:** X yenilemesinde rotanın görünmesi, yeni yankı üretilmemesi, incelemede zamanın durması, 6 saniyelik silinme, yeni kayıtta temizlenme ve gerçek devriye çarpışması Playwright regresyonlarıyla kontrol edilir.
+
 ## Build 035 — Devriye Öngörüsü / Tehlikeyi Önceden Gör
 
 Kör Nokta odasının kırmızı güvenlik devriyesine gerçek hareket güzergâhı ve güvenli karar vermeyi kolaylaştıran kısa vadeli uyarılar eklendi.
