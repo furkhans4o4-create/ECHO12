@@ -125,7 +125,7 @@ def main():
             page.evaluate("window.__echo12Test.pollPad()")
             page.evaluate("window.__echo12Test.tick(.4)")
             after=page.evaluate("window.__echo12Test.position()")
-            assert 1.3<after['x']-before['x']<1.8,(before,after)
+            assert 1.1<after['x']-before['x']<1.3,(before,after)
             # Holding X for multiple polls records exactly once.
             page.evaluate("window.__mockPad.axes[0]=0")
             page.evaluate("window.__mockPad.buttons[2].pressed=true")
