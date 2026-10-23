@@ -386,11 +386,19 @@ body.high-contrast .inspector-markers,body.high-contrast .inspector-playback{bor
 .challenge-item[data-earned="true"] small{color:#93f6c7;font-weight:750}
 body.high-contrast .challenge-panel,body.high-contrast .challenge-item{border-color:#9bcfe4}
 @media(max-width:620px){.challenge-list{grid-template-columns:1fr}}
+
+/* BUILD 030 — per-echo phase offsets affect physical pressure and replay */
+.echo-phase-controls{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.echo-phase-controls button{padding:8px;min-height:36px;min-width:38px}
+.echo-phase-controls output{min-width:58px;text-align:center;font:750 11px ui-monospace,Consolas,monospace;color:#a8f7e1}
+.echo-phase-controls[aria-disabled="true"] output{color:#9bb2c4}
+.echo-editor-row{grid-template-columns:minmax(0,1fr) auto auto}
+@media(max-width:650px){.echo-editor-row{grid-template-columns:minmax(0,1fr);gap:8px}.echo-phase-controls{justify-content:flex-start}.echo-editor-row button{justify-self:auto}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 029</div></header>
+<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 030</div></header>
 <div class="topbar">
  <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 19</div></div>
  <div class="stat"><div class="label">Döngüye kalan</div><div class="value teal" id="time">12.0 sn</div><div class="meters"><div class="meter"><i id="timefill"></i></div></div></div>
@@ -411,7 +419,7 @@ body.high-contrast .challenge-panel,body.high-contrast .challenge-item{border-co
 <div class="mobile-controls" aria-label="Dokunmatik oyun kontrolleri"><div class="mobile-controls-info">DOKUNMATİK KONTROL <span>İki yöne aynı anda basarak çapraz yürü</span></div><div class="mobilepad" role="group" aria-label="Yön tuşları"><button type="button" data-dir="ArrowUp" aria-label="Yukarı yürü" aria-pressed="false">↑</button><button type="button" data-dir="ArrowLeft" aria-label="Sola yürü" aria-pressed="false">←</button><button type="button" data-dir="ArrowDown" aria-label="Aşağı yürü" aria-pressed="false">↓</button><button type="button" data-dir="ArrowRight" aria-label="Sağa yürü" aria-pressed="false">→</button><button type="button" id="mobile-record" aria-label="Mevcut döngüyü kaydet">↺<small>KAYDET</small></button></div><div class="mobile-shortcuts"><button type="button" id="mobile-interact" class="secondary">⌁ Etkileşim</button><button type="button" id="mobile-retry" class="secondary" title="Yankıları koruyarak bu döngüyü tekrar dene">↻ Deneme</button><button type="button" id="mobile-undo" class="secondary">↶ Geri al</button><button type="button" id="mobile-pause" class="secondary">Ⅱ Duraklat</button></div></div>
 <div class="signal-strip" id="signal-strip" aria-label="Canlı sistem durumu"><span>SİSTEM SİNYALİ / <strong id="signal-value">HAZIR</strong></span><span class="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></div>
 <div class="timeline" aria-label="Yankıların zaman çizelgesi"><div class="timeline-head"><span>HAREKET KAYITLARI</span><small id="timeline-legend">Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas</small></div><canvas id="timeline" width="960" height="155" role="img" aria-label="12 saniyelik hareket ve plaka tetikleme çizelgesi"></canvas></div>
-<details id="echo-editor" class="echo-editor"><summary>⌁ Yankı kayıtlarını yönet <span class="echo-editor-count" id="echo-editor-count">0 / 6</span></summary><p class="echo-editor-desc">Yanlış yankıyı tek tek sil. Sildiğin son kaydı, yenisini üretmeden önce geri getirebilirsin. Düzenleme mevcut 12 saniyelik döngüyü başa alır.</p><div class="echo-editor-list" id="echo-editor-list" aria-live="polite"></div><div class="echo-editor-actions"><button type="button" class="secondary" id="echo-restore" disabled>↷ Son silinen yankıyı geri getir</button><small>Yalnızca bu odada, bir sonraki kayıt öncesi · Kısayol: Shift+Z</small></div></details>
+<details id="echo-editor" class="echo-editor"><summary>⌁ Yankı kayıtlarını yönet <span class="echo-editor-count" id="echo-editor-count">0 / 6</span></summary><p class="echo-editor-desc">Yanlış yankıyı sil veya Bölüm II ve sonrasında 0,5 sn adımlarla geciktir. Faz süresince yankı henüz görünmez. Her düzenleme canlı döngüyü başa alır; silinen yankı geri getirilebilir.</p><div class="echo-editor-list" id="echo-editor-list" aria-live="polite"></div><div class="echo-editor-actions"><button type="button" class="secondary" id="echo-restore" disabled>↷ Son silinen yankıyı geri getir</button><small>Yalnızca bu odada, bir sonraki kayıt öncesi · Kısayol: Shift+Z</small></div></details>
 <details class="plate-forecast" id="plate-forecast"><summary>⌁ Plakaların 12 saniyelik zaman haritası</summary><p class="plate-forecast-intro">Mavi: kaydedilmiş yankıların koşulları karşıladığı anlar · Altın: kısa süreli rölenin tahmini devamı · Beyaz: şu an. Canlı oyuncu ve F tarayıcısı ayrıca gerekir; bu harita hiçbir kapıyı değiştirmez.</p><div class="plate-forecast-ruler" aria-hidden="true"><span>0 sn</span><span>3</span><span>6</span><span>9</span><span>12 sn</span></div><div id="plate-forecast-list" class="plate-forecast-list" aria-live="polite"></div><div class="plate-forecast-legend"><span><i class="plate-forecast-dot"></i>Yankı teması</span><span><i class="plate-forecast-dot relay"></i>Röle uzantısı</span><span><i class="plate-forecast-dot cursor"></i>Şu an</span></div></details>
 <section id="sync-timeline" class="sync-timeline" hidden aria-label="İki tanığın zamansal çakışma haritası"><div class="sync-timeline-head"><strong>EŞZAMANLILIK HARİTASI · 0–12 SN</strong><small>Yalnızca kaydedilmiş gerçek yankılar</small></div><p class="sync-timeline-legend">Mavi: I sensörü · Lila: II sensörü · Yeşil: ayrı yankıların ortak anı · Beyaz: şimdi</p><div class="sync-timeline-tracks" id="sync-timeline-tracks"></div><div class="sync-timeline-result" id="sync-timeline-result" role="status" aria-live="polite">Henüz doğrulanmış tanık yok.</div></section>
 <div class="help"><div class="helptext"><kbd>W A S D</kbd> veya <kbd>← ↑ ↓ →</kbd> yürü &nbsp; <kbd>Boşluk</kbd> döngüyü kaydet &nbsp; <kbd>R</kbd> odayı sıfırla &nbsp; <kbd>X</kbd> denemeyi yenile (yankılar kalır) &nbsp; <kbd>Z</kbd> son yankıyı sil &nbsp; <kbd>P</kbd> duraklat &nbsp; <kbd>E</kbd> terminal &nbsp; <kbd>L</kbd> arşiv &nbsp; <kbd>M</kbd> ses &nbsp; <kbd>H</kbd> ipucu &nbsp; <kbd>O</kbd> oda seçimi</div>
@@ -422,7 +430,7 @@ body.high-contrast .challenge-panel,body.high-contrast .challenge-item{border-co
 <section class="protocol-status" aria-label="Geçit hedefleri"><div class="protocol-status-head"><strong>ANLIK GEÇİT DURUMU</strong><small id="gate-counter">0 / 0 açık</small></div><div class="gate-status-grid" id="gate-status"></div></section>
 <section class="proof-panel" id="proof-panel" hidden aria-label="Sıralı kayıt doğrulama paneli"><div class="protocol-status-head"><strong>İMZA DOĞRULAMA / A VE B GEÇİŞLERİ</strong><small id="proof-status" role="status" aria-live="polite">Kayıt bekleniyor</small></div><p class="proof-help">Parlak A ve B noktalarına <strong>aynı döngü içinde</strong> sırayla dokun. Gerçek yankıyı kaydet; F doğrulayıcısı sahte görüntüleri ayırır.</p><div class="proof-grid"><div><span class="proof-label">BU DÖNGÜDE</span><div id="proof-live" class="proof-sequence">—</div></div><div><span class="proof-label">KAYDEDİLMİŞ İMZALAR</span><div id="proof-records" class="proof-record-list">Henüz yok</div></div></div><div id="proof-evidence" class="proof-evidence">A→B: 0/1</div></section>
 <section id="sync-panel" class="sync-panel" hidden aria-label="İki tanık senkronizasyonu"><div class="protocol-status-head"><strong>ÇİFTE TANIKLIK / AYRI KAYITLAR</strong><small id="sync-verdict" role="status" aria-live="polite">İmza bekleniyor</small></div><div class="sync-grid"><div id="sync-left">I · YANKI BEKLENİYOR</div><div id="sync-right">II · YANKI BEKLENİYOR</div></div><p id="sync-rule">İki farklı yankı aynı anda gerekli.</p></section>
-<footer>BUILD 029 · OPERATÖR SINAMALARI</footer>
+<footer>BUILD 030 · FAZ KAYDIRMA</footer>
 </div>
 <script>
 (()=>{
@@ -1378,11 +1386,35 @@ function renderEchoEditor(){
   const evidence=document.createElement('small');
   const path=c.proofOrder?c.proofOrder[0]+'→'+c.proofOrder[1]:'A/B imzası yok';
   evidence.textContent=level.probes?path+(level.timeWindow&&c.proofGap!==null?' · '+c.proofGap.toFixed(1).replace('.',',')+' sn'+(c.timeProof?' ✓':' ✕'):''):'12 saniyelik hareket kaydı';
+  const phase=document.createElement('div');phase.className='echo-phase-controls';phase.setAttribute('role','group');
+  phase.setAttribute('aria-label','E'+String(i+1).padStart(2,'0')+' yankısının zaman fazı');
+  const phaseAllowed=levelIndex>=6,delay=echoDelay(c);
+  phase.setAttribute('aria-disabled',String(!canEdit||!phaseAllowed));
+  const minus=document.createElement('button');minus.type='button';minus.className='secondary';minus.textContent='− 0,5';
+  minus.disabled=!canEdit||!phaseAllowed||delay<=0;minus.setAttribute('aria-label','E'+String(i+1).padStart(2,'0')+' yankısını 0,5 saniye erkene çek');
+  minus.onclick=()=>shiftEchoPhase(i,-.5);
+  const value=document.createElement('output');value.textContent='+'+delay.toFixed(1).replace('.',',')+' sn';value.dataset.phase=String(delay);
+  const plus=document.createElement('button');plus.type='button';plus.className='secondary';plus.textContent='+ 0,5';
+  plus.disabled=!canEdit||!phaseAllowed||delay>=3;plus.setAttribute('aria-label','E'+String(i+1).padStart(2,'0')+' yankısını 0,5 saniye geciktir');
+  plus.onclick=()=>shiftEchoPhase(i,.5);
+  if(!phaseAllowed)value.title='Faz kaydırma Bölüm II ile açılır.';
+  phase.append(minus,value,plus);
   const erase=document.createElement('button');erase.type='button';erase.className='secondary';erase.textContent='Bu yankıyı sil';erase.disabled=!canEdit;erase.setAttribute('aria-label','E'+String(i+1).padStart(2,'0')+' yankısını sil');
   erase.addEventListener('click',()=>{if(removeEchoAt(i))$('echo-restore').focus()});
-  info.append(title,evidence);row.append(info,erase);grid.append(row);
+  info.append(title,evidence);row.append(info,phase,erase);grid.append(row);
  }
  $('echo-restore').disabled=!canEdit||!removedEcho||clones.length>=MAX_CLONES;
+}
+/* Build 030: shift a recording's materialization, never its immutable samples.
+   Editing resets live proof-dependent authorizations just like removing an echo. */
+function shiftEchoPhase(index,delta){
+ if(mode!=='playing'||levelIndex<6||!Number.isInteger(index)||index<0||index>=clones.length||![.5,-.5].includes(delta))return false;
+ const echo=clones[index],next=Math.round((echoDelay(echo)+delta)*2)/2;
+ if(next<0||next>3)return false;
+ echo.delay=next;echoRevision++;invalidateEditedEvidence();
+ lastPlateForecastSignature='';lastSyncTimelineSignature='';
+ flash('E'+String(index+1).padStart(2,'0')+' · faz +'+next.toFixed(1).replace('.',',')+' sn.');
+ audioBeep(delta>0?770:510,.1);pulseFX(player.x,player.y,'#a8e4ff',1.1);updateHUD();return true;
 }
 function removeEchoAt(index){
  if(mode!=='playing'||!Number.isInteger(index)||index<0||index>=clones.length)return false;
@@ -1397,7 +1429,7 @@ function restoreEcho(){
  invalidateEditedEvidence();flash('Silinen yankı eski sırasına geri getirildi.');
  audioBeep(700,.12);pulseFX(player.x,player.y,'#8bf0d7');updateHUD();return true;
 }
-function cycleCommit(manual=true){if(mode!=='playing')return;if(clones.length>=MAX_CLONES){if(!manual)resetPlayer();flash('6 yankı sınırı doldu. Z ile son yankıyı sil.');audioBeep(190,.2,'sawtooth');return}const samples=record.map(p=>({...p})),last=samples[samples.length-1];while(samples.length<Math.round(LOOP/DT)+1)samples.push({...last});const proofEvents=traceEvents(samples,level.probes),order=traceOrder(samples,level.probes),timeCheck=timeAttestation(proofEvents,level.timeWindow);clones.push({samples,color:clones.length,reverse:!!(level.reverseEnabled&&reverseMode),proofOrder:order,proofEvents,proofGap:timeCheck.gap,timeProof:timeCheck.valid});removedEcho=null;echoRevision++;lastSyncTimelineSignature='';if(order){pulseFX(player.x,player.y,'#ffe6aa',1.2)}for(let j=0;j<17;j++)spawnParticle(player.x,player.y,'#ba9dff');pulseFX(player.x,player.y,'#bd9dff',2);rewindWash=.55;playCue('echo');resetPlayer();flash(manual?'Yankın kaydedildi. Yeni döngü başladı.':'12 saniye doldu. Geçmişin kaydedildi.');updateHUD()}
+function cycleCommit(manual=true){if(mode!=='playing')return;if(clones.length>=MAX_CLONES){if(!manual)resetPlayer();flash('6 yankı sınırı doldu. Z ile son yankıyı sil.');audioBeep(190,.2,'sawtooth');return}const samples=record.map(p=>({...p})),last=samples[samples.length-1];while(samples.length<Math.round(LOOP/DT)+1)samples.push({...last});const proofEvents=traceEvents(samples,level.probes),order=traceOrder(samples,level.probes),timeCheck=timeAttestation(proofEvents,level.timeWindow);clones.push({samples,color:clones.length,reverse:!!(level.reverseEnabled&&reverseMode),delay:0,proofOrder:order,proofEvents,proofGap:timeCheck.gap,timeProof:timeCheck.valid});removedEcho=null;echoRevision++;lastSyncTimelineSignature='';if(order){pulseFX(player.x,player.y,'#ffe6aa',1.2)}for(let j=0;j<17;j++)spawnParticle(player.x,player.y,'#ba9dff');pulseFX(player.x,player.y,'#bd9dff',2);rewindWash=.55;playCue('echo');resetPlayer();flash(manual?'Yankın kaydedildi. Yeni döngü başladı.':'12 saniye doldu. Geçmişin kaydedildi.');updateHUD()}
 function undoEcho(){if(mode!=='playing'||!clones.length)return;removeEchoAt(clones.length-1)}
 /* Build 026: discard only the live attempt. The existing recorded roster and
    deliberate in-room confirmations are retained, unlike R (full room restart). */
@@ -1477,7 +1509,13 @@ $('mobile-interact').onclick=interactTerminal;
 $('mobile-retry').onclick=retryCurrentLoop;
 $('mobile-undo').onclick=undoEcho;
 $('mobile-pause').onclick=pause;$('camera-toggle').onclick=toggleCamera;
-function ghostAt(c,t=elapsed){const moment=c.reverse?LOOP-t:t;const index=Math.max(0,Math.min(c.samples.length-1,Math.round(moment/DT)));return c.samples[index]}
+function echoDelay(c){return Number.isFinite(c.delay)?c.delay:0}
+function echoActive(c,t=elapsed){return t+DT/3>=echoDelay(c)}
+function ghostAt(c,t=elapsed){
+ const local=Math.max(0,t-echoDelay(c)),moment=c.reverse?LOOP-local:local;
+ const index=Math.max(0,Math.min(c.samples.length-1,Math.round(moment/DT)));
+ return c.samples[index];
+}
 function plateOccupancy(p){const x=p.x+.5,y=p.y+.5;return {live:Math.hypot(player.x-x,player.y-y)<.46,echoes:clones.reduce((n,c)=>{if(p.reverseOnly&&!c.reverse||p.forwardOnly&&c.reverse)return n;const g=ghostAt(c);return n+(Math.hypot(g.x-x,g.y-y)<.46?1:0)},0)}}
 function platePressed(p){if(p.routeMode)return sourceVerdict==='publish'?liveRelayCount(p)>=2:plateOccupancy(p).live;const count=plateOccupancy(p);if(p.needsScan)return scannerOn&&count.echoes>0;if(p.reverseOnly||p.forwardOnly)return count.echoes>0;if(p.selfOnly)return count.live;if(p.echoCount)return count.echoes>=p.echoCount;if(p.echoOnly)return count.echoes>0;return count.live||count.echoes>0}
 function toggleFrequency(){if(mode!=='playing')return;if(level.phantoms){scannerOn=!scannerOn;flash(scannerOn?'Doğrulayıcı etkin. Sahte imzalar kırmızı işaretlendi.':'Doğrulayıcı kapandı. Sahte imzalar ayırt edilemiyor.')}else if(level.reverseEnabled){reverseMode=!reverseMode;flash(reverseMode?'Sonraki kayıt TERS oynatılacak.':'Sonraki kayıt NORMAL oynatılacak.')}else return;audioBeep(scannerOn||reverseMode?930:440,.11,'sine');updateGateFeedback();updateHUD()}
