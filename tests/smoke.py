@@ -24,7 +24,7 @@ def load(browser, level):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -100,6 +100,54 @@ def main():
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
             
+            # Build 034: signal cabling follows true physical pressure.
+            page, errors = load(browser,0)
+            wires=page.evaluate("window.__echo12Test.conduits()")
+            assert len(wires)==1,wires
+            assert wires[0]['key']=='A' and wires[0]['state']=='dark',wires
+            assert wires[0]['from']==[6.5,3.5] and wires[0]['to']==[9.5,5.5],wires
+            assert wires[0]['remaining']==0
+            page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.15)")
+            assert page.evaluate("window.__echo12Test.conduits()[0].state")=='powered'
+            commit(page)
+            assert page.evaluate("window.__echo12Test.conduits()[0].state")=='powered'
+            page.keyboard.press('z')
+            assert page.evaluate("window.__echo12Test.conduits()[0].state")=='dark'
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 034: real plate-gate cabling and undo')
+
+            # A pulse gate's light stays amber after contact ends.
+            page, errors = load(browser,3)
+            wires=page.evaluate("window.__echo12Test.conduits()")
+            assert [x['key'] for x in wires]==['A','B'],wires
+            page.evaluate("window.__echo12Test.teleport(4.5,2.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            powered=page.evaluate("window.__echo12Test.conduits()[0]")
+            assert powered['state']=='powered' and 1.9<powered['remaining']<=2.05,powered
+            page.evaluate("window.__echo12Test.teleport(2.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            relay=page.evaluate("window.__echo12Test.conduits()[0]")
+            assert relay['state']=='relay' and 1.7<relay['remaining']<2,relay
+            page.evaluate("window.__echo12Test.tick(2)")
+            expired=page.evaluate("window.__echo12Test.conduits()[0]")
+            assert expired['state']=='dark' and expired['remaining']==0,expired
+            assert not errors,errors
+            page.close()
+            print('PASS Build 034: actual relay countdown and light expiry')
+
+            # Independent verdict or proof gates do not get invented cabling.
+            for lvl,keys in [(6,['Q','R']),(8,['T','U']),(10,['B']),(11,['M']),(14,['M','ROUTE']),(18,['M'])]:
+                page, errors = load(browser,lvl)
+                wires=page.evaluate("window.__echo12Test.conduits()")
+                assert [w['key'] for w in wires]==keys,(lvl,wires)
+                assert all(len(w['from'])==2 and len(w['to'])==2 for w in wires)
+                assert not errors,(lvl,errors)
+                page.close()
+            print('PASS Build 034: accurate cabling across six advanced rooms')
+
             # Build 033: scene waypoint follows active task, is non-spoiling
             # and never modifies hint count or gameplay state when toggled.
             page, errors = load(browser,0)

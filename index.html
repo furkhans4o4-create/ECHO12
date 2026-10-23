@@ -437,7 +437,7 @@ body.high-contrast #beacon-toggle[aria-pressed="true"]{border-color:#aff6ed}
 </head>
 <body>
 <div class="wrap">
-<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 033</div></header>
+<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 034</div></header>
 <div class="topbar">
  <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 19</div></div>
  <div class="stat"><div class="label">Döngüye kalan</div><div class="value teal" id="time">12.0 sn</div><div class="meters"><div class="meter"><i id="timefill"></i></div></div></div>
@@ -470,7 +470,7 @@ body.high-contrast #beacon-toggle[aria-pressed="true"]{border-color:#aff6ed}
 <section class="protocol-status" aria-label="Geçit hedefleri"><div class="protocol-status-head"><strong>ANLIK GEÇİT DURUMU</strong><small id="gate-counter">0 / 0 açık</small></div><div class="gate-status-grid" id="gate-status"></div></section>
 <section class="proof-panel" id="proof-panel" hidden aria-label="Sıralı kayıt doğrulama paneli"><div class="protocol-status-head"><strong>İMZA DOĞRULAMA / A VE B GEÇİŞLERİ</strong><small id="proof-status" role="status" aria-live="polite">Kayıt bekleniyor</small></div><p class="proof-help">Parlak A ve B noktalarına <strong>aynı döngü içinde</strong> sırayla dokun. Gerçek yankıyı kaydet; F doğrulayıcısı sahte görüntüleri ayırır.</p><div class="proof-grid"><div><span class="proof-label">BU DÖNGÜDE</span><div id="proof-live" class="proof-sequence">—</div></div><div><span class="proof-label">KAYDEDİLMİŞ İMZALAR</span><div id="proof-records" class="proof-record-list">Henüz yok</div></div></div><div id="proof-evidence" class="proof-evidence">A→B: 0/1</div></section>
 <section id="sync-panel" class="sync-panel" hidden aria-label="İki tanık senkronizasyonu"><div class="protocol-status-head"><strong>ÇİFTE TANIKLIK / AYRI KAYITLAR</strong><small id="sync-verdict" role="status" aria-live="polite">İmza bekleniyor</small></div><div class="sync-grid"><div id="sync-left">I · YANKI BEKLENİYOR</div><div id="sync-right">II · YANKI BEKLENİYOR</div></div><p id="sync-rule">İki farklı yankı aynı anda gerekli.</p></section>
-<footer>BUILD 033 · SAHNE PUSULASI</footer>
+<footer>BUILD 034 · SİNYAL HATLARI</footer>
 </div>
 <script>
 (()=>{
@@ -2231,10 +2231,57 @@ function drawMinimap(){
  const goal=level.exit;miniCtx.save();miniCtx.translate((goal[0]+.5)*k,(goal[1]+.5)*k);miniCtx.rotate(Math.PI/4);miniCtx.strokeStyle='#a5ffe7';miniCtx.lineWidth=1.6;miniCtx.strokeRect(-4,-4,8,8);miniCtx.restore();
  miniCtx.fillStyle='#70ffe1';miniCtx.strokeStyle='#072329';miniCtx.lineWidth=1.5;miniCtx.beginPath();miniCtx.arc(player.x*k,player.y*k,5,0,Math.PI*2);miniCtx.fill();miniCtx.stroke();
 }
+
+/* Build 034 — the visual signal follows actual gate and plate physics. */
+function signalConduits(){
+ if(!level)return [];
+ return level.barriers.flatMap((b,index)=>{
+  const plate=level.plates.find(p=>p.key===b.key);
+  if(!plate)return [];
+  const open=gateOpen(b.key),pressed=platePressed(plate);
+  const remaining=plate.pulse&&open?Math.max(0,(relayUntil[b.key]||0)-elapsed):0;
+  return [{key:b.key,index,from:[plate.x+.5,plate.y+.5],to:[b.gate[0]+.5,b.gate[1]+.5],
+   state:open?(pressed?'powered':'relay'):(pressed?'blocked':'dark'),
+   remaining:Math.round(remaining*100)/100}];
+ });
+}
+function drawSignalConduits(){
+ for(const line of signalConduits()){
+  const [sx,sy]=line.from,[ex,ey]=line.to;
+  const x0=sx*T,y0=sy*T,x1=ex*T,y1=ey*T;
+  const bend=x0+(x1-x0)*.48+(line.index%3-1)*T*.09;
+  const on=line.state==='powered'||line.state==='relay';
+  const ink=line.state==='relay'?'#ffd98d':line.state==='powered'?'#6effd4':line.state==='blocked'?'#e2ac75':'#42566d';
+  ctx.save();
+  ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(bend,y0);ctx.lineTo(bend,y1);ctx.lineTo(x1,y1);
+  if(on){
+   ctx.strokeStyle=ink;ctx.globalAlpha=.15;ctx.lineWidth=8;
+   ctx.shadowColor=ink;ctx.shadowBlur=reducedMotion?0:12;ctx.stroke();
+   ctx.shadowBlur=0;ctx.globalAlpha=.45;ctx.lineWidth=3;ctx.stroke();
+  }else{ctx.globalAlpha=line.state==='blocked'?.65:.45;ctx.strokeStyle=ink;ctx.lineWidth=2.2;ctx.stroke()}
+  ctx.strokeStyle=ink;ctx.globalAlpha=on?.95:.75;ctx.lineWidth=on?1.9:1.1;
+  ctx.setLineDash(on?[7,12]:[2,10]);
+  ctx.lineDashOffset=reducedMotion?0:-wallClock*(line.state==='relay'?17:27);
+  ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();ctx.arc(x1,y1,4.3,0,Math.PI*2);
+  ctx.fillStyle=on?ink:'#485973';ctx.globalAlpha=on?1:.68;ctx.fill();
+  ctx.strokeStyle='#102234';ctx.lineWidth=1.5;ctx.stroke();
+  if(line.remaining>0){
+   const label=line.remaining.toFixed(1).replace('.',',')+' sn';
+   ctx.font='bold 10px ui-monospace,Consolas,monospace';ctx.textAlign='center';
+   const width=Math.max(43,ctx.measureText(label).width+11);
+   ctx.fillStyle='#182834e9';ctx.strokeStyle='#b68c54';ctx.globalAlpha=1;
+   ctx.beginPath();ctx.roundRect(x1-width/2,y1-41,width,16,4);ctx.fill();ctx.stroke();
+   ctx.fillStyle='#ffe1a5';ctx.fillText(label,x1,y1-30);
+  }
+  ctx.restore();
+ }
+}
 function draw(){if(cameraMode==='focus')cameraFocusOrigin();ctx.clearRect(0,0,960,610);ctx.fillStyle='#0c1523';ctx.fillRect(0,0,960,610);const t=wallClock;
  ctx.fillStyle=sceneGradient;ctx.fillRect(0,0,960,610);
  ctx.save();ctx.translate(OX,OY);ctx.drawImage(floorCache,0,0);
  for(let y=0;y<H;y++)for(let x=0;x<W;x++){let px=x*T,py=y*T;const tp=tileType(x,y);if(tp==='wall'){ctx.fillStyle='#293a50';round(px+2,py+2,T-4,T-4,5);ctx.fill();ctx.fillStyle='#32475d';ctx.fillRect(px+5,py+5,T-10,3);ctx.fillStyle='#203247';ctx.fillRect(px+5,py+T-9,T-10,3)}else if(tp==='gate'||tp==='gateopen'){let col=tp==='gate'?'#f1ae6c':'#53f3d0';ctx.fillStyle=tp==='gate'?'#51382f':'#1a453d';ctx.fillRect(px+4,py+3,T-8,T-6);ctx.strokeStyle=col;ctx.lineWidth=tp==='gate'?3:1.5;ctx.strokeRect(px+6,py+5,T-12,T-10);if(tp==='gate'){ctx.fillStyle=col;for(let q=0;q<4;q++)ctx.fillRect(px+12+q*7,py+9,3,T-18)}}}
+ drawSignalConduits();
  // faint ghost trails
  for(let j=0;j<clones.length;j++){let c=clones[j];ctx.beginPath();for(let i=0;i<c.samples.length;i+=12){let p=c.samples[i],x=p.x*T,y=p.y*T;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.strokeStyle=c.reverse?'rgba(252,183,110,.40)':`rgba(183,148,255,${.19+j*.025})`;ctx.lineWidth=3;ctx.stroke()}
  // plates

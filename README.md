@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 034 — Sinyal Hatları / Görsel Kapı Geri Bildirimi
+
+Kapıları ilgili plakalara bağlayan, sahnenin döşemesine işlenmiş ince elektrik hatları eklendi. Böylece oyuncu haritadaki kapının hangi fiziksel plaka tarafından beslendiğini ek bir kontrol paneline bakmadan görebilir.
+
+- **Sahnedeki gerçek durum:** Sönük hat kapalı geçidi, turkuaz hat etkin plakayı, altın hat temas sona erse bile rölenin sürdürdüğü açıklığı gösterir. Bir plaka üzerinde fiziksel temas olsa bile kapı henüz açılmamışsa açık yeşil ışık gösterilmez.
+- **Kapının yanında geri sayım:** Süreli röleli geçitlerde kalan süre ondalık saniyeyle gösterilir. Gösterge mevcut röle zaman damgasından okunur, tahmin etmez.
+- **Geniş oda uyumu:** Birden fazla kapısı olan odalarda ayrı elektrik hatları bulunur. Kanıt, denetim, tanık ve final yetki kapıları için sahte bir plaka bağlantısı çizilmez. Yankı fazı veya zaman çivisi değiştirilince ışık, fiziksel kapı durumuyla birlikte değişir.
+- **Erişilebilirlik ve performans:** Hareket azaltma tercihinde hareketli akım animasyonu kapatılır. Çizgiler ince bir sahne katmanıdır; oyun kuralları, kayıt dosyaları, hikâye ve ustalık rozetleri etkilenmez.
+- **Tarayıcı testleri:** Plaka açılma/kapanma, yankıyı geri alma, süreli röle bitişi ve altı farklı odanın fiziksel bağlantıları kapsanır.
+
 ## Build 033 — Sahne Pusulası / Hedefi Haritanın İçinde Bul
 
 **Yeni bir panel yerine doğrudan oynanış sahnesine küçük bir hedef pusulası eklendi.** Build 032'deki dinamik görev rehberinin henüz tamamlanmamış adımı, varsa tek bir oyun içi konuma bağlanır. Oyuncunun çevresinde o konumu işaret eden küçük bir ok görünür; hedefte hafif bir halka ve yakın takip haritasında işaret bulunur.
