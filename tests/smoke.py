@@ -1839,7 +1839,7 @@ def main():
             verify(page,errors,'ODA SEÇİMİ')
             assert page.locator('[data-room="0"]').is_enabled()
             assert page.locator('[data-room="1"]').is_disabled()
-            assert page.locator('#room-picker-grid button').count() == 19
+            assert page.locator('#room-picker-grid button').count() == 20
             page.evaluate("window.__echo12Test.tick(1.3)")
             frozen=page.locator('#time').inner_text()
             page.evaluate("window.__echo12Test.tick(2)")
