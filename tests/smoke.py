@@ -100,6 +100,65 @@ def main():
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
             
+            # Build 025: remove an arbitrary echo, restore it at the original index,
+            # reset live progress, and expire the restore window on a new recording.
+            page, errors = load(browser, 0)
+            assert page.locator('#echo-editor-count').inner_text() == '0 / 6'
+            page.locator('#echo-editor summary').click()
+            assert 'henüz' in page.locator('#echo-editor-list').inner_text()
+            page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            page.evaluate("window.__echo12Test.teleport(3.5,6.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            assert page.locator('#echo-editor-list .echo-editor-row').count()==2
+            original=page.evaluate("window.__echo12Test.sync().clones")
+            page.locator('#echo-editor-list [data-echo-index="0"] button').click()
+            assert page.locator('#echo-editor-list .echo-editor-row').count()==1
+            assert page.locator('#echo-restore').is_enabled()
+            assert page.locator('#time').inner_text()=='12.0 sn'
+            assert page.evaluate("window.__echo12Test.sync().clones") == original[1:]
+            page.locator('#echo-restore').click()
+            assert page.locator('#echo-editor-list .echo-editor-row').count()==2
+            assert page.evaluate("window.__echo12Test.sync().clones") == original
+            assert page.locator('#echo-restore').is_disabled()
+            page.keyboard.press('z')
+            assert page.locator('#echo-restore').is_enabled()
+            page.keyboard.press('Shift+z')
+            assert page.locator('#echo-editor-list .echo-editor-row').count()==2
+            assert page.locator('#echo-restore').is_disabled()
+            page.locator('#echo-editor-list [data-echo-index="0"] button').click()
+            assert page.locator('#echo-restore').is_enabled()
+            commit(page)
+            assert page.locator('#echo-restore').is_disabled()
+            assert not errors,errors
+            page.keyboard.press('r')
+            assert page.locator('#echo-editor-list .echo-editor-row').count()==0
+            assert page.locator('#echo-restore').is_disabled()
+            assert not errors,errors
+            page.close()
+            print('PASS Build 025: selective delete, original-order restore, Shift+Z, recording expiry and restart')
+
+            # Removing a proof-bearing echo must invalidate its certified gate.
+            page, errors = load(browser, 12)
+            move(page,'d',.493);move(page,'w',.493);commit(page)
+            move(page,'d',1.73);move(page,'w',.493);move(page,'d',.247);move(page,'s',.986);commit(page)
+            move(page,'d',1.976);move(page,'s',.493);move(page,'w',.986);move(page,'a',.247);commit(page)
+            page.keyboard.press('f')
+            assert page.evaluate("window.__echo12Test.gate('PROOF')")
+            page.locator('#echo-editor summary').click()
+            assert 'A→B' in page.locator('#echo-editor-list').inner_text()
+            assert 'B→A' in page.locator('#echo-editor-list').inner_text()
+            page.locator('#echo-editor-list [data-echo-index="1"] button').click()
+            assert not page.evaluate("window.__echo12Test.gate('PROOF')")
+            assert 'A→B 0/1' in page.locator('#proof-evidence').inner_text()
+            page.locator('#echo-restore').click()
+            assert page.evaluate("window.__echo12Test.gate('PROOF')")
+            assert not errors,errors
+            page.close()
+            print('PASS Build 025: proven opposite-order records are revoked and reinstated correctly')
+
             page, errors = load(browser, 1)
             move(page, "d", .247); move(page, "s", .985); commit(page)
             move(page, "d", 2.04); move(page, "s", 1.235); commit(page)

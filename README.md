@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 025 — Yankı Kayıtlarını Yönet
+
+**19 oda, 7 bölüm, 35 arşiv** korunur. Kayıt alanının altında açılan **Yankı kayıtlarını yönet** panelinde E01–E06 arasından istenen yankı ayrı ayrı silinebilir; sonraki yankıları yeniden kaydetmek gerekmez.
+
+- **Tek kayıt silme:** Her satırda NORMAL/TERS ve varsa A→B/B→A kanıtı, zaman farkı ile kaydın geçerliliği görülür. Silme sonrasında canlı döngü başa sarılır, kalan yankılar eski sıralarını korur.
+- **Geri getirme:** Son silinen kayıt, yeni yankı oluşmadan aynı sıraya döndürülebilir. Ekrandaki düğme veya **Shift+Z** kullanılır; mevcut **Z** son yankıyı silmeye devam eder. Yeni bir kayıt oluşturulunca veya oda değişince geri getirme hakkı temizlenir.
+- **Fiziksel tutarlılık:** Yankıya bağlı Kora tanıklığı, kanıt denetimi ve henüz tamamlanmamış kapı/karar onayı kaydı düzenlendiğinde yeniden hesaplanır; daha önce silinen kanıta dayanarak kapı açık kalmaz. Ayrı tanık zaman haritası da yeniden oluşturulur.
+- **Testler:** Ortadan silme, özgün sıraya getirme, Shift+Z, zamanın sıfırlanması, yeni kayıtla geri getirme hakkının kaybolması, oda sıfırlama ve karşıt A/B imzaları silinince kapının yeniden kilitlenmesi doğrulanır.
+- **Kayıt biçimi:** Kaydedilmiş kampanya ilerlemesi ve JSON yedek yapısı değişmez. Geçici yankılar/geri alma hafızası diske yazılmaz.
+
 ## Build 024 — İki Tanığın Zaman Haritası
 
 **19 oda, 7 bölüm ve 35 arşiv** değişmedi. Ayrı tanıklık isteyen odalarda, kayıtlı yankıların I ve II sensörlerini **12 saniyenin hangi aralıklarında** tuttuğunu gösteren yeni bir eşzamanlılık haritası bulunur.
@@ -246,6 +256,7 @@ Her şey tek `index.html` içindedir; harici ses/görsel paketi, ağ bağlantıs
 | `WASD` veya oklar | Hareket |
 | `Space` | Döngüyü bitirip yankıyı kaydet |
 | `Z` | Son yankıyı sil |
+| `Shift+Z` | Son silinen yankıyı geri getir (bir sonraki kayda kadar) |
 | `R` | Odayı sıfırla |
 | `P` | Duraklat |
 | `E` | Yakındaki arşiv terminalini veya karar konsolunu kullan |
