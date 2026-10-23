@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 026 — Hızlı Deneme / Yankıları Koru
+
+**19 oda, 7 bölüm ve 35 arşiv** korunur. Denemede yanlış yöne yürüdüğünde artık yankıları silmeden yeni bir 12 saniyelik başlangıç yapabilirsin.
+
+- **X · Denemeyi yenile:** Mevcut canlı hareket izi iptal edilir; oyuncu ve saat başlangıca döner. Hiçbir yeni yankı oluşmaz ve mevcut E01–E06 kayıtları, sıraları, kayıt imzaları korunur.
+- **R farklı çalışır:** R bütün odayı ve geçici yankıları sıfırlar. X yalnızca o anki canlı denemeyi bırakır. Z son yankıyı silmeye, Shift+Z onu geri getirmeye devam eder.
+- **Kısa süreli sensör güvenliği:** Tekrar denemede anlık röle ve o anki canlı pozisyon temizlenir. Daha önce bilinçli olarak onaylanan kararlar veya toplanan denetim delilleri, gerçek kayıtları değiştirmediğin sürece korunur.
+- **Erişim:** Klavyedeki X, kontrol alanındaki **Denemeyi yenile** ve mobil **Deneme** düğmesi aynı işlevi görür. Oyun duraklatılmışken veya arşiv gibi pencereler açıkken yeniden başlatma kapalıdır.
+- **Uyumluluk:** Kampanya, kayıt kasası ve JSON yedek biçimi değişmedi. Otomatik tarayıcı testlerine yankı/geri alma korunumu, üç farklı kontrol şekli ve duraklatma denetimleri eklendi.
+
 ## Build 025 — Yankı Kayıtlarını Yönet
 
 **19 oda, 7 bölüm, 35 arşiv** korunur. Kayıt alanının altında açılan **Yankı kayıtlarını yönet** panelinde E01–E06 arasından istenen yankı ayrı ayrı silinebilir; sonraki yankıları yeniden kaydetmek gerekmez.
@@ -255,6 +265,7 @@ Her şey tek `index.html` içindedir; harici ses/görsel paketi, ağ bağlantıs
 | --- | --- |
 | `WASD` veya oklar | Hareket |
 | `Space` | Döngüyü bitirip yankıyı kaydet |
+| `X` | Geçerli denemeyi iptal edip döngüyü başlat; mevcut yankıları koru |
 | `Z` | Son yankıyı sil |
 | `Shift+Z` | Son silinen yankıyı geri getir (bir sonraki kayda kadar) |
 | `R` | Odayı sıfırla |

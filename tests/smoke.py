@@ -100,6 +100,50 @@ def main():
             page.close()
             print("PASS 1/5 + undo, performance records and post-room debrief")
             
+            # Build 026: quick retry discards only the current live path, not
+            # previous recordings, their order, or a pending restore candidate.
+            page, errors = load(browser, 0)
+            assert page.locator('#retry').is_enabled()
+            assert page.locator('#mobile-retry').is_enabled()
+            page.evaluate("window.__echo12Test.teleport(6.5,3.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            first=page.evaluate("window.__echo12Test.echoIDs()")
+            assert len(first)==1
+            move(page,'d',.4)
+            before=page.evaluate("window.__echo12Test.inspect()")
+            assert before['elapsed']>0.2 and before['record']>1
+            page.keyboard.press('x')
+            after=page.evaluate("window.__echo12Test.inspect()")
+            assert after['elapsed']<0.15 and after['record']<=10
+            assert after['echoes']==1
+            assert page.evaluate("window.__echo12Test.echoIDs()")==first
+            assert page.evaluate("window.__echo12Test.position()")=={'x':2.5,'y':5.5}
+            move(page,'d',.3)
+            page.locator('#retry').click()
+            assert page.evaluate("window.__echo12Test.inspect().elapsed")<0.15
+            assert page.evaluate("window.__echo12Test.echoIDs()")==first
+            move(page,'d',.25)
+            page.locator('#mobile-retry').click(force=True)
+            assert page.evaluate("window.__echo12Test.inspect().elapsed")<0.15
+            assert page.evaluate("window.__echo12Test.echoIDs()")==first
+            page.locator('#undo').click()
+            assert page.locator('#echo-restore').is_enabled()
+            page.locator('#retry').click()
+            assert page.locator('#echo-restore').is_enabled(), 'Retry must not erase the last deleted recording'
+            page.locator('#echo-restore').click()
+            assert page.evaluate("window.__echo12Test.echoIDs()")==first
+            page.keyboard.press('p')
+            assert page.locator('#retry').is_disabled()
+            assert page.locator('#mobile-retry').is_disabled()
+            page.keyboard.press('x')
+            assert page.locator('#mode').inner_text()=='DURDU'
+            page.keyboard.press('p')
+            assert page.locator('#retry').is_enabled()
+            assert not errors,errors
+            page.close()
+            print('PASS Build 026: preserve echoes and undo across keyboard, desktop and touch retry; block retry while paused')
+
             # Build 025: remove an arbitrary echo, restore it at the original index,
             # reset live progress, and expire the restore window on a new recording.
             page, errors = load(browser, 0)
