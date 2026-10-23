@@ -103,6 +103,7 @@ def main():
             # Build 027: read-only plate forecast follows immutable echo recordings.
             page, errors = load(browser, 0)
             page.locator('#plate-forecast summary').click()
+            page.evaluate("document.activeElement.blur()")
             assert page.locator('#plate-forecast-list .plate-forecast-item').count()==1
             assert page.locator('[data-plate="A"]').get_attribute('data-ready')=='false'
             assert page.locator('[data-plate="A"] .plate-forecast-band').count()==0
@@ -130,6 +131,7 @@ def main():
             # Two copies must overlap on the echo-only dual pressure plate.
             page, errors = load(browser, 6)
             page.locator('#plate-forecast summary').click()
+            page.evaluate("document.activeElement.blur()")
             assert page.locator('[data-plate="R"]').get_attribute('data-ready')=='false'
             page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
             page.evaluate("window.__echo12Test.tick(.1)")
@@ -149,6 +151,7 @@ def main():
             # Pulse extension is displayed, and scanner dependency is explicit.
             page, errors = load(browser, 3)
             page.locator('#plate-forecast summary').click()
+            page.evaluate("document.activeElement.blur()")
             page.evaluate("window.__echo12Test.teleport(4.5,2.5)")
             page.evaluate("window.__echo12Test.tick(.2)")
             page.evaluate("window.__echo12Test.teleport(2.5,5.5)")
@@ -160,6 +163,7 @@ def main():
             page.close()
             page, errors = load(browser, 8)
             page.locator('#plate-forecast summary').click()
+            page.evaluate("document.activeElement.blur()")
             page.evaluate("window.__echo12Test.teleport(4.5,3.5)")
             page.evaluate("window.__echo12Test.tick(.1)")
             commit(page)
