@@ -508,11 +508,22 @@ body.high-contrast #walk-cancel{border:2px solid #d4fff1}
 .room-resume[hidden]{display:none}
 .room-resume button{font-size:11px;padding:9px 12px}
 body.high-contrast .room-resume{border:2px solid #d4fff1}
+/* BUILD 046: predictive route status with accessible, state-only announcements. */
+.walk-info{display:flex;flex:0 1 280px;flex-direction:column;justify-content:center;gap:3px;min-width:170px;max-width:325px;padding:7px 10px;border:1px solid #3b7880;background:#102c36;border-radius:9px}
+.walk-info[hidden]{display:none}
+.walk-info strong{font:800 10px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.035em;color:#8bf1e0}
+.walk-info small{font:500 11px/1.35 system-ui,sans-serif;color:#accbd5}
+.walk-info[data-state="waiting"]{background:#332819;border-color:#c99658}
+.walk-info[data-state="waiting"] strong{color:#ffd59a}
+.walk-info[data-state="late"]{background:#372029;border-color:#b96980}
+.walk-info[data-state="late"] strong{color:#ffb4c1}
+body.high-contrast .walk-info{border:2px solid #dafff3}
+@media(max-width:680px){.walk-info{flex:1 1 100%;max-width:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 045</div></header>
+<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 046</div></header>
 <div class="topbar">
  <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 19</div></div>
  <div class="stat"><div class="label">Döngüye kalan</div><div class="value teal" id="time">12.0 sn</div><div class="meters"><div class="meter"><i id="timefill"></i></div></div></div>
@@ -530,7 +541,7 @@ body.high-contrast .room-resume{border:2px solid #d4fff1}
 <div class="case-overlay hidden" id="case-board" aria-hidden="true"><section class="case-dialog" role="dialog" aria-modal="true" aria-labelledby="case-title"><div class="case-header"><div><div class="kicker">BAĞIMSIZ SORUŞTURMA / DELİL ZİNCİRİ</div><h2 id="case-title">Üç açık soru</h2><p>Yalnızca arşivden gerçekten bulduğun kayıtlarla karar ver. Yanlış bir yorum dosyayı kapatmaz; her doğru çıkarım yeni bir tutanak açar.</p></div><button type="button" class="secondary" id="case-close">Kapat (Esc)</button></div><div class="case-progress" id="case-progress" aria-live="polite">0 / 3 çıkarım</div><div id="case-grid" class="case-grid"></div><p class="case-footnote">Kısayol: K · Bu ekran açıkken 12 saniyelik döngü durur.</p></section></div>
 <div class="room-picker-overlay hidden" id="room-picker" aria-hidden="true"><section class="room-picker" role="dialog" aria-modal="true" aria-labelledby="room-picker-title"><div class="room-picker-head"><div><div class="kicker">PROTOKOL NAVİGASYONU</div><h2 id="room-picker-title">Oda seçimi</h2><p>Açılmış odaları tekrar oynayabilirsin. Oda değiştirmek mevcut döngüyü sıfırlar; kaydedilmiş ilerlemeyi ve arşivi silmez.</p></div><button type="button" class="secondary" id="room-picker-close">Kapat ✕</button></div><div id="room-picker-grid" class="room-picker-grid"></div></section></div>
 <div class="guard-warning" id="guard-warning" hidden role="status" aria-live="polite"><span>⚠ DEVRİYE YAKIN</span><small>Kırmızı temas alanından uzaklaş. Yalnızca bu döngü riskte.</small></div>
-<div class="camera-toolbar" aria-label="Görünüm ayarları"><button type="button" id="camera-toggle" class="secondary" aria-pressed="false">⊙ Yakın takip: kapalı</button><button type="button" id="beacon-toggle" class="secondary" aria-pressed="true" aria-label="Görev pusulasını aç veya kapat" title="G: görev pusulasını aç/kapat">◇ Görev pusulası: açık</button><button type="button" id="walk-cancel" class="secondary" hidden title="Esc: seçilen yürüyüş rotasını iptal et">⌖ Rotayı iptal et</button><span id="gamepad-status" class="gamepad-status" hidden role="status" aria-live="polite">🎮 OYUN KOLU BAĞLANDI · X KAYDET · Y SİL · A ETKİLEŞİM</span><div class="camera-note" id="camera-note">Tam harita görünümü · Kamera ayarını dilediğinde değiştirebilirsin.</div><div class="minimap-box" id="minimap-box" hidden><span class="minimap-heading">HARİTA · TÜM ODA</span><canvas id="minimap" width="216" height="132" role="img" aria-label="Tüm odanın küçük haritası, oyuncu ve açık kapılar"></canvas><span class="minimap-legend">◆ Oyuncu &nbsp; ● Yankı &nbsp; ◇ Çıkış</span></div></div>
+<div class="camera-toolbar" aria-label="Görünüm ayarları"><button type="button" id="camera-toggle" class="secondary" aria-pressed="false">⊙ Yakın takip: kapalı</button><button type="button" id="beacon-toggle" class="secondary" aria-pressed="true" aria-label="Görev pusulasını aç veya kapat" title="G: görev pusulasını aç/kapat">◇ Görev pusulası: açık</button><button type="button" id="walk-cancel" class="secondary" hidden title="Esc: seçilen yürüyüş rotasını iptal et">⌖ Rotayı iptal et</button><div id="walk-info" class="walk-info" data-state="walking" hidden><strong id="walk-state" role="status" aria-live="polite"></strong><small id="walk-time" aria-hidden="true"></small></div><span id="gamepad-status" class="gamepad-status" hidden role="status" aria-live="polite">🎮 OYUN KOLU BAĞLANDI · X KAYDET · Y SİL · A ETKİLEŞİM</span><div class="camera-note" id="camera-note">Tam harita görünümü · Kamera ayarını dilediğinde değiştirebilirsin.</div><div class="minimap-box" id="minimap-box" hidden><span class="minimap-heading">HARİTA · TÜM ODA</span><canvas id="minimap" width="216" height="132" role="img" aria-label="Tüm odanın küçük haritası, oyuncu ve açık kapılar"></canvas><span class="minimap-legend">◆ Oyuncu &nbsp; ● Yankı &nbsp; ◇ Çıkış</span></div></div>
 <div class="mobile-controls" aria-label="Dokunmatik oyun kontrolleri"><div class="mobile-controls-info">DOKUNMATİK KONTROL <span>Sahneye dokunup yürü veya yön tuşlarını kullan</span></div><div class="mobilepad" role="group" aria-label="Yön tuşları"><button type="button" data-dir="ArrowUp" aria-label="Yukarı yürü" aria-pressed="false">↑</button><button type="button" data-dir="ArrowLeft" aria-label="Sola yürü" aria-pressed="false">←</button><button type="button" data-dir="ArrowDown" aria-label="Aşağı yürü" aria-pressed="false">↓</button><button type="button" data-dir="ArrowRight" aria-label="Sağa yürü" aria-pressed="false">→</button><button type="button" id="mobile-record" aria-label="Mevcut döngüyü kaydet">↺<small>KAYDET</small></button></div><div class="mobile-shortcuts"><button type="button" id="mobile-interact" class="secondary">⌁ Etkileşim</button><button type="button" id="mobile-retry" class="secondary" title="Yankıları koruyarak bu döngüyü tekrar dene">↻ Deneme</button><button type="button" id="mobile-undo" class="secondary">↶ Geri al</button><button type="button" id="mobile-pause" class="secondary">Ⅱ Duraklat</button></div></div>
 <div class="signal-strip" id="signal-strip" aria-label="Canlı sistem durumu"><span>SİSTEM SİNYALİ / <strong id="signal-value">HAZIR</strong></span><span class="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></div>
 <div class="timeline" aria-label="Yankıların zaman çizelgesi"><div class="timeline-head"><span>HAREKET KAYITLARI</span><small id="timeline-legend">Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas</small></div><canvas id="timeline" width="960" height="155" role="img" aria-label="12 saniyelik hareket ve plaka tetikleme çizelgesi"></canvas></div><section id="echo-focus-bar" class="echo-focus-bar" aria-label="Yankı rotalarını ayrı ayrı vurgula" hidden><span class="echo-focus-title">◇ YANKI ODAĞI</span><div id="echo-focus-buttons" class="echo-focus-options" role="group" aria-label="Görsel yankı odağı"></div><span class="echo-focus-help">1–6: yankı · 0: hepsi</span></section>
@@ -547,7 +558,7 @@ body.high-contrast .room-resume{border:2px solid #d4fff1}
 <section class="protocol-status" aria-label="Geçit hedefleri"><div class="protocol-status-head"><strong>ANLIK GEÇİT DURUMU</strong><small id="gate-counter">0 / 0 açık</small></div><div class="gate-status-grid" id="gate-status"></div></section>
 <section class="proof-panel" id="proof-panel" hidden aria-label="Sıralı kayıt doğrulama paneli"><div class="protocol-status-head"><strong>İMZA DOĞRULAMA / A VE B GEÇİŞLERİ</strong><small id="proof-status" role="status" aria-live="polite">Kayıt bekleniyor</small></div><p class="proof-help">Parlak A ve B noktalarına <strong>aynı döngü içinde</strong> sırayla dokun. Gerçek yankıyı kaydet; F doğrulayıcısı sahte görüntüleri ayırır.</p><div class="proof-grid"><div><span class="proof-label">BU DÖNGÜDE</span><div id="proof-live" class="proof-sequence">—</div></div><div><span class="proof-label">KAYDEDİLMİŞ İMZALAR</span><div id="proof-records" class="proof-record-list">Henüz yok</div></div></div><div id="proof-evidence" class="proof-evidence">A→B: 0/1</div></section>
 <section id="sync-panel" class="sync-panel" hidden aria-label="İki tanık senkronizasyonu"><div class="protocol-status-head"><strong>ÇİFTE TANIKLIK / AYRI KAYITLAR</strong><small id="sync-verdict" role="status" aria-live="polite">İmza bekleniyor</small></div><div class="sync-grid"><div id="sync-left">I · YANKI BEKLENİYOR</div><div id="sync-right">II · YANKI BEKLENİYOR</div></div><p id="sync-rule">İki farklı yankı aynı anda gerekli.</p></section>
-<footer>BUILD 045 · ODA KURTARMA</footer>
+<footer>BUILD 046 · AKILLI ROTA GÖSTERGESİ</footer>
 </div>
 <script>
 (()=>{
@@ -1911,10 +1922,44 @@ function drawImpactTrace(){
 /* Build 044: path planning is static and tile-based, while motion still
    uses the live collision, plate, relay and guard physics each frame. */
 let walkRoute=[],walkTarget=null;
+let lastWalkStatusSignature='';
+/* Pure feedback: neither path sampling nor gate physics is changed.
+   Minimum duration ignores waits for plates/relays and roaming guards. */
+function walkRouteDetails(){
+ if(!walkTarget||!walkRoute.length||!player||!level)return null;
+ let cursor=player.x,cy=player.y,distance=0,closedGate=null;
+ for(const point of walkRoute){
+  distance+=Math.hypot(point.x-cursor,point.y-cy);
+  cursor=point.x;cy=point.y;
+  if(!closedGate){
+   const gate=level.barriers.find(b=>b.gate[0]===Math.floor(point.x)&&b.gate[1]===Math.floor(point.y));
+   if(gate&&!gateOpen(gate.key))closedGate=gate;
+  }
+ }
+ const minimum=distance/SPEED,remaining=Math.max(0,LOOP-elapsed);
+ return{status:closedGate?'waiting':minimum>remaining+.12?'late':'walking',
+  gate:closedGate?.key||null,gateTile:closedGate?.gate||null,
+  minimum,remaining,distance};
+}
 function updateWalkStatus(){
- const button=$('walk-cancel');
+ const button=$('walk-cancel'),pane=$('walk-info');
  button.hidden=!walkTarget;
- if(walkTarget)button.textContent='⌖ Rotayı iptal et · '+walkRoute.length+' adım';
+ pane.hidden=!walkTarget;
+ if(!walkTarget){lastWalkStatusSignature='';return}
+ const info=walkRouteDetails();
+ if(!info){pane.hidden=true;return}
+ const name=info.status==='waiting'?info.gate+' KAPISI KAPALI · AÇILINCA DEVAM EDER':
+  info.status==='late'?'⚠ BU DÖNGÜYE YETİŞMEYEBİLİR':'⌖ HEDEFE YÜRÜNÜYOR';
+ const estimate='En az '+(Math.ceil(info.minimum*2)/2).toFixed(1).replace('.',',')+
+  ' sn yol · '+(Math.ceil(info.remaining*2)/2).toFixed(1).replace('.',',')+' sn kaldı';
+ const signature=[walkTarget.x,walkTarget.y,walkRoute.length,info.status,info.gate,estimate].join('|');
+ if(signature===lastWalkStatusSignature)return;
+ lastWalkStatusSignature=signature;
+ pane.dataset.state=info.status;
+ const label=$('walk-state');
+ if(label.textContent!==name)label.textContent=name;
+ $('walk-time').textContent=estimate;
+ button.textContent='⌖ Rotayı iptal et · '+walkRoute.length+' adım';
 }
 function cancelWalkRoute(){
  const hadRoute=!!walkTarget;
@@ -1967,13 +2012,28 @@ function onScenePointer(event){
 }
 function drawWalkRoute(){
  if(!walkTarget||!walkRoute.length)return;
+ const blocked=walkRouteDetails(),gate=blocked?.gateTile;
  ctx.save();ctx.strokeStyle='#6ef3dd';ctx.globalAlpha=.7;ctx.lineWidth=2.5;ctx.setLineDash([5,7]);
  ctx.beginPath();ctx.moveTo(player.x*T,player.y*T);
- for(const p of walkRoute)ctx.lineTo(p.x*T,p.y*T);
+ let beyondGate=false;
+ for(const p of walkRoute){
+  ctx.lineTo(p.x*T,p.y*T);
+  if(gate&&!beyondGate&&Math.floor(p.x)===gate[0]&&Math.floor(p.y)===gate[1]){
+   ctx.stroke();ctx.beginPath();ctx.moveTo(p.x*T,p.y*T);
+   ctx.strokeStyle='#f4bd74';beyondGate=true;
+  }
+ }
  ctx.stroke();ctx.setLineDash([]);
  const end=walkRoute[walkRoute.length-1];
  ctx.beginPath();ctx.arc(end.x*T,end.y*T,11,0,Math.PI*2);
- ctx.strokeStyle='#baffeb';ctx.lineWidth=2;ctx.stroke();ctx.restore();
+ ctx.strokeStyle=blocked?.status==='late'?'#ffb2c1':'#baffeb';ctx.lineWidth=2;ctx.stroke();
+ if(gate){
+  const x=(gate[0]+.5)*T,y=(gate[1]+.5)*T;
+  ctx.beginPath();ctx.arc(x,y,15,0,Math.PI*2);ctx.lineWidth=2.2;ctx.strokeStyle='#ffce87';ctx.stroke();
+  ctx.fillStyle='#ffe8b4';ctx.font='bold 11px ui-monospace,monospace';ctx.textAlign='center';
+  ctx.fillText(blocked.gate,x,y-18);
+ }
+ ctx.restore();
 }
 function resetPlayer(){cancelWalkRoute();tensionCharge=Object.create(null);guardThreatActive=false;$('guard-warning').hidden=true;motionTrail=[];needsRedraw=true;player={x:level.start[0]+.5,y:level.start[1]+.5};elapsed=0;relayUntil={};record=[{...player}];lastCountdownBeat=-1;}
 /* Build 025: recordings are immutable; editing only changes the in-room roster. */
@@ -2910,7 +2970,7 @@ if(secondLeft<=3&&secondLeft>0&&lastCountdownBeat!==secondLeft){lastCountdownBea
  if(Math.hypot(player.x-level.exit[0]-.5,player.y-level.exit[1]-.5)<.48)victory();if((Math.round(elapsed*10)!==Math.round((elapsed-dt)*10)))updateHUD()
 }
 function updateHUD(){
- persistRoomIfChanged();updateSyncStatus();updateSyncTimeline();updateProofPanel();updateDiagnostics();renderEchoEditor();renderEchoFocusBar();updatePlateForecast();renderChallenges();updateCalibrationPanel();const playing=mode==='playing';
+ updateWalkStatus();persistRoomIfChanged();updateSyncStatus();updateSyncTimeline();updateProofPanel();updateDiagnostics();renderEchoEditor();renderEchoFocusBar();updatePlateForecast();renderChallenges();updateCalibrationPanel();const playing=mode==='playing';
  $('mobile-record').disabled=!playing;
  $('mobile-interact').disabled=!playing||!(nearWitnessConsole()||nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice());
  $('mobile-undo').disabled=!playing||clones.length===0;

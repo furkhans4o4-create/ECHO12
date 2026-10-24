@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 046 — Akıllı Rota Durumu / Kapı Bekleme ve Döngü Tahmini
+
+Dokun-ve-yürü kontrolü artık **rotanın neden beklediğini ve hedefe yetişme olasılığını** gösterir. Bu yeni araç zaman döngüsü bulmacasını çözmez; yalnızca karakterin gerçek yürüyüşünün durumunu okunabilir kılar.
+
+- **Kapalı kapı bildirimi:** Tıklanan güzergâhta henüz kapalı bir geçit varsa A / B vb. geçidin harfiyle **KAPISI KAPALI · AÇILINCA DEVAM EDER** mesajı görünür. Fizik motoru kapalı geçitte durur; yankı plakayı etkinleştirip kapı açarsa rota aynı hedefe otomatik sürer. Geçit arkasındaki kesikli çizgi turuncu ve geçit halkası sarıdır.
+- **12 saniyelik rota tahmini:** Seçilen yolun kalan kare-merkezi mesafesi standart hızla bölünerek **en az kaç saniyede** yürünebileceği gösterilir. Kalan döngü süresinden uzun bir yol için kırmızı **YETİŞMEYEBİLİR** uyarısı çıkar. Kapı bekleme ve devriyeler bu alt sınıra dahil değildir; başarı garantisi, kestirme veya ekstra zaman sunulmaz.
+- **Sessiz ve erişilebilir:** Durum mesajı yalnızca anlamlı durum değişiminde güncellenir; yarım saniyelik süre rakamları ekran okuyucusundan gizlenir. Mevcut Esc/klavye/oyun kolu/duraklama/oda değişimi iptalleri göstergeyi de temizler.
+- **Bulmaca ve ilerleme değişmedi:** Hareket, çarpışmalar, kapı ve plaka koşulları, otomatik döngü kaydı, ipucu ve ustalık kuralları aynı. JSON yedeği ve oda içi kurtarma biçimi değişmez.
+- **Tarayıcı testleri:** Kapalı kapıya çarpma ve bekleme, kayıtlı yankıyla kapının doğal açılması, aynı rotayla odayı bitirme, kalan süre uyarısı ve döngü sonrası otomatik temizlenme doğrulanır.
+
 ## Build 045 — Oda Oturumu Kurtarma
 
 Tarayıcı yenilemesi veya sekmenin kapanması artık **tamamlanmış yankı kayıtlarını kaybettirmez**. Sadece aynı cihazdaki güncel oda için geçici bir kayıt saklanır.
