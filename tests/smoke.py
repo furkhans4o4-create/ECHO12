@@ -225,16 +225,8 @@ def main():
                 window.dispatchEvent(new Event('focus'));
             }""")
             page.keyboard.up('w')
-            debug=page.evaluate("""() => {
-              window.__focusDebug=[];
-              window.addEventListener('blur',()=>window.__focusDebug.push(['blur',document.hasFocus(),document.hidden,window.__echo12Test.inspect().mode]));
-              document.addEventListener('visibilitychange',()=>window.__focusDebug.push(['visibility',document.hasFocus(),document.hidden,window.__echo12Test.inspect().mode]));
-              document.getElementById('start').addEventListener('click',()=>window.__focusDebug.push(['click',document.hasFocus(),document.hidden,window.__echo12Test.inspect().mode]));
-              return {before:window.__echo12Test.inspect().mode,focused:document.hasFocus(),hidden:document.hidden};
-            }""")
             page.locator('#start').click()
-            resumed=page.evaluate("({mode:window.__echo12Test.inspect().mode,events:window.__focusDebug,focused:document.hasFocus(),hidden:document.hidden})")
-            assert resumed['mode']=='playing',(debug,resumed)
+            verify(page,errors,'KAYIT')
             assert page.evaluate("window.__echo12Test.held()")==[]
             page.evaluate("window.__echo12Test.tick(.5)")
             after=page.evaluate("window.__echo12Test.inspect()")
@@ -259,6 +251,7 @@ def main():
             assert page.evaluate("window.__echo12Test.inspect()['elapsed']")<1
             page.evaluate("""() => {
                 Object.defineProperty(document,'hidden',{configurable:true,get:()=>false});
+                Object.defineProperty(document,'hasFocus',{configurable:true,value:()=>true});
                 document.dispatchEvent(new Event('visibilitychange'));
                 window.dispatchEvent(new Event('focus'));
             }""")
