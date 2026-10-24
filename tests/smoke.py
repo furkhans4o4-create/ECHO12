@@ -207,7 +207,10 @@ def main():
             before=page.evaluate("window.__echo12Test.inspect()")
             assert before['mode']=='playing'
             assert page.evaluate("window.__echo12Test.held()")
-            page.evaluate("window.dispatchEvent(new Event('blur'))")
+            page.evaluate("""() => {
+                Object.defineProperty(document,'hasFocus',{configurable:true,value:()=>false});
+                window.dispatchEvent(new Event('blur'));
+            }""")
             verify(page,errors,'DURDU')
             assert page.locator('#kicker').inner_text()=='DÖNGÜ KORUMASI'
             assert 'odağını kaybetti' in page.locator('#dialog-title').inner_text()
@@ -217,6 +220,10 @@ def main():
             frozen=page.evaluate("window.__echo12Test.inspect()")
             for field in ('elapsed','record','position','echoes'):
                 assert frozen[field]==before[field],(field,frozen,before)
+            page.evaluate("""() => {
+                Object.defineProperty(document,'hasFocus',{configurable:true,value:()=>true});
+                window.dispatchEvent(new Event('focus'));
+            }""")
             page.keyboard.up('w')
             page.locator('#start').click()
             verify(page,errors,'KAYIT')
