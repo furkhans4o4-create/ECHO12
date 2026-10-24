@@ -2,6 +2,37 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 058 — Yankı Temas Analizi / Boşa Harcanan Döngüleri Fark Et (Geliştirme)
+
+Bu build yalnızca `develop` dalındadır. `main` ve canlı Vercel yayını değiştirilmez.
+
+- **Anında kayıt analizi:** Boşluk tuşuyla veya 12 saniye bitiminde oluşan son yankının gerçek hareket örnekleri incelenir. Plaka, A/B kanıt izi ve I/II tanık sensörü temasları belirtilir.
+- **Boş yankı uyarısı:** Hiçbir bulmaca sensörüne dokunmayan bir kayıt `BOŞ YANKI` olarak görünür; gereksiz kayıtları Z ile silme seçeneği hatırlatılır. Kayıt otomatik silinmez.
+- **Yanlış tür farkı:** Ters kayıt isteyen plaka normal yankıyı, canlı temas isteyen plaka kayıtlı yankıyı geçerli saymaz. Yanlış yön veya kaynak kısa teması gereken Zaman Sigortası gibi durumlar açıklanır.
+- **Kısmi ve uygun iz:** İki yankının eşzamanlı olması veya A→B sırası gibi koşullar tamamlanmadıysa kayıt `KISMİ KAYIT` olarak değerlendirilir. Gerçek kayıtlar bir koşulu sağlıyorsa `SİNYAL ALGILANDI` gösterilir; tüm kapıların açıldığı iddia edilmez.
+- **Düzenlemeye duyarlı:** Faz veya Zaman Çivisi değiştirilirse analiz güncellenir; kayıt silinirse panel kapanır. Rapora bakmak ipucu sayısını artırmaz veya kayıt biçimini değiştirmez.
+- **Regresyonlar:** Hareketsiz kayıt, plaka teması, ters/normal oynatma ayrımı ve otomatik 12 saniye kaydı test edilir.
+
+## Build 057 — Ustalık Raporu / Bu Deneme ve Kalıcı Başarı Ayrımı (Geliştirme)
+
+Bu sürüm yalnızca `develop` dalındadır; **canlı siteye alınmaz**. 12 saniyelik fizik, ödül kuralları ve oyun kayıt biçimleri değişmez.
+
+- **Ölçülebilir sonuç:** Her oda tamamlandığında AZ YANKI (oda başına yankı sınırı ve kullanılan sayı), İPUCUSUZ (0 ipucu ve kullanılan sayı), ZAMAN (hedef saniye ve bu denemedeki toplam aktif süre) ayrı kartlarda görünür.
+- **Doğru ödül açıklaması:** Her kriter `BU DENEMEDE BAŞARILI`, `BU DENEMEDE KAÇIRILDI` veya daha önce kazanılmış olsa da bu denemede kaçırıldıysa `ÖNCEDEN KAZANILDI` durumlarından birini gösterir. Kalıcı ustalık toplamı hâlâ geçmiş başarıları içerir; oyuncuya yanlışlıkla bu denemede 3/3 yaptığı söylenmez.
+- **Tekrar deneme bağlantısı:** Build 056'daki aynı odayı tekrar oynama düğmesi ve mevcut hikâye akışı aynı kalır. Madalyalar, en iyi koşular, kalıcı kayıtlar ve bölümler korunur.
+- **Regresyon kapsamı:** Üç hedefin tam metni, geçmişte kazanılıp yeni denemede kaçırılan madalya, ipucu kaçırması ve gerçek oyun süresine göre geç kalma kontrol edilir.
+
+## Build 056 — Tek Tıkla Oda Tekrarı / Ustalık Hedefleri (Geliştirme)
+
+Bu sürüm **yalnızca `develop` geliştirme dalındadır**. Kullanıcının isteği üzerine canlı Vercel sitesine dağıtılmayacak; GitHub `main` dalı Build 055 olarak bırakılacaktır.
+
+- **Başarı ekranında yeniden oyna:** Tamamlanan tüm normal odalarda, ekranda mevcut “Sonraki oda” düğmesinin yanında “ODA XX YENİDEN OYNA” düğmesi bulunur. Oyuncu bölüm seçimine dönmeden aynı bulmacayı ve farklı yankı stratejilerini hemen tekrar deneyebilir.
+- **Madalyalar somut hedeflere dönüşür:** Sonuç paneli 3 ustalık hedefine ilişkin toplamı ve eksik kalan “AZ YANKI”, “İPUCUSUZ” veya “ZAMAN” koşullarını gösterir. Üçü kazanıldıysa kişisel rekoru geliştirme seçeneğini hatırlatır. Bu ekran yeni bir ipucu harcamaz.
+- **Gerçekten temiz yeni tur:** Tekrar oynamak yalnızca bu odanın canlı döngüsünü, yankı kadrosunu ve geçici editör hâlini başlatır. Açılmış odalar, üç kalıcı ustalık madalyası, en iyi sonuçlar, arşiv ve hikâye kararları silinmez.
+- **Oyuncunun tercihi:** Mevcut “SONRAKİ ODA” akışı aynı kalır. Bölüm sonu hikâye mesajları korunur. Ana hikâyenin tümü tamamlandığında verilen özel final kararını yeniden oynama seçeneği de olduğu gibi kalır.
+- **Klavye ve oyun kolu uyumu:** Sonuç ekranındaki yeni düğme odaklanabilir; Enter/Space ve oyun kolunun standart düğme gezinmesiyle etkinleştirilir. Oyun devam ederken görünmez.
+- **Chromium testleri:** Oda tamamlama ve doğrudan tekrar oynama, açılmış ilerleme/madalyalar/rekor bütünlüğü, eksik ustalık hedefinin görünmesi ve mevcut sonraki odaya geçiş denetlenir.
+
 ## Build 055 — Rota Durumu / Kapıya Yaklaşma ve Güvenilir İlerleme
 
 Dokun-ve-yürü rotası açıkken verilen uyarılar artık **oyuncunun gerçek hareketiyle** daha doğru eşleşiyor.
