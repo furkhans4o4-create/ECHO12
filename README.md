@@ -2,6 +2,18 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 047 — Kaldığın Oda / Kilidi Açılmış Eski Sektörlerde Kurtarma
+
+**Oyun tarayıcıda tamamlanana kadar geliştirmeye devam ediyoruz; Unreal top-down 3D sürümüne geçiş henüz başlamıyor.**
+
+Build 045’in otomatik yankı kurtarmasındaki kritik yeniden oynama sorunu düzeltildi. Daha ileri bir odayı açmış oyuncu eski bir sektöre dönüp yankı kaydettiğinde tarayıcı yenilenirse artık otomatik olarak en ileri odaya atlamıyor.
+
+- **Gerçek kaldığın oda:** Açılış ekranı en son oynadığın sektörün numarasını, adını ve kayıtlı yankı sayısını gösterir. Devam butonu doğrudan bu sektörü açar. Tamamlanmış yankılar, faz ve zaman çivisi ayarları korunur; canlı 12 saniyelik hareket sıfırdan başlar.
+- **İlerleme korunur:** Önceden açılmış en ileri oda, hikâye seçimleri, ustalık madalyaları, arşiv ve JSON ilerleme yedeği değişmez. Eski sektörde çalışırken daha ileri odaların kilidi kapanmaz.
+- **Bilinçli yeni başlangıç:** “Odayı sıfırdan başlat” seçilirse yalnızca geçici yankı kaydı silinir ve oyun son açılmış sektörden başlar. Tamamlanan bölümden başka odaya geçmek mevcut tek odalık geçici kaydı temizler.
+- **Geçersiz kayıt güvenliği:** Kaydın oda numarası tam sayı, harita sınırları içinde ve gerçekten açılmış olmak zorunda. Bozuk, kilitli veya hikâye hattıyla uyuşmayan kayıtlar menüyü kilitlemeden reddedilir.
+- **Tarayıcı regresyonları:** Oda 7 açıkken oda 1’e dönüş, sayfa yenileme ve yankıyla devam; ilerleme korunumu, yeni başlangıç tercihi, başka odaya geçiş ve geçersiz oda kimlikleri Chromium ile denetlenir.
+
 ## Build 046 — Akıllı Rota Durumu / Kapı Bekleme ve Döngü Tahmini
 
 Dokun-ve-yürü kontrolü artık **rotanın neden beklediğini ve hedefe yetişme olasılığını** gösterir. Bu yeni araç zaman döngüsü bulmacasını çözmez; yalnızca karakterin gerçek yürüyüşünün durumunu okunabilir kılar.
