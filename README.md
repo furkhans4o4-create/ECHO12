@@ -2,6 +2,15 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 057 — Ustalık Raporu / Bu Deneme ve Kalıcı Başarı Ayrımı (Geliştirme)
+
+Bu sürüm yalnızca `develop` dalındadır; **canlı siteye alınmaz**. 12 saniyelik fizik, ödül kuralları ve oyun kayıt biçimleri değişmez.
+
+- **Ölçülebilir sonuç:** Her oda tamamlandığında AZ YANKI (oda başına yankı sınırı ve kullanılan sayı), İPUCUSUZ (0 ipucu ve kullanılan sayı), ZAMAN (hedef saniye ve bu denemedeki toplam aktif süre) ayrı kartlarda görünür.
+- **Doğru ödül açıklaması:** Her kriter `BU DENEMEDE BAŞARILI`, `BU DENEMEDE KAÇIRILDI` veya daha önce kazanılmış olsa da bu denemede kaçırıldıysa `ÖNCEDEN KAZANILDI` durumlarından birini gösterir. Kalıcı ustalık toplamı hâlâ geçmiş başarıları içerir; oyuncuya yanlışlıkla bu denemede 3/3 yaptığı söylenmez.
+- **Tekrar deneme bağlantısı:** Build 056'daki aynı odayı tekrar oynama düğmesi ve mevcut hikâye akışı aynı kalır. Madalyalar, en iyi koşular, kalıcı kayıtlar ve bölümler korunur.
+- **Regresyon kapsamı:** Üç hedefin tam metni, geçmişte kazanılıp yeni denemede kaçırılan madalya, ipucu kaçırması ve gerçek oyun süresine göre geç kalma kontrol edilir.
+
 ## Build 056 — Tek Tıkla Oda Tekrarı / Ustalık Hedefleri (Geliştirme)
 
 Bu sürüm **yalnızca `develop` geliştirme dalındadır**. Kullanıcının isteği üzerine canlı Vercel sitesine dağıtılmayacak; GitHub `main` dalı Build 055 olarak bırakılacaktır.
