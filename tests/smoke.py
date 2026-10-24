@@ -699,6 +699,13 @@ def main():
             assert 'ODA 01 YENİDEN OYNA' in page.locator('#room-replay').inner_text()
             assert '3/3 USTALIK' in page.locator('#room-replay').inner_text()
             assert 'USTALIK 3/3' in page.locator('#debrief .debrief-goal').inner_text()
+            # Build 057: show the measurable requirements for all three medals.
+            assert page.locator('#debrief .debrief-criterion').count()==3
+            for criterion in ('precise','focus','speed'):
+                item=page.locator(f'#debrief [data-challenge="{criterion}"]')
+                assert item.get_attribute('data-result')=='earned-now'
+                assert 'Hedef:' in item.inner_text() and 'Bu deneme:' in item.inner_text()
+                assert 'BU DENEMEDE BAŞARILI' in item.inner_text()
             before=page.evaluate("""() => ({
                 unlock:localStorage.getItem('echo12-unlocked'),
                 medals:localStorage.getItem('echo12-room-challenges'),
@@ -719,9 +726,20 @@ def main():
                 clears:localStorage.getItem('echo12-room-clears')
             })""")
             assert before==after,(before,after)
+            # Replaying with a hint does not erase the previously won focus medal.
+            # Its report must NOT falsely mark this attempt as hint-free.
+            page.locator('#help-button').click()
+            page.evaluate("window.__echo12Test.teleport(15.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.03)")
+            verify(page,errors,'BAŞARILI')
+            focus=page.locator('#debrief [data-challenge="focus"]')
+            assert focus.get_attribute('data-result')=='earned-earlier'
+            assert 'Bu deneme: 1' in focus.inner_text()
+            assert 'ÖNCEDEN KAZANILDI' in focus.inner_text()
+            assert 'USTALIK 3/3' in page.locator('#debrief .debrief-goal').inner_text()
             assert not errors,errors
             page.close()
-            print('PASS Build 056: optional one-click room replay keeps medals and full progress')
+            print('PASS Build 057: exact mastery targets and historic medals versus current attempt')
 
             # With a hint used, the results tell the player precisely what
             # mastery is still missing rather than presenting a generic score.
@@ -732,6 +750,8 @@ def main():
             verify(page,errors,'BAŞARILI')
             goal=page.locator('#debrief .debrief-goal').inner_text()
             assert 'USTALIK 2/3' in goal and 'İPUCUSUZ' in goal,goal
+            assert page.locator('#debrief [data-challenge="focus"]').get_attribute('data-result')=='missing'
+            assert 'Bu deneme: 1' in page.locator('#debrief [data-challenge="focus"]').inner_text()
             assert '2/3 USTALIK' in page.locator('#room-replay').inner_text()
             page.locator('#room-replay').focus()
             page.keyboard.press('Enter')
@@ -742,6 +762,22 @@ def main():
             assert not errors,errors
             page.close()
             print('PASS Build 056: debrief explains missing medals and Enter retries room')
+
+            # Build 057: use a real elapsed loop, not a fake timestamp, to
+            # demonstrate the speed target and measured overrun.
+            page, errors = load(browser,0)
+            page.evaluate("window.__echo12Test.tick(35.0)")
+            page.evaluate("window.__echo12Test.teleport(15.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.03)")
+            verify(page,errors,'BAŞARILI')
+            speed=page.locator('#debrief [data-challenge="speed"]')
+            assert speed.get_attribute('data-result')=='missing'
+            assert 'Hedef: 34 sn' in speed.inner_text()
+            assert 'Bu deneme: 35.' in speed.inner_text()
+            assert page.locator('#debrief [data-challenge="focus"]').get_attribute('data-result')=='earned-now'
+            assert not errors,errors
+            page.close()
+            print('PASS Build 057: time medal uses real elapsed time and explicit threshold')
 
             # Existing next-room action stays the primary campaign path;
             # replay is purely optional, even in another early room.
