@@ -25,7 +25,7 @@ def load(browser, level, use_user_hud=False, initial_store=None, start=True):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, focusMode(){return mode}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, plateReadouts(){return plateReadouts()}, bestGhost(){return bestGhostStatus()}, walkTo(x,y){return requestWalkTo(x+.5,y+.5)}, walkInfo(){return {target:walkTarget?{...walkTarget}:null,remaining:walkRoute.length}}, walkForecast(){return walkRouteDetails()}, resume(){const active=readActiveRoomCheckpoint();return active?{room:active.room,count:active.clips.length}:null}, fuse(key){return tensionState(level.plates.find(p=>p.key===key))}, sourceFuse(index,key){return sourceTensionCandidate(clones[index],level.plates.find(p=>p.key===key))}, nail(index,at,hold){return configureEchoAnchor(index,at,hold)}, forecast(key){return plateForecastData(level.plates.find(p=>p.key===key))}, openRoom(index){loadLevel(index)}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, focusMode(){return mode}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, plateReadouts(){return plateReadouts()}, bestGhost(){return bestGhostStatus()}, walkTo(x,y){return requestWalkTo(x+.5,y+.5)}, walkInfo(){return {target:walkTarget?{...walkTarget}:null,remaining:walkRoute.length}}, jamRoute(x,y){if(walkRoute.length)walkRoute[0]={x,y};return walkRoute.length>0}, blockTile(x,y){level.block.push({x,y})}, routeRecovery(){return {attempts:routeRecoveryAttempts,stalled:routeStalledFor}}, walkForecast(){return walkRouteDetails()}, resume(){const active=readActiveRoomCheckpoint();return active?{room:active.room,count:active.clips.length}:null}, fuse(key){return tensionState(level.plates.find(p=>p.key===key))}, sourceFuse(index,key){return sourceTensionCandidate(clones[index],level.plates.find(p=>p.key===key))}, nail(index,at,hold){return configureEchoAnchor(index,at,hold)}, forecast(key){return plateForecastData(level.plates.find(p=>p.key===key))}, openRoom(index){loadLevel(index)}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -677,6 +677,54 @@ def main():
             assert not errors,errors
             page.close()
             print('PASS Build 045: corrupt local room checkpoint rejected')
+
+            # Build 053: a transiently corrupted waypoint toward the map
+            # border cannot waste the entire 12-second attempt. A re-plan
+            # uses ordinary collision-aware movement; no teleport occurs.
+            page, errors = load(browser,0)
+            assert page.evaluate("window.__echo12Test.walkTo(6,3)")
+            assert page.evaluate("window.__echo12Test.jamRoute(.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(1.3)")
+            assert page.evaluate("window.__echo12Test.routeRecovery()['attempts']")>=1
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            page.evaluate("window.__echo12Test.tick(2.2)")
+            p=page.evaluate("window.__echo12Test.position()")
+            assert abs(p['x']-6.5)<.1 and abs(p['y']-3.5)<.1,p
+            assert page.evaluate("window.__echo12Test.walkInfo()['target']") is None
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 053: blocked invalid waypoint re-plans and reaches target physically')
+
+            # When target becomes a permanent obstacle, fail closed instead
+            # of retrying forever or moving through the blocked tile.
+            page, errors = load(browser,0)
+            assert page.evaluate("window.__echo12Test.walkTo(6,3)")
+            assert page.evaluate("window.__echo12Test.jamRoute(.5,5.5)")
+            page.evaluate("window.__echo12Test.blockTile(6,3)")
+            page.evaluate("window.__echo12Test.tick(1.4)")
+            assert page.evaluate("window.__echo12Test.walkInfo()['target']") is None
+            assert 'açık bir yol kalmadı' in page.locator('#log-desc').inner_text()
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 053: unreachable target cancels safely without hint or echo')
+
+            # The locked A gate is intentional, not a stuck route; waiting
+            # must continue for as long as it takes and restart once real
+            # recorded proof opens the gate.
+            page, errors = load(browser,0)
+            assert page.evaluate("window.__echo12Test.walkTo(15,5)")
+            page.evaluate("window.__echo12Test.tick(4)")
+            info=page.evaluate("window.__echo12Test.walkForecast()")
+            assert info['status']=='waiting' and info['gate']=='A'
+            assert page.evaluate("window.__echo12Test.routeRecovery()['attempts']")==0
+            assert page.evaluate("window.__echo12Test.walkInfo()['target']") is not None
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 053: locked gate waits without false re-route or time bypass')
 
             # Build 046: a clicked exit beyond a closed gate tells the player
             # why the route pauses; the real echo later opens it naturally.

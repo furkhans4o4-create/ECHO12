@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 053 — Akıllı Rota Kurtarma / Tıklayarak Yürüyüşte Tıkanma Denetimi
+
+Dokun-ve-yürü yönlendirmesi, fiziksel olarak durduğu hâlde hedefe ulaşamayan bir kareyi sonsuza kadar zorlamıyor. Kendi oluşturduğun yankılar ve 12 saniyelik zaman sınırı aynen korunuyor.
+
+- **Gerçek tıkanma ayrımı:** Yürüyüş hedefi varken karakter 0,6 saniye hiçbir fiziksel mesafe katedemezse güzergâh başlangıç pozisyonundan yeniden hesaplanır. İki yeniden hesaplama da çözüm üretmezse rota iptal edilir ve oyuncuya yön tuşlarını kullanması veya yeni zemin karesi seçmesi söylenir.
+- **Kapalı geçitlere saygı:** Sıradaki kare dinamik ama kapalı bir kapıysa bu, arıza sayılmaz. Tıklanan hedef tutulur; yankı gerçek plakayı açtığında aynı rotadan fiziksel yürüyüşe devam edilir. Otomatik ipucu veya kapı açma yoktur.
+- **Hedef erişilemezse güvenli iptal:** Oda geometrisi nedeniyle artık geçerli yol yoksa karakter engelin içinden geçirilmez; rota temizlenir, kullanıcıya ne yapacağı gösterilir.
+- **Korunan kontroller:** Manuel WASD/yön tuşları, oyun kolu, Escape, kayıt, 12 saniyelik döngü sonu, tekrar dene ve duraklatma mevcut rotayı önceki gibi temizler. Yeniden rota hesabı, kazanım veya ipucu sayacı değiştirmez.
+- **Tarayıcı regresyonları:** Engelli ara noktanın otomatik yeniden çizilmesi, fiziksel varış, erişilemeyen hedefin güvenle bırakılması ve kilitli kapı önünde beklemenin tıkanma sayılmaması doğrulanır.
+
 ## Build 052 — Fiziksel Yankı Kaydı Denetimi
 
 Yeniden yüklenen oda yankılarında koordinat aralığının yanında **gerçek 60 Hz hareket fiziği** denetlenir. Böylece bozulan veya elle değiştirilmiş yerel kayıtlar bir anda kapı/kanıt sistemini atlayamaz.
