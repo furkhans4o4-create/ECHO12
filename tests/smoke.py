@@ -685,6 +685,79 @@ def main():
             page.close()
             print('PASS Build 045: corrupt local room checkpoint rejected')
 
+            # Build 056: a completed room offers a direct mastery retry.
+            # Neither permanent unlocks nor already awarded medals are reset.
+            page, errors = load(browser,0)
+            assert page.locator('#room-replay').is_hidden()
+            page.keyboard.press('p')
+            assert page.locator('#room-replay').is_hidden()
+            page.locator('#start').click()
+            page.evaluate("window.__echo12Test.teleport(15.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.03)")
+            verify(page,errors,'BAŞARILI')
+            assert page.locator('#room-replay').is_visible()
+            assert 'ODA 01 YENİDEN OYNA' in page.locator('#room-replay').inner_text()
+            assert '3/3 USTALIK' in page.locator('#room-replay').inner_text()
+            assert 'USTALIK 3/3' in page.locator('#debrief .debrief-goal').inner_text()
+            before=page.evaluate("""() => ({
+                unlock:localStorage.getItem('echo12-unlocked'),
+                medals:localStorage.getItem('echo12-room-challenges'),
+                records:localStorage.getItem('echo12-best-runs'),
+                clears:localStorage.getItem('echo12-room-clears')
+            })""")
+            page.locator('#room-replay').click()
+            verify(page,errors,'KAYIT')
+            assert page.locator('#room').inner_text().startswith('01')
+            assert page.locator('#room-replay').is_hidden()
+            assert page.locator('#overlay').is_hidden()
+            assert page.locator('#clones').inner_text()=='0 / 6'
+            assert page.evaluate("window.__echo12Test.inspect()['elapsed']")==0
+            after=page.evaluate("""() => ({
+                unlock:localStorage.getItem('echo12-unlocked'),
+                medals:localStorage.getItem('echo12-room-challenges'),
+                records:localStorage.getItem('echo12-best-runs'),
+                clears:localStorage.getItem('echo12-room-clears')
+            })""")
+            assert before==after,(before,after)
+            assert not errors,errors
+            page.close()
+            print('PASS Build 056: optional one-click room replay keeps medals and full progress')
+
+            # With a hint used, the results tell the player precisely what
+            # mastery is still missing rather than presenting a generic score.
+            page, errors = load(browser,0)
+            page.locator('#help-button').click()
+            page.evaluate("window.__echo12Test.teleport(15.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.03)")
+            verify(page,errors,'BAŞARILI')
+            goal=page.locator('#debrief .debrief-goal').inner_text()
+            assert 'USTALIK 2/3' in goal and 'İPUCUSUZ' in goal,goal
+            assert '2/3 USTALIK' in page.locator('#room-replay').inner_text()
+            page.locator('#room-replay').focus()
+            page.keyboard.press('Enter')
+            verify(page,errors,'KAYIT')
+            assert page.evaluate("window.__echo12Test.inspect()['elapsed']")==0
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert page.locator('#room-replay').is_hidden()
+            assert not errors,errors
+            page.close()
+            print('PASS Build 056: debrief explains missing medals and Enter retries room')
+
+            # Existing next-room action stays the primary campaign path;
+            # replay is purely optional, even in another early room.
+            page, errors = load(browser,1)
+            page.evaluate("window.__echo12Test.teleport(15.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.03)")
+            verify(page,errors,'BAŞARILI')
+            assert page.locator('#room-replay').is_visible()
+            page.locator('#start').click()
+            verify(page,errors,'KAYIT')
+            assert page.locator('#room').inner_text().startswith('03')
+            assert page.locator('#room-replay').is_hidden()
+            assert not errors,errors
+            page.close()
+            print('PASS Build 056: next-sector button remains unchanged')
+
             # Build 055: at the far start of a route the closed gate is
             # ahead; "waiting" is only displayed near the gate's face.
             page, errors = load(browser,0)
