@@ -794,6 +794,52 @@ def main():
             page.close()
             print('PASS Build 056: next-sector button remains unchanged')
 
+            # Build 058: recording feedback distinguishes a wasted idle
+            # echo from an authentic plate contact; neither is auto-deleted.
+            page, errors = load(browser,0)
+            assert page.locator('#echo-quality').is_hidden()
+            commit(page)
+            assert page.locator('#echo-quality').is_visible()
+            assert page.locator('#echo-quality').get_attribute('data-grade')=='inert'
+            assert 'BOŞ YANKI' in page.locator('#echo-quality-title').inner_text()
+            assert 'Z ile sil' in page.locator('#echo-quality-detail').inner_text()
+            assert page.locator('#clones').inner_text()=='1 / 6'
+            page.keyboard.press('z')
+            assert page.locator('#echo-quality').is_hidden()
+            move(page,'d',.99);move(page,'w',.49);commit(page)
+            assert page.locator('#echo-quality').get_attribute('data-grade')=='ready'
+            assert 'plaka A' in page.locator('#echo-quality-detail').inner_text()
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 058: inert echo, undo cleanup and qualified plate contact')
+
+            # A physical contact of the wrong replay direction must never
+            # be labeled a valid gate activation.
+            page, errors = load(browser,9)
+            move(page,'d',.5);move(page,'w',.5);commit(page)
+            assert page.locator('#echo-quality').get_attribute('data-grade')=='invalid'
+            assert 'ters kayıt gerekli' in page.locator('#echo-quality-detail').inner_text()
+            page.keyboard.press('f')
+            move(page,'d',.5);move(page,'w',.5);commit(page)
+            assert page.locator('#echo-quality').get_attribute('data-grade')=='ready'
+            assert 'plaka V' in page.locator('#echo-quality-detail').inner_text()
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 058: reverse-only sensor rejects forward echo, accepts reverse')
+
+            # At the 12-second deadline the original auto-commit still
+            # creates a real recording and the report remains advisory.
+            page, errors = load(browser,0)
+            page.evaluate("window.__echo12Test.tick(12.01)")
+            assert page.locator('#clones').inner_text()=='1 / 6'
+            assert page.locator('#echo-quality').get_attribute('data-grade')=='inert'
+            assert page.evaluate("window.__echo12Test.inspect()['elapsed']")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 058: automatic time-loop commit preserves existing rules')
+
             # Build 055: at the far start of a route the closed gate is
             # ahead; "waiting" is only displayed near the gate's face.
             page, errors = load(browser,0)
