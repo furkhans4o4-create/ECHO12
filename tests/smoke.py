@@ -247,7 +247,7 @@ def main():
             page.close()
             page, errors = load(browser,19,initial_store={'echo12-unlocked':'19','echo12-active-room-v1':saved20})
             assert page.evaluate("window.__echo12Test.inspect()['echoes']")==1
-            assert page.locator('[data-echo-index="0"] [data-phase]').inner_text()=='+0,5 sn'
+            assert page.locator('[data-echo-index="0"] [data-phase]').text_content()=='+0,5 sn'
             assert page.locator('[data-echo-index="0"] [data-anchor-hold]').input_value()=='1.5'
             assert page.evaluate("window.__echo12Test.sourceFuse(0,'N')")
             assert page.evaluate("window.__echo12Test.fuse('N')")['seconds']==0
