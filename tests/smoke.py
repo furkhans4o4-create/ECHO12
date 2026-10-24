@@ -2689,6 +2689,7 @@ def main():
             page.keyboard.press('Escape')
             verify(page,errors,'KAYIT')
             assert page.locator('#inspector').is_hidden()
+            assert not page.evaluate("document.activeElement.closest('#inspector') !== null"), 'Hidden scrubber must release keyboard focus'
             page.keyboard.press('p')
             verify(page,errors,'DURDU')
             page.keyboard.press('i')
