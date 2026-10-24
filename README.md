@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 058 — Yankı Temas Analizi / Boşa Harcanan Döngüleri Fark Et (Geliştirme)
+
+Bu build yalnızca `develop` dalındadır. `main` ve canlı Vercel yayını değiştirilmez.
+
+- **Anında kayıt analizi:** Boşluk tuşuyla veya 12 saniye bitiminde oluşan son yankının gerçek hareket örnekleri incelenir. Plaka, A/B kanıt izi ve I/II tanık sensörü temasları belirtilir.
+- **Boş yankı uyarısı:** Hiçbir bulmaca sensörüne dokunmayan bir kayıt `BOŞ YANKI` olarak görünür; gereksiz kayıtları Z ile silme seçeneği hatırlatılır. Kayıt otomatik silinmez.
+- **Yanlış tür farkı:** Ters kayıt isteyen plaka normal yankıyı, canlı temas isteyen plaka kayıtlı yankıyı geçerli saymaz. Yanlış yön veya kaynak kısa teması gereken Zaman Sigortası gibi durumlar açıklanır.
+- **Kısmi ve uygun iz:** İki yankının eşzamanlı olması veya A→B sırası gibi koşullar tamamlanmadıysa kayıt `KISMİ KAYIT` olarak değerlendirilir. Gerçek kayıtlar bir koşulu sağlıyorsa `SİNYAL ALGILANDI` gösterilir; tüm kapıların açıldığı iddia edilmez.
+- **Düzenlemeye duyarlı:** Faz veya Zaman Çivisi değiştirilirse analiz güncellenir; kayıt silinirse panel kapanır. Rapora bakmak ipucu sayısını artırmaz veya kayıt biçimini değiştirmez.
+- **Regresyonlar:** Hareketsiz kayıt, plaka teması, ters/normal oynatma ayrımı ve otomatik 12 saniye kaydı test edilir.
+
 ## Build 057 — Ustalık Raporu / Bu Deneme ve Kalıcı Başarı Ayrımı (Geliştirme)
 
 Bu sürüm yalnızca `develop` dalındadır; **canlı siteye alınmaz**. 12 saniyelik fizik, ödül kuralları ve oyun kayıt biçimleri değişmez.
