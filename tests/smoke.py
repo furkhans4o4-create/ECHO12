@@ -189,6 +189,58 @@ def main():
             page.close()
             print('PASS Build 042: narrative final does not shift when calibration sector is added')
 
+            # Build 043: expose calibration mistakes as read-only, room-local
+            # diagnostics without affecting hint medals or puzzle rules.
+            page, errors = load(browser,0)
+            assert page.locator('#calibration-panel').is_hidden()
+            page.close()
+            page, errors = load(browser,19)
+            assert page.locator('#calibration-panel').is_visible()
+            assert 'Henüz yankı yok' in page.locator('#calibration-list').inner_text()
+            assert page.locator('#calibration-meter').get_attribute('aria-valuenow') == '0.00'
+            page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.3)")
+            commit(page)
+            assert page.locator('.calibration-line').first.get_attribute('data-status') == 'no-exit'
+            assert not page.evaluate("window.__echo12Test.gate('N')")
+            assert page.evaluate("window.__echo12Test.hints()") == 0
+            page.close()
+            print('PASS Build 043: calibration panel is sector-specific, rejects stationary source')
+
+            page, errors = load(browser,19)
+            page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(1)")
+            page.evaluate("window.__echo12Test.teleport(10.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.1)")
+            commit(page)
+            assert page.locator('.calibration-line').first.get_attribute('data-status') == 'too-long'
+            assert 'izin verilen' in page.locator('.calibration-line').first.inner_text()
+            page.close()
+            print('PASS Build 043: overlong source gets actionable feedback')
+
+            page, errors = load(browser,19)
+            page.evaluate("window.__echo12Test.tick(.3)")
+            page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.25)")
+            page.evaluate("window.__echo12Test.teleport(10.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            commit(page)
+            assert page.locator('.calibration-line').first.get_attribute('data-status') == 'needs-nail'
+            assert page.evaluate("window.__echo12Test.nail(0,2.0,1.5)")
+            assert page.locator('.calibration-line').first.get_attribute('data-status') == 'wrong-anchor'
+            assert page.evaluate("window.__echo12Test.nail(0,.5,1.5)")
+            assert page.locator('.calibration-line').first.get_attribute('data-status') == 'ready'
+            page.evaluate("window.__echo12Test.tick(1)")
+            val=float(page.locator('#calibration-meter').get_attribute('aria-valuenow'))
+            assert .6<val<1 and not page.evaluate("window.__echo12Test.gate('N')"),val
+            page.evaluate("window.__echo12Test.tick(.7)")
+            assert 'RÖLE AÇIK' in page.locator('#calibration-state').inner_text()
+            assert 'Çıkışa ilerle' in page.locator('#calibration-summary').inner_text()
+            assert page.evaluate("window.__echo12Test.hints()") == 0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 043: valid source, wrong nail, live charge, relay, no hint penalty')
+
             # Build 041: clear once to record a device-local time-trial
             # ghost and replay it as an explicitly nonphysical shadow.
             page, errors = load(browser,0)

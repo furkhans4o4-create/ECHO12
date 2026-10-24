@@ -484,11 +484,25 @@ body.high-contrast .echo-focus-chip[aria-pressed="true"]{border:2px solid #fff}
 #best-ghost-toggle[aria-pressed="true"]{border-color:#68ccbd;color:#c6fff3}
 #best-ghost-toggle:focus-visible{outline:3px solid #a0ffed;outline-offset:2px}
 body.high-contrast #best-ghost-toggle{border:2px solid #c7fff5}
+/* Build 043: focused, read-only fuse calibration; no permanent HUD clutter. */
+.calibration-panel{margin:10px 0 0;border:1px solid #54798a;border-radius:12px;background:linear-gradient(125deg,#122c3a,#102238);padding:12px 15px}
+.calibration-panel[hidden]{display:none}
+.calibration-header{display:flex;justify-content:space-between;align-items:center;gap:9px;flex-wrap:wrap;color:#cdfaf1;font:800 11px ui-monospace,Consolas,monospace}
+.calibration-summary{color:#a8c7d6;font-size:12px;line-height:1.5;margin:9px 0}
+.calibration-meter{height:7px;background:#2f4a60;border-radius:20px;overflow:hidden}
+.calibration-meter i{height:100%;display:block;background:#75ead0;transition:width .12s linear;width:0}
+.calibration-list{display:grid;gap:6px;margin-top:11px}
+.calibration-line{display:flex;gap:10px;align-items:baseline;border:1px solid #345668;border-radius:8px;background:#142b3d;padding:8px 10px;font:12px/1.5 system-ui,sans-serif;color:#bed2df}
+.calibration-line strong{flex:none;font:800 11px ui-monospace,Consolas,monospace;color:#f9d8a0}
+.calibration-line[data-status="ready"]{border-color:#438c79}.calibration-line[data-status="ready"] strong{color:#8cf5d3}
+body.high-contrast .calibration-panel,body.high-contrast .calibration-line{border:2px solid #c5f4ee}
+body.reduced-motion .calibration-meter i{transition:none}
+@media(max-width:520px){.calibration-panel{padding:11px}.calibration-line{flex-direction:column;gap:3px}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 042</div></header>
+<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 043</div></header>
 <div class="topbar">
  <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 19</div></div>
  <div class="stat"><div class="label">Döngüye kalan</div><div class="value teal" id="time">12.0 sn</div><div class="meters"><div class="meter"><i id="timefill"></i></div></div></div>
@@ -518,6 +532,7 @@ body.high-contrast #best-ghost-toggle{border:2px solid #c7fff5}
 
 <div class="log"><div class="indicator"></div><div><div class="logtitle" id="mission">PROTOKOL 01 · İLK İZ</div><div class="logdesc" id="hint">Yeşil plakaya bas, SPACE ile yankını kaydet. Sonraki döngüde kapı açılınca çıkışa git.</div></div></div>
 <section class="mission-director" id="mission-director" aria-label="Dinamik oda görev rehberi"><div class="mission-director-head"><span>◇ OPERATÖR / AKTİF HEDEF</span><span class="mission-count" id="mission-progress">0 / 3 ADIM</span></div><div class="mission-next" id="mission-next" aria-live="polite">İlk hedef hazırlanıyor.</div><div class="mission-progress-bar" id="mission-progress-bar" aria-hidden="true"></div><details class="mission-details" id="mission-details"><summary>Tüm görev adımlarını göster</summary><ol id="mission-task-list" class="mission-flow"></ol></details></section>
+<section id="calibration-panel" class="calibration-panel" hidden aria-label="Zaman sigortası kalibrasyonu"><div class="calibration-header"><strong>⌁ N / KAYNAK DENETİMİ</strong><span id="calibration-state">KAYIT BEKLENİYOR</span></div><p class="calibration-summary" id="calibration-summary" role="status" aria-live="polite" aria-atomic="true">Kaynağın N plakasına kısa süre basıp ayrılmalı.</p><div id="calibration-meter" class="calibration-meter" role="progressbar" aria-label="N sigortası şarj süresi" aria-valuemin="0" aria-valuemax="1.25" aria-valuenow="0"><i id="calibration-fill"></i></div><div class="calibration-list" id="calibration-list"></div></section>
 <details class="challenge-panel" id="challenge-panel"><summary>✧ Operatör sınamaları <span class="challenge-score" id="challenge-score">0 / 3</span></summary><p class="challenge-intro">Üç sınamayı ayrı oynayışlarda bile tamamlayabilirsin. Rozetler kalıcıdır; hikâye ve kapı kuralları değişmez.</p><div id="challenge-list" class="challenge-list" aria-live="polite"></div></details>
 <section class="protocol-status" aria-label="Geçit hedefleri"><div class="protocol-status-head"><strong>ANLIK GEÇİT DURUMU</strong><small id="gate-counter">0 / 0 açık</small></div><div class="gate-status-grid" id="gate-status"></div></section>
 <section class="proof-panel" id="proof-panel" hidden aria-label="Sıralı kayıt doğrulama paneli"><div class="protocol-status-head"><strong>İMZA DOĞRULAMA / A VE B GEÇİŞLERİ</strong><small id="proof-status" role="status" aria-live="polite">Kayıt bekleniyor</small></div><p class="proof-help">Parlak A ve B noktalarına <strong>aynı döngü içinde</strong> sırayla dokun. Gerçek yankıyı kaydet; F doğrulayıcısı sahte görüntüleri ayırır.</p><div class="proof-grid"><div><span class="proof-label">BU DÖNGÜDE</span><div id="proof-live" class="proof-sequence">—</div></div><div><span class="proof-label">KAYDEDİLMİŞ İMZALAR</span><div id="proof-records" class="proof-record-list">Henüz yok</div></div></div><div id="proof-evidence" class="proof-evidence">A→B: 0/1</div></section>
@@ -1681,7 +1696,7 @@ function toggleHudMode(){
  applyHudMode();needsRedraw=true;
  return hudIsSimple();
 }
-function loadLevel(idx){tensionCharge=Object.create(null);lastPlateReaderSignature='';$('plate-reader').textContent='';focusedEcho=null;lastEchoFocusSignature='';clearImpactTrace();guardThreatActive=false;lastGuardCueWall=-Infinity;guardWarningChirps=0;$('guard-warning').hidden=true;objectiveWaypoint=null;lastMissionSignature='';lastMissionMemoKey='';missionMemo=null;newlyEarnedChallenges=[];lastChallengeSignature='';lastPlateForecastSignature='';removedEcho=null;echoRevision++;lastEchoEditorSignature='';lastSyncTimelineSignature='';lastDiagnosticSignature='';witnessVerified=false;lastSyncStatus='';lastProofSignature='';motionTrail=[];needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];activeBestGhost=bestGhosts[levelIndex]||null;updateBestGhostButton();applyHudMode();$('timeline-legend').textContent=level.probes?'Mor: yankı · Yeşil: canlı · A/B: sıralı okuma anları':'Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas';scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx===19?'EK PROTOKOL / ':idx>=17?'BÖLÜM VII / ':idx>=15?'BÖLÜM VI / ':idx>=13?'BÖLÜM V / ':idx>=11?'BÖLÜM IV / ':idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8,11,13,15,17,19].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8,11,13,15,17,19].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
+function loadLevel(idx){lastCalibrationSignature='';tensionCharge=Object.create(null);lastPlateReaderSignature='';$('plate-reader').textContent='';focusedEcho=null;lastEchoFocusSignature='';clearImpactTrace();guardThreatActive=false;lastGuardCueWall=-Infinity;guardWarningChirps=0;$('guard-warning').hidden=true;objectiveWaypoint=null;lastMissionSignature='';lastMissionMemoKey='';missionMemo=null;newlyEarnedChallenges=[];lastChallengeSignature='';lastPlateForecastSignature='';removedEcho=null;echoRevision++;lastEchoEditorSignature='';lastSyncTimelineSignature='';lastDiagnosticSignature='';witnessVerified=false;lastSyncStatus='';lastProofSignature='';motionTrail=[];needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];activeBestGhost=bestGhosts[levelIndex]||null;updateBestGhostButton();applyHudMode();$('timeline-legend').textContent=level.probes?'Mor: yankı · Yeşil: canlı · A/B: sıralı okuma anları':'Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas';scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx===19?'EK PROTOKOL / ':idx>=17?'BÖLÜM VII / ':idx>=15?'BÖLÜM VI / ':idx>=13?'BÖLÜM V / ':idx>=11?'BÖLÜM IV / ':idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8,11,13,15,17,19].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8,11,13,15,17,19].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
 
 function closeAuditPanel(){$('audit').classList.add('hidden');$('audit').setAttribute('aria-hidden','true')}
 function nearestSensor(){return (level.sensors||[]).find(v=>Math.hypot(player.x-v.x-.5,player.y-v.y-.5)<.72)||null}
@@ -2111,6 +2126,59 @@ function sourceTensionCandidate(c,p){
 function tensionState(p){
  const state=tensionCharge[p.key];
  return {seconds:state?.seconds||0,owner:state?.owner?clones.indexOf(state.owner):-1,needed:p.holdSeconds};
+}
+/* Build 043: source and time-nail diagnostics read immutable recordings
+   and live physical charge; they never write into the puzzle simulation. */
+let lastCalibrationSignature='';
+function calibrationSourceInfo(c,p){
+ let streak=0,best=0,seen=false,departed=false;
+ for(const sample of c.samples){
+  const inside=Math.hypot(sample.x-p.x-.5,sample.y-p.y-.5)<.46;
+  if(inside){seen=true;streak++;best=Math.max(best,streak)}
+  else if(seen){departed=true;streak=0}
+ }
+ const at=echoAnchorAt(c),moment=c.reverse?LOOP-at:at;
+ const idx=Math.max(0,Math.min(c.samples.length-1,Math.round(moment/DT)));
+ const held=c.samples[idx],anchorInside=!!held&&Math.hypot(held.x-p.x-.5,held.y-p.y-.5)<.46;
+ return {seen,departed,dwell:best*DT,eligible:sourceTensionCandidate(c,p),anchorInside,hold:echoHoldFor(c)};
+}
+function updateCalibrationPanel(){
+ const panel=$('calibration-panel');
+ panel.hidden=levelIndex!==19;
+ if(panel.hidden)return;
+ const p=level.plates.find(plate=>plate.key==='N'&&plate.tension);
+ if(!p)return;
+ const charge=tensionState(p),remaining=Math.max(0,(relayUntil.N||0)-elapsed),open=gateOpen('N');
+ const signature=[echoRevision,mode,Math.floor((charge.seconds+1e-6)*10),Math.floor((remaining+1e-6)*10),open].join(':');
+ if(signature===lastCalibrationSignature)return;
+ lastCalibrationSignature=signature;
+ const progress=Math.min(p.holdSeconds,charge.seconds);
+ $('calibration-meter').setAttribute('aria-valuemax',String(p.holdSeconds));
+ $('calibration-meter').setAttribute('aria-valuenow',progress.toFixed(2));
+ $('calibration-fill').style.width=(100*progress/p.holdSeconds)+'%';
+ $('calibration-state').textContent=open?(remaining>0?'RÖLE AÇIK':'GEÇİT AÇIK'):charge.seconds>0?'ŞARJ OLUŞUYOR':'KAYIT DENETİMİ';
+ $('calibration-summary').textContent=open
+  ? 'N geçidi açık · '+(remaining>0?'röle '+remaining.toFixed(1)+' sn daha açık. Çıkışa ilerle.':'Çıkışa ilerle.')
+  : 'Fiziksel şarj '+progress.toFixed(1)+' / '+p.holdSeconds.toFixed(2)+' sn. N kaynağı en fazla '+p.sourceMaxDwell.toFixed(2)+' sn sürmeli ve oyuncu plakadan ayrılmalı.';
+ const list=$('calibration-list');list.replaceChildren();
+ if(!clones.length){
+  const row=document.createElement('div');row.className='calibration-line';row.dataset.status='empty';
+  row.textContent='Henüz yankı yok · N plakasına kısa süre bas, üzerinden ayrıl ve Boşluk ile kaydet.';
+  list.append(row);return;
+ }
+ for(const [index,c] of clones.entries()){
+  const info=calibrationSourceInfo(c,p),row=document.createElement('div');
+  row.className='calibration-line';
+  const name=document.createElement('strong'),detail=document.createElement('span');
+  name.textContent='E'+String(index+1).padStart(2,'0');
+  if(!info.seen){row.dataset.status='no-touch';detail.textContent='Kaynak kaydı N plakasına dokunmadı.';}
+  else if(!info.departed){row.dataset.status='no-exit';detail.textContent='N temasından sonra ayrılmadı · kaydı yeniden oluştur.';}
+  else if(!info.eligible){row.dataset.status='too-long';detail.textContent='Kaynak teması '+info.dwell.toFixed(2)+' sn · izin verilen '+p.sourceMaxDwell.toFixed(2)+' sn. Daha hızlı geç.';}
+  else if(info.hold===0){row.dataset.status='needs-nail';detail.textContent='Kaynak uygun ('+info.dwell.toFixed(2)+' sn) · Yankı yöneticisinden Zaman Çivisini etkinleştir.';}
+  else if(!info.anchorInside){row.dataset.status='wrong-anchor';detail.textContent='Kaynak uygun · Zaman Çivisi N dışında. Durak saniyesini N temasına taşı.';}
+  else{row.dataset.status='ready';detail.textContent='Kaynak uygun ('+info.dwell.toFixed(2)+' sn) · çivi N üzerinde '+info.hold.toFixed(1)+' sn bekletiyor. Şarjı izle.';}
+  row.append(name,detail);list.append(row);
+ }
 }
 function updateTensionCharge(dt){
  for(const p of level.plates){
@@ -2650,7 +2718,7 @@ if(secondLeft<=3&&secondLeft>0&&lastCountdownBeat!==secondLeft){lastCountdownBea
  if(Math.hypot(player.x-level.exit[0]-.5,player.y-level.exit[1]-.5)<.48)victory();if((Math.round(elapsed*10)!==Math.round((elapsed-dt)*10)))updateHUD()
 }
 function updateHUD(){
- updateSyncStatus();updateSyncTimeline();updateProofPanel();updateDiagnostics();renderEchoEditor();renderEchoFocusBar();updatePlateForecast();renderChallenges();const playing=mode==='playing';
+ updateSyncStatus();updateSyncTimeline();updateProofPanel();updateDiagnostics();renderEchoEditor();renderEchoFocusBar();updatePlateForecast();renderChallenges();updateCalibrationPanel();const playing=mode==='playing';
  $('mobile-record').disabled=!playing;
  $('mobile-interact').disabled=!playing||!(nearWitnessConsole()||nearestSensor()||nearestAuditConsole()||nearestTerminal()||nearestChoice());
  $('mobile-undo').disabled=!playing||clones.length===0;

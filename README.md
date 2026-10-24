@@ -2,6 +2,15 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 043 — Zaman Sigortası Kalibrasyon Ekranı
+
+20. odadaki zorunlu Zaman Çivisi bulmacası artık deneme-yanılma sırasında neden ilerlemediğini **gerçek kaynak ve fizik durumundan** gösteriyor. Yeni oda veya hikâye dalı eklenmedi.
+
+- **Yalnızca 20. oda:** Görev rehberinin altında küçük bir kalibrasyon alanı açılır; diğer 19 odanın HUD'ı değişmez.
+- **Her yankı için somut neden:** N plakasına hiç temas etmemek, temasın ardından ayrılmamak, 0,75 saniyeyi aşan kaynak beklemesi, çivinin kapalı olması veya yanlış saniyede N dışına çakılması ayrı ayrı açıklanır. Kaynak uygunken yankı numarası ve bekleme süresi gösterilir.
+- **Canlı şarj ve röle:** N plakasının kesintisiz fiziksel şarjı 0/1,25 saniyelik erişilebilir çubukta okunur. Kapı 2,8 saniyelik röleyle açıldığında çıkış uyarısına dönüşür.
+- **Sadece açıklama:** Kayıt içeriği, çivi ayarları, simülasyon, kapı kuralları, hikâye, ipucu cezası ve ustalık sistemi değişmez. Chromium testleri farklı kaynak hatalarını, yanlış çivi konumunu, gerçek şarjı ve diğer odalarda görünmeme koşulunu denetler.
+
 ## Build 042 — Zaman Sigortası / Final Sonrası 20. Oda
 
 ECHO/12'nin yedinci bölüm sonunda tamamlanan özgün hikâyesine dokunmadan **oynanabilir, isteğe bağlı bir 20. oda** eklendi. Bu özel kalibrasyon odası, 10. odadan beri kullanılabilen Zaman Çivisi mekaniğine ilk kez **zorunlu fiziksel bir bulmaca görevi** verir.
