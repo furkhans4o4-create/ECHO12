@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 056 — Tek Tıkla Oda Tekrarı / Ustalık Hedefleri (Geliştirme)
+
+Bu sürüm **yalnızca `develop` geliştirme dalındadır**. Kullanıcının isteği üzerine canlı Vercel sitesine dağıtılmayacak; GitHub `main` dalı Build 055 olarak bırakılacaktır.
+
+- **Başarı ekranında yeniden oyna:** Tamamlanan tüm normal odalarda, ekranda mevcut “Sonraki oda” düğmesinin yanında “ODA XX YENİDEN OYNA” düğmesi bulunur. Oyuncu bölüm seçimine dönmeden aynı bulmacayı ve farklı yankı stratejilerini hemen tekrar deneyebilir.
+- **Madalyalar somut hedeflere dönüşür:** Sonuç paneli 3 ustalık hedefine ilişkin toplamı ve eksik kalan “AZ YANKI”, “İPUCUSUZ” veya “ZAMAN” koşullarını gösterir. Üçü kazanıldıysa kişisel rekoru geliştirme seçeneğini hatırlatır. Bu ekran yeni bir ipucu harcamaz.
+- **Gerçekten temiz yeni tur:** Tekrar oynamak yalnızca bu odanın canlı döngüsünü, yankı kadrosunu ve geçici editör hâlini başlatır. Açılmış odalar, üç kalıcı ustalık madalyası, en iyi sonuçlar, arşiv ve hikâye kararları silinmez.
+- **Oyuncunun tercihi:** Mevcut “SONRAKİ ODA” akışı aynı kalır. Bölüm sonu hikâye mesajları korunur. Ana hikâyenin tümü tamamlandığında verilen özel final kararını yeniden oynama seçeneği de olduğu gibi kalır.
+- **Klavye ve oyun kolu uyumu:** Sonuç ekranındaki yeni düğme odaklanabilir; Enter/Space ve oyun kolunun standart düğme gezinmesiyle etkinleştirilir. Oyun devam ederken görünmez.
+- **Chromium testleri:** Oda tamamlama ve doğrudan tekrar oynama, açılmış ilerleme/madalyalar/rekor bütünlüğü, eksik ustalık hedefinin görünmesi ve mevcut sonraki odaya geçiş denetlenir.
+
 ## Build 055 — Rota Durumu / Kapıya Yaklaşma ve Güvenilir İlerleme
 
 Dokun-ve-yürü rotası açıkken verilen uyarılar artık **oyuncunun gerçek hareketiyle** daha doğru eşleşiyor.
