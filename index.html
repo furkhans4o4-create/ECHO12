@@ -536,6 +536,17 @@ body.high-contrast .walk-info{border:2px solid #dafff3}
 #room-replay{margin-top:10px;margin-left:8px}
 #room-replay[hidden]{display:none}
 .debrief-goal{display:block;width:100%;font:600 12px/1.5 system-ui,sans-serif;color:#a6d9d0;padding:6px 0}
+/* Build 057: end-of-room goals show exact targets, current results and persistent rewards. */
+.debrief-breakdown{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;width:100%;text-align:left}
+.debrief-criterion{min-width:0;border:1px solid #37546a;border-radius:9px;background:#101f31;padding:10px 11px;line-height:1.45}
+.debrief-criterion strong{display:block;color:#ecf7ff;font-size:12px;letter-spacing:.03em}
+.debrief-criterion span{display:block;color:#b5c9dc;font-size:11px;margin:5px 0}
+.debrief-criterion small{display:block;font-size:10px;font-weight:800;letter-spacing:.035em;color:#ffb6b6}
+.debrief-criterion[data-result="earned-now"]{border-color:#5dbd9e;background:#112e2f}
+.debrief-criterion[data-result="earned-now"] small{color:#8ff0c9}
+.debrief-criterion[data-result="earned-earlier"]{border-color:#717ca5}
+.debrief-criterion[data-result="earned-earlier"] small{color:#c8caff}
+@media(max-width:620px){.debrief-breakdown{grid-template-columns:1fr}.debrief-criterion{padding:7px 10px}.debrief-criterion span{margin:3px 0}}
 @media(max-width:560px){#room-replay{margin:10px 0 0;max-width:100%;width:100%}}
 </style>
 </head>
@@ -1885,6 +1896,33 @@ function showDebrief(improved){
  for(const id of newlyEarnedChallenges)tokens.push(['Yeni sınama',CHALLENGE_NAMES[id]+' ◆']);
  for(const [label,value] of tokens){const tag=document.createElement('span');tag.className='debrief-stat'+(label==='Yeni kişisel rekor'?' best':'');tag.textContent=label+': '+value;d.append(tag)}
  const awarded=awardedChallenges(levelIndex);
+ // A medal may be permanently earned in a previous clear even if today's run misses it.
+ // Distinguish those states instead of suggesting the current attempt qualified.
+ const runSeconds=Math.round(roomActiveSeconds*10)/10;
+ const checks={
+  precise:clones.length<=CHALLENGE_LIMITS[levelIndex],
+  focus:runHintCount===0,
+  speed:runSeconds<=challengeTimeLimit(levelIndex)
+ };
+ const descriptions={
+  precise:'Hedef: en fazla '+CHALLENGE_LIMITS[levelIndex]+' yankı · Bu deneme: '+clones.length,
+  focus:'Hedef: 0 ipucu · Bu deneme: '+runHintCount,
+  speed:'Hedef: '+challengeTimeLimit(levelIndex)+' sn veya daha hızlı · Bu deneme: '+runSeconds.toFixed(1)+' sn'
+ };
+ const breakdown=document.createElement('div');
+ breakdown.className='debrief-breakdown';
+ breakdown.setAttribute('aria-label','Üç ustalık hedefinin ayrıntılı sonuçları');
+ for(const id of CHALLENGE_IDS){
+  const passed=checks[id],earned=awarded.includes(id);
+  const item=document.createElement('div');item.className='debrief-criterion';item.dataset.challenge=id;
+  item.dataset.result=passed?'earned-now':earned?'earned-earlier':'missing';
+  const heading=document.createElement('strong');heading.textContent=CHALLENGE_NAMES[id];
+  const detail=document.createElement('span');detail.textContent=descriptions[id];
+  const outcome=document.createElement('small');
+  outcome.textContent=passed?'BU DENEMEDE BAŞARILI ✓':earned?'ÖNCEDEN KAZANILDI ◆':'BU DENEMEDE KAÇIRILDI ◇';
+  item.append(heading,detail,outcome);breakdown.append(item);
+ }
+ d.append(breakdown);
  const pending=CHALLENGE_IDS.filter(id=>!awarded.includes(id));
  const goal=document.createElement('span');goal.className='debrief-goal';goal.setAttribute('role','status');
  goal.textContent=pending.length?
