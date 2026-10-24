@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 049 — Klavye ve Arayüz Kısayolu Güvenliği
+
+Oyuncunun 12 saniyelik canlı turunu ve tamamlanmış yankı kayıtlarını yanlış klavye kısayollarından koruyan giriş denetimi eklendi.
+
+- **Tarayıcı komutları ayrı:** Ctrl, Command/Meta ve Alt ile yapılan klavye komutları oyunun kendi kısayollarını tetiklemez. Özellikle Ctrl+R/Cmd+R, oda sıfırlama (R) işlemini çalıştırıp geçici yankı kurtarmasını silmez. Ctrl+Z kayıtlı yankıyı silmez; Alt+sol ok oyuncuyu hareket ettirmez.
+- **Form kontrolleri ayrı:** Bir seçim kutusu, metin alanı veya düzenlenebilir bileşen odaktayken WASD, R, Z, P, F, G ve diğer oyun tuşları devreye girmez. Seçim listesinin yerel tuş denetimi korunur; Escape diyalog kapatma için kullanılabilir.
+- **Düğmelerde doğal Enter/Boşluk:** Menüde Oda Seç gibi bir düğme odaktayken Enter o düğmeyi çalıştırır; ayrıca “Oyuna Başla” komutu göndermez. Oyun alanında odak yokken Enter ile başlama alışkanlığı aynı kalır. Modal iptal/onay düğmeleri klavye ile doğru etkinleşir.
+- **IME uyumluluğu:** Türkçe dahil farklı klavye bileşimleri sırasında metin girme işlemi oyun hareketine dönüşmez.
+- **Davranış korunumu:** Shift+Z ile silinen yankıyı geri alma, standart WASD, Space ile döngü kaydı, P ile duraklatma ve menüde Escape işlevleri korunur.
+- **Regresyon testleri:** Ctrl/Meta/Alt kombinasyonları, kayıtlı yankı ve kurtarma bütünlüğü, odaklanmış yankı editörü seçim kutuları, menü düğmeleri, metin girişi ve modal Escape kontrol edilir.
+
 ## Build 048 — Sekme Değişince Zamanı Koruma
 
 Tarayıcı oyununun kontrol güvenliği tamamlanma hedefiyle iyileştirildi. Pencere odağı kaybolursa veya sekme gizlenirse aktif 12 saniyelik döngü hemen duraklatılır.
