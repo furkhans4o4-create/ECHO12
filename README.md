@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 055 — Rota Durumu / Kapıya Yaklaşma ve Güvenilir İlerleme
+
+Dokun-ve-yürü rotası açıkken verilen uyarılar artık **oyuncunun gerçek hareketiyle** daha doğru eşleşiyor.
+
+- **İleride kapalı kapı:** Seçilen rotanın devamında kapalı bir geçit varsa karakter yürürken yanlışlıkla “kapıda bekliyor” denmez. Durum “A KAPISI İLERİDE KAPALI · YÜRÜNÜYOR” olarak görünür. Geçidin fiziksel girişine ulaştığında “AÇILINCA DEVAM EDER” mesajına geçer. Kapı yankılar tarafından açılınca normal yürüyüş bildirimi geri gelir.
+- **Hedefe fiziksel yaklaşma:** Yeni tıkanma denetimi yalnızca karakterin konum değiştirmesine değil, sıradaki rota noktasına **gerçekten yaklaşmasına** bakar. Bir duvarın yanında kayarak hedefe yaklaşamayan hareketler ilerleme sayılmaz. Çarpışmalar ve hareket hızı değiştirilmedi.
+- **Eski tıkanma denemesini temizleme:** Engel sonrasında en az 0,75 saniye kesintisiz doğru ilerleme varsa önceki başarısız yeniden rota hesaplama sayacı sıfırlanır. Uzun yürüyüşlerde eski bir aksaklık yüzünden gereksiz iptal riski azaltılır.
+- **Bulmaca kuralları aynı:** Kapalı geçitler otomatik açılmaz, geçitler üzerinden ışınlanılmaz; kayıt edilen her pozisyon oyunun aynı 60 Hz fizik kurallarıyla oluşturulur. Yanlış anlaşılan rota bildirimi yeni bir ipucu ya da ödül sağlamaz.
+- **Chromium regresyonları:** Uzak kapı/gerçek bekleme ayrımı, kapının gerçek kayıtlı yankıyla açılması, sürmekte olan yolun korunması ve düzelen rotada önceki hata sayacının silinmesi doğrulanır.
+
 ## Build 054 — Onaylı Oda Sıfırlama / Yankı Kazalarını Önle
 
 Tek yanlış R tuşuyla oluşturulmuş yankıların ve editör ayarlarının silinmesine yol açan oyun akışı güvenli hâle getirildi.
