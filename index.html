@@ -2214,6 +2214,9 @@ function pause(){if(mode==='playing'){clearInputs();mode='paused';showOverlay('S
 /* Build 048: Focus loss protects the current physical loop. No implicit
    resume is allowed; dialogs and the main menu keep their own state. */
 function protectLoopOnFocusLoss(reason){
+ // A focused window may dispatch a transient blur when controls relinquish
+ // focus. Only a genuine loss of browsing-context focus must pause play.
+ if(reason==='blur'&&!document.hidden&&document.hasFocus())return false;
  clearInputs();
  gamepadPreviousButtons=[];
  if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04);
