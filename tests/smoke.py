@@ -24,7 +24,7 @@ def load(browser, level, use_user_hud=False):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, plateReadouts(){return plateReadouts()}, bestGhost(){return bestGhostStatus()}, fuse(key){return tensionState(level.plates.find(p=>p.key===key))}, sourceFuse(index,key){return sourceTensionCandidate(clones[index],level.plates.find(p=>p.key===key))}, nail(index,at,hold){return configureEchoAnchor(index,at,hold)}, forecast(key){return plateForecastData(level.plates.find(p=>p.key===key))}, openRoom(index){loadLevel(index)}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, plateReadouts(){return plateReadouts()}, bestGhost(){return bestGhostStatus()}, walkTo(x,y){return requestWalkTo(x+.5,y+.5)}, walkInfo(){return {target:walkTarget?{...walkTarget}:null,remaining:walkRoute.length}}, fuse(key){return tensionState(level.plates.find(p=>p.key===key))}, sourceFuse(index,key){return sourceTensionCandidate(clones[index],level.plates.find(p=>p.key===key))}, nail(index,at,hold){return configureEchoAnchor(index,at,hold)}, forecast(key){return plateForecastData(level.plates.find(p=>p.key===key))}, openRoom(index){loadLevel(index)}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -188,6 +188,73 @@ def main():
             assert not errors,errors
             page.close()
             print('PASS Build 042: narrative final does not shift when calibration sector is added')
+
+            # Build 044: optional path input uses ordinary recorded movement.
+            page, errors = load(browser,0)
+            assert page.locator('#walk-cancel').is_hidden()
+            assert not page.evaluate("window.__echo12Test.walkTo(0,0)")
+            assert not page.evaluate("window.__echo12Test.walkInfo()['target']")
+            assert page.evaluate("window.__echo12Test.walkTo(6,3)")
+            assert page.locator('#walk-cancel').is_visible()
+            page.evaluate("window.__echo12Test.tick(1.8)")
+            position=page.evaluate("window.__echo12Test.position()")
+            assert abs(position['x']-6.5)<.08 and abs(position['y']-3.5)<.08,position
+            assert page.evaluate("window.__echo12Test.walkInfo()['target']") is None
+            assert page.locator('#walk-cancel').is_hidden()
+            assert page.evaluate("window.__echo12Test.hints()") == 0
+            commit(page)
+            assert page.locator('#clones').inner_text()=='1 / 6'
+            assert page.evaluate("window.__echo12Test.walkTo(15,5)")
+            page.evaluate("window.__echo12Test.tick(4.0)")
+            verify(page,errors,'BAŞARILI')
+            assert page.evaluate("window.__echo12Test.walkInfo()['target']") is None
+            page.close()
+            print('PASS Build 044: physical click navigation, recording, gate and room success')
+
+            # Without a qualifying echo, pathfinding cannot cross a closed gate.
+            page, errors = load(browser,0)
+            assert page.evaluate("window.__echo12Test.walkTo(15,5)")
+            page.evaluate("window.__echo12Test.tick(3)")
+            position=page.evaluate("window.__echo12Test.position()")
+            assert position['x']<9 and page.evaluate("window.__echo12Test.walkInfo()['target']"),position
+            page.keyboard.press('Escape')
+            assert page.evaluate("window.__echo12Test.walkInfo()['target']") is None
+            assert page.evaluate("window.__echo12Test.walkTo(6,3)")
+            move(page,'w',.2)
+            assert page.evaluate("window.__echo12Test.walkInfo()['target']") is None
+            assert page.evaluate("window.__echo12Test.walkTo(6,3)")
+            page.keyboard.press('p')
+            verify(page,errors,'DURDU')
+            assert page.locator('#walk-cancel').is_hidden()
+            assert page.evaluate("window.__echo12Test.walkInfo()['target']") is None
+            assert not errors,errors
+            page.close()
+            print('PASS Build 044: closed gate, Esc/manual/pause route cancellation')
+
+            # Pointer coordinates must invert the zoomed follow camera, too.
+            page, errors = load(browser,0)
+            page.set_viewport_size({"width":390,"height":844})
+            page.locator('#camera-toggle').click()
+            assert page.locator('.stage').evaluate("(e)=>e.classList.contains('focus-camera')")
+            page.evaluate("""() => {
+              const c=document.getElementById('scene'),r=c.getBoundingClientRect();
+              const px=48+3.5*48,py=40+5.5*48;
+              c.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true,
+                pointerType:'touch',button:0,clientX:r.left+px*r.width/960,
+                clientY:r.top+py*r.height/610}));
+            }""")
+            target=page.evaluate("window.__echo12Test.walkInfo()['target']")
+            assert target == {'x':3.5,'y':5.5},target
+            page.evaluate("window.__echo12Test.tick(.3)")
+            position=page.evaluate("window.__echo12Test.position()")
+            assert abs(position['x']-3.5)<.1 and abs(position['y']-5.5)<.1,position
+            assert page.evaluate("window.__echo12Test.walkInfo()['target']") is None
+            assert page.evaluate("window.__echo12Test.walkTo(6,3)")
+            page.keyboard.press('x')
+            assert page.evaluate("window.__echo12Test.walkInfo()['target']") is None
+            assert not errors,errors
+            page.close()
+            print('PASS Build 044: mobile zoomed canvas pointer coordinates, arrival and retry')
 
             # Build 043: expose calibration mistakes as read-only, room-local
             # diagnostics without affecting hint medals or puzzle rules.

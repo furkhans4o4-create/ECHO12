@@ -498,11 +498,16 @@ body.high-contrast #best-ghost-toggle{border:2px solid #c7fff5}
 body.high-contrast .calibration-panel,body.high-contrast .calibration-line{border:2px solid #c5f4ee}
 body.reduced-motion .calibration-meter i{transition:none}
 @media(max-width:520px){.calibration-panel{padding:11px}.calibration-line{flex-direction:column;gap:3px}}
+/* Build 044: optional tap-to-walk that follows the same physical rules. */
+#scene{touch-action:none;cursor:crosshair}
+#walk-cancel[hidden]{display:none}
+#walk-cancel{border-color:#65bba9;color:#c3ffed}
+body.high-contrast #walk-cancel{border:2px solid #d4fff1}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 043</div></header>
+<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 044</div></header>
 <div class="topbar">
  <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 19</div></div>
  <div class="stat"><div class="label">Döngüye kalan</div><div class="value teal" id="time">12.0 sn</div><div class="meters"><div class="meter"><i id="timefill"></i></div></div></div>
@@ -520,14 +525,14 @@ body.reduced-motion .calibration-meter i{transition:none}
 <div class="case-overlay hidden" id="case-board" aria-hidden="true"><section class="case-dialog" role="dialog" aria-modal="true" aria-labelledby="case-title"><div class="case-header"><div><div class="kicker">BAĞIMSIZ SORUŞTURMA / DELİL ZİNCİRİ</div><h2 id="case-title">Üç açık soru</h2><p>Yalnızca arşivden gerçekten bulduğun kayıtlarla karar ver. Yanlış bir yorum dosyayı kapatmaz; her doğru çıkarım yeni bir tutanak açar.</p></div><button type="button" class="secondary" id="case-close">Kapat (Esc)</button></div><div class="case-progress" id="case-progress" aria-live="polite">0 / 3 çıkarım</div><div id="case-grid" class="case-grid"></div><p class="case-footnote">Kısayol: K · Bu ekran açıkken 12 saniyelik döngü durur.</p></section></div>
 <div class="room-picker-overlay hidden" id="room-picker" aria-hidden="true"><section class="room-picker" role="dialog" aria-modal="true" aria-labelledby="room-picker-title"><div class="room-picker-head"><div><div class="kicker">PROTOKOL NAVİGASYONU</div><h2 id="room-picker-title">Oda seçimi</h2><p>Açılmış odaları tekrar oynayabilirsin. Oda değiştirmek mevcut döngüyü sıfırlar; kaydedilmiş ilerlemeyi ve arşivi silmez.</p></div><button type="button" class="secondary" id="room-picker-close">Kapat ✕</button></div><div id="room-picker-grid" class="room-picker-grid"></div></section></div>
 <div class="guard-warning" id="guard-warning" hidden role="status" aria-live="polite"><span>⚠ DEVRİYE YAKIN</span><small>Kırmızı temas alanından uzaklaş. Yalnızca bu döngü riskte.</small></div>
-<div class="camera-toolbar" aria-label="Görünüm ayarları"><button type="button" id="camera-toggle" class="secondary" aria-pressed="false">⊙ Yakın takip: kapalı</button><button type="button" id="beacon-toggle" class="secondary" aria-pressed="true" aria-label="Görev pusulasını aç veya kapat" title="G: görev pusulasını aç/kapat">◇ Görev pusulası: açık</button><span id="gamepad-status" class="gamepad-status" hidden role="status" aria-live="polite">🎮 OYUN KOLU BAĞLANDI · X KAYDET · Y SİL · A ETKİLEŞİM</span><div class="camera-note" id="camera-note">Tam harita görünümü · Kamera ayarını dilediğinde değiştirebilirsin.</div><div class="minimap-box" id="minimap-box" hidden><span class="minimap-heading">HARİTA · TÜM ODA</span><canvas id="minimap" width="216" height="132" role="img" aria-label="Tüm odanın küçük haritası, oyuncu ve açık kapılar"></canvas><span class="minimap-legend">◆ Oyuncu &nbsp; ● Yankı &nbsp; ◇ Çıkış</span></div></div>
-<div class="mobile-controls" aria-label="Dokunmatik oyun kontrolleri"><div class="mobile-controls-info">DOKUNMATİK KONTROL <span>İki yöne aynı anda basarak çapraz yürü</span></div><div class="mobilepad" role="group" aria-label="Yön tuşları"><button type="button" data-dir="ArrowUp" aria-label="Yukarı yürü" aria-pressed="false">↑</button><button type="button" data-dir="ArrowLeft" aria-label="Sola yürü" aria-pressed="false">←</button><button type="button" data-dir="ArrowDown" aria-label="Aşağı yürü" aria-pressed="false">↓</button><button type="button" data-dir="ArrowRight" aria-label="Sağa yürü" aria-pressed="false">→</button><button type="button" id="mobile-record" aria-label="Mevcut döngüyü kaydet">↺<small>KAYDET</small></button></div><div class="mobile-shortcuts"><button type="button" id="mobile-interact" class="secondary">⌁ Etkileşim</button><button type="button" id="mobile-retry" class="secondary" title="Yankıları koruyarak bu döngüyü tekrar dene">↻ Deneme</button><button type="button" id="mobile-undo" class="secondary">↶ Geri al</button><button type="button" id="mobile-pause" class="secondary">Ⅱ Duraklat</button></div></div>
+<div class="camera-toolbar" aria-label="Görünüm ayarları"><button type="button" id="camera-toggle" class="secondary" aria-pressed="false">⊙ Yakın takip: kapalı</button><button type="button" id="beacon-toggle" class="secondary" aria-pressed="true" aria-label="Görev pusulasını aç veya kapat" title="G: görev pusulasını aç/kapat">◇ Görev pusulası: açık</button><button type="button" id="walk-cancel" class="secondary" hidden title="Esc: seçilen yürüyüş rotasını iptal et">⌖ Rotayı iptal et</button><span id="gamepad-status" class="gamepad-status" hidden role="status" aria-live="polite">🎮 OYUN KOLU BAĞLANDI · X KAYDET · Y SİL · A ETKİLEŞİM</span><div class="camera-note" id="camera-note">Tam harita görünümü · Kamera ayarını dilediğinde değiştirebilirsin.</div><div class="minimap-box" id="minimap-box" hidden><span class="minimap-heading">HARİTA · TÜM ODA</span><canvas id="minimap" width="216" height="132" role="img" aria-label="Tüm odanın küçük haritası, oyuncu ve açık kapılar"></canvas><span class="minimap-legend">◆ Oyuncu &nbsp; ● Yankı &nbsp; ◇ Çıkış</span></div></div>
+<div class="mobile-controls" aria-label="Dokunmatik oyun kontrolleri"><div class="mobile-controls-info">DOKUNMATİK KONTROL <span>Sahneye dokunup yürü veya yön tuşlarını kullan</span></div><div class="mobilepad" role="group" aria-label="Yön tuşları"><button type="button" data-dir="ArrowUp" aria-label="Yukarı yürü" aria-pressed="false">↑</button><button type="button" data-dir="ArrowLeft" aria-label="Sola yürü" aria-pressed="false">←</button><button type="button" data-dir="ArrowDown" aria-label="Aşağı yürü" aria-pressed="false">↓</button><button type="button" data-dir="ArrowRight" aria-label="Sağa yürü" aria-pressed="false">→</button><button type="button" id="mobile-record" aria-label="Mevcut döngüyü kaydet">↺<small>KAYDET</small></button></div><div class="mobile-shortcuts"><button type="button" id="mobile-interact" class="secondary">⌁ Etkileşim</button><button type="button" id="mobile-retry" class="secondary" title="Yankıları koruyarak bu döngüyü tekrar dene">↻ Deneme</button><button type="button" id="mobile-undo" class="secondary">↶ Geri al</button><button type="button" id="mobile-pause" class="secondary">Ⅱ Duraklat</button></div></div>
 <div class="signal-strip" id="signal-strip" aria-label="Canlı sistem durumu"><span>SİSTEM SİNYALİ / <strong id="signal-value">HAZIR</strong></span><span class="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></div>
 <div class="timeline" aria-label="Yankıların zaman çizelgesi"><div class="timeline-head"><span>HAREKET KAYITLARI</span><small id="timeline-legend">Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas</small></div><canvas id="timeline" width="960" height="155" role="img" aria-label="12 saniyelik hareket ve plaka tetikleme çizelgesi"></canvas></div><section id="echo-focus-bar" class="echo-focus-bar" aria-label="Yankı rotalarını ayrı ayrı vurgula" hidden><span class="echo-focus-title">◇ YANKI ODAĞI</span><div id="echo-focus-buttons" class="echo-focus-options" role="group" aria-label="Görsel yankı odağı"></div><span class="echo-focus-help">1–6: yankı · 0: hepsi</span></section>
 <details id="echo-editor" class="echo-editor"><summary>⌁ Yankı kayıtlarını yönet <span class="echo-editor-count" id="echo-editor-count">0 / 6</span></summary><p class="echo-editor-desc">Yankıyı sil, fazını kaydır veya 10. odadan itibaren bir ana Zaman Çivisi koy. Seçilen saniyede yankı 0,5–1,5 sn hareketsiz kalır ve bulunduğu plakayı tutar. Her değişiklik canlı döngüyü başa alır.</p><div class="echo-editor-list" id="echo-editor-list" aria-live="polite"></div><div class="echo-editor-actions"><button type="button" class="secondary" id="echo-restore" disabled>↷ Son silinen yankıyı geri getir</button><small>Yalnızca bu odada, bir sonraki kayıt öncesi · Kısayol: Shift+Z</small></div></details>
 <details class="plate-forecast" id="plate-forecast"><summary>⌁ Plakaların 12 saniyelik zaman haritası</summary><p class="plate-forecast-intro">Mavi: kaydedilmiş yankıların koşulları karşıladığı anlar · Altın: kısa süreli rölenin tahmini devamı · Beyaz: şu an. Canlı oyuncu ve F tarayıcısı ayrıca gerekir; bu harita hiçbir kapıyı değiştirmez.</p><div class="plate-forecast-ruler" aria-hidden="true"><span>0 sn</span><span>3</span><span>6</span><span>9</span><span>12 sn</span></div><div id="plate-forecast-list" class="plate-forecast-list" aria-live="polite"></div><div class="plate-forecast-legend"><span><i class="plate-forecast-dot"></i>Yankı teması</span><span><i class="plate-forecast-dot relay"></i>Röle uzantısı</span><span><i class="plate-forecast-dot cursor"></i>Şu an</span></div></details>
 <section id="sync-timeline" class="sync-timeline" hidden aria-label="İki tanığın zamansal çakışma haritası"><div class="sync-timeline-head"><strong>EŞZAMANLILIK HARİTASI · 0–12 SN</strong><small>Yalnızca kaydedilmiş gerçek yankılar</small></div><p class="sync-timeline-legend">Mavi: I sensörü · Lila: II sensörü · Yeşil: ayrı yankıların ortak anı · Beyaz: şimdi</p><div class="sync-timeline-tracks" id="sync-timeline-tracks"></div><div class="sync-timeline-result" id="sync-timeline-result" role="status" aria-live="polite">Henüz doğrulanmış tanık yok.</div></section>
-<div class="help"><div id="hud-quick-guide" class="hud-quick-guide" role="note">WASD ile yürü · Boşluk ile yankını kaydet · X ile yenile · C ile ayrıntıları aç.</div><div class="helptext"><kbd>W A S D</kbd> veya <kbd>← ↑ ↓ →</kbd> yürü &nbsp; <kbd>Boşluk</kbd> döngüyü kaydet &nbsp; <kbd>R</kbd> odayı sıfırla &nbsp; <kbd>X</kbd> denemeyi yenile (yankılar kalır) &nbsp; <kbd>Z</kbd> son yankıyı sil &nbsp; <kbd>P</kbd> duraklat &nbsp; <kbd>E</kbd> terminal &nbsp; <kbd>L</kbd> arşiv &nbsp; <kbd>M</kbd> ses &nbsp; <kbd>H</kbd> ipucu &nbsp; <kbd>G</kbd> görev pusulası &nbsp; <kbd>C</kbd> sade / ayrıntılı &nbsp; <kbd>1–6</kbd> yankıyı izle &nbsp; <kbd>0</kbd> hepsi &nbsp; <kbd>V</kbd> rekor gölgesi &nbsp; <kbd>O</kbd> oda seçimi &nbsp; <kbd>Gamepad</kbd> sol çubuk/yön: yürü · X: kaydet · Y: sil · A: etkileşim · B: yenile · Start: duraklat</div>
+<div class="help"><div id="hud-quick-guide" class="hud-quick-guide" role="note">WASD ile yürü · Boşluk ile yankını kaydet · X ile yenile · C ile ayrıntıları aç.</div><div class="helptext"><kbd>W A S D</kbd> veya <kbd>← ↑ ↓ →</kbd> yürü &nbsp; <kbd>Boşluk</kbd> döngüyü kaydet &nbsp; <kbd>R</kbd> odayı sıfırla &nbsp; <kbd>X</kbd> denemeyi yenile (yankılar kalır) &nbsp; <kbd>Z</kbd> son yankıyı sil &nbsp; <kbd>P</kbd> duraklat &nbsp; <kbd>E</kbd> terminal &nbsp; <kbd>L</kbd> arşiv &nbsp; <kbd>M</kbd> ses &nbsp; <kbd>H</kbd> ipucu &nbsp; <kbd>G</kbd> görev pusulası &nbsp; <kbd>C</kbd> sade / ayrıntılı &nbsp; <kbd>1–6</kbd> yankıyı izle &nbsp; <kbd>0</kbd> hepsi &nbsp; <kbd>V</kbd> rekor gölgesi &nbsp; <kbd>O</kbd> oda seçimi &nbsp; <kbd>Sahneye dokun</kbd> hedefe yürü · <kbd>Esc</kbd> rotayı iptal et &nbsp; <kbd>Gamepad</kbd> sol çubuk/yön: yürü · X: kaydet · Y: sil · A: etkileşim · B: yenile · Start: duraklat</div>
 <div class="controls"><button class="secondary" id="commit">↺ Yankıyı kaydet</button><button class="secondary" id="retry" title="X: Canlı denemeyi başa al; kaydedilen yankılar ve kanıtlar silinmez">↻ Denemeyi yenile (X)</button><button class="secondary" id="hud-toggle" type="button" aria-pressed="false" aria-label="Sade veya ayrıntılı oyun görünümüne geç" title="C: sade / ayrıntılı">▣ Görünüm: ayrıntılı</button><button class="secondary" id="best-ghost-toggle" type="button" hidden aria-pressed="true" title="V: kişisel rekor gölgesini aç/kapat">◌ Rekor gölgesi: açık</button><button class="secondary" id="undo">↶ Son yankıyı sil</button><button class="secondary" id="restart">↻ Odayı sıfırla</button><button class="secondary" id="interact" disabled>⌁ Terminali oku</button><button class="secondary" id="logbook">▤ Arşiv <span id="archive-count">0/35</span></button><button class="secondary" id="inspector-button" title="I: yankı kayıtlarını incele">⌕ Yankı Laboratuvarı</button><button class="secondary" id="case-board-button" title="K: delil panosunu aç">⌁ Delil Panosu <span id="case-board-count">0/3</span></button><button class="secondary" id="save-vault-button" title="Kaydı dışarı aktar, geri yükle ve finalleri gör">▣ Kayıt Kasası</button><button class="secondary" id="room-select" title="O: açılmış odaları seç">▦ Oda seç</button><button class="secondary" id="help-button" title="H: aşamalı ipucu">? İpucu</button><button class="sound" id="sound">♪ Ses: açık</button><details class="accessibility-settings"><summary>◈ Görünüm ve Hareket</summary><div class="accessibility-actions"><button type="button" class="secondary" id="motion-toggle" aria-label="Hareket azaltma tercihi">Hareket: Sistem</button><button type="button" class="secondary" id="contrast-toggle" aria-pressed="false">Kontrast: Normal</button></div><small>Sistem tercihini izleyebilir ya da hareketi sabitleyebilirsin. Bulmaca zamanlaması değişmez.</small></details><button class="sound" id="frequency" title="F: kayıt doğrulama / ters kayıt" disabled>F · KAPALI</button></div><details class="diagnostics" id="diagnostics"><summary>⌁ Kapılar neden kapalı? <span id="diagnostic-count"></span></summary><div id="diagnostic-list" class="diagnostic-list" aria-live="polite"></div><small>Bu panel mevcut kanıtları yorumlar; zamanlamaya müdahale etmez.</small></details><div id="hint-assist" class="hint-assist hidden" role="status" aria-live="polite"><strong id="hint-step"></strong><span id="hint-body"></span></div></div>
 
 <div class="log"><div class="indicator"></div><div><div class="logtitle" id="mission">PROTOKOL 01 · İLK İZ</div><div class="logdesc" id="hint">Yeşil plakaya bas, SPACE ile yankını kaydet. Sonraki döngüde kapı açılınca çıkışa git.</div></div></div>
@@ -537,7 +542,7 @@ body.reduced-motion .calibration-meter i{transition:none}
 <section class="protocol-status" aria-label="Geçit hedefleri"><div class="protocol-status-head"><strong>ANLIK GEÇİT DURUMU</strong><small id="gate-counter">0 / 0 açık</small></div><div class="gate-status-grid" id="gate-status"></div></section>
 <section class="proof-panel" id="proof-panel" hidden aria-label="Sıralı kayıt doğrulama paneli"><div class="protocol-status-head"><strong>İMZA DOĞRULAMA / A VE B GEÇİŞLERİ</strong><small id="proof-status" role="status" aria-live="polite">Kayıt bekleniyor</small></div><p class="proof-help">Parlak A ve B noktalarına <strong>aynı döngü içinde</strong> sırayla dokun. Gerçek yankıyı kaydet; F doğrulayıcısı sahte görüntüleri ayırır.</p><div class="proof-grid"><div><span class="proof-label">BU DÖNGÜDE</span><div id="proof-live" class="proof-sequence">—</div></div><div><span class="proof-label">KAYDEDİLMİŞ İMZALAR</span><div id="proof-records" class="proof-record-list">Henüz yok</div></div></div><div id="proof-evidence" class="proof-evidence">A→B: 0/1</div></section>
 <section id="sync-panel" class="sync-panel" hidden aria-label="İki tanık senkronizasyonu"><div class="protocol-status-head"><strong>ÇİFTE TANIKLIK / AYRI KAYITLAR</strong><small id="sync-verdict" role="status" aria-live="polite">İmza bekleniyor</small></div><div class="sync-grid"><div id="sync-left">I · YANKI BEKLENİYOR</div><div id="sync-right">II · YANKI BEKLENİYOR</div></div><p id="sync-rule">İki farklı yankı aynı anda gerekli.</p></section>
-<footer>BUILD 042 · ZAMAN SİGORTASI</footer>
+<footer>BUILD 044 · DOKUN VE YÜRÜ</footer>
 </div>
 <script>
 (()=>{
@@ -1696,7 +1701,7 @@ function toggleHudMode(){
  applyHudMode();needsRedraw=true;
  return hudIsSimple();
 }
-function loadLevel(idx){lastCalibrationSignature='';tensionCharge=Object.create(null);lastPlateReaderSignature='';$('plate-reader').textContent='';focusedEcho=null;lastEchoFocusSignature='';clearImpactTrace();guardThreatActive=false;lastGuardCueWall=-Infinity;guardWarningChirps=0;$('guard-warning').hidden=true;objectiveWaypoint=null;lastMissionSignature='';lastMissionMemoKey='';missionMemo=null;newlyEarnedChallenges=[];lastChallengeSignature='';lastPlateForecastSignature='';removedEcho=null;echoRevision++;lastEchoEditorSignature='';lastSyncTimelineSignature='';lastDiagnosticSignature='';witnessVerified=false;lastSyncStatus='';lastProofSignature='';motionTrail=[];needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];activeBestGhost=bestGhosts[levelIndex]||null;updateBestGhostButton();applyHudMode();$('timeline-legend').textContent=level.probes?'Mor: yankı · Yeşil: canlı · A/B: sıralı okuma anları':'Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas';scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx===19?'EK PROTOKOL / ':idx>=17?'BÖLÜM VII / ':idx>=15?'BÖLÜM VI / ':idx>=13?'BÖLÜM V / ':idx>=11?'BÖLÜM IV / ':idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8,11,13,15,17,19].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8,11,13,15,17,19].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
+function loadLevel(idx){cancelWalkRoute();lastCalibrationSignature='';tensionCharge=Object.create(null);lastPlateReaderSignature='';$('plate-reader').textContent='';focusedEcho=null;lastEchoFocusSignature='';clearImpactTrace();guardThreatActive=false;lastGuardCueWall=-Infinity;guardWarningChirps=0;$('guard-warning').hidden=true;objectiveWaypoint=null;lastMissionSignature='';lastMissionMemoKey='';missionMemo=null;newlyEarnedChallenges=[];lastChallengeSignature='';lastPlateForecastSignature='';removedEcho=null;echoRevision++;lastEchoEditorSignature='';lastSyncTimelineSignature='';lastDiagnosticSignature='';witnessVerified=false;lastSyncStatus='';lastProofSignature='';motionTrail=[];needsRedraw=true;clearInputs();closeRoomSelectorPanel();resetHints();roomActiveSeconds=0;runHintCount=0;lastGateSignature='';levelIndex=idx;level=LVLS[levelIndex];activeBestGhost=bestGhosts[levelIndex]||null;updateBestGhostButton();applyHudMode();$('timeline-legend').textContent=level.probes?'Mor: yankı · Yeşil: canlı · A/B: sıralı okuma anları':'Mor: eski yankı · Yeşil: şu an · Altın: plakaya temas';scannerOn=false;reverseMode=false;auditEvidence=new Map();auditUnlocked=false;auditMistakes=0;closeAuditPanel();player={x:level.start[0]+.5,y:level.start[1]+.5};clones=[];record=[{...player}];elapsed=0;relayUntil={};particles=[];fxRings=[];rewindWash=0;gateMemory=new Map(level.barriers.map(b=>[b.key,false]));lastCountdownBeat=-1;mode='playing';wonAll=false;endingChoice=null;activeDecision=null;closeDecisionPanel();msg='';signalBanner((idx===19?'EK PROTOKOL / ':idx>=17?'BÖLÜM VII / ':idx>=15?'BÖLÜM VI / ':idx>=13?'BÖLÜM V / ':idx>=11?'BÖLÜM IV / ':idx>=8?'BÖLÜM III / ':idx>=6?'BÖLÜM II / ':'')+'SEKTÖR '+String(idx+1).padStart(2,'0'),[0,6,8,11,13,15,17,19].includes(idx)?chapterFor(idx).intro:idx>=6?(chapterPath==='keep'?'İÇ HAT • ':chapterPath==='cut'?'DIŞ HAT • ':'BİLİNMEYEN HAT • ')+level.tag:level.tag);if([0,6,8,11,13,15,17,19].includes(idx))sceneBannerUntil=wallClock+3.2;$('mission').textContent=`PROTOKOL ${String(levelIndex+1).padStart(2,'0')} · ${level.title}`;$('hint').textContent=ROOM_BRIEFS[levelIndex];updateHUD();}
 
 function closeAuditPanel(){$('audit').classList.add('hidden');$('audit').setAttribute('aria-hidden','true')}
 function nearestSensor(){return (level.sensors||[]).find(v=>Math.hypot(player.x-v.x-.5,player.y-v.y-.5)<.72)||null}
@@ -1808,7 +1813,74 @@ function drawImpactTrace(){
  }else{ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle=color;ctx.fill()}
  ctx.restore();
 }
-function resetPlayer(){tensionCharge=Object.create(null);guardThreatActive=false;$('guard-warning').hidden=true;motionTrail=[];needsRedraw=true;player={x:level.start[0]+.5,y:level.start[1]+.5};elapsed=0;relayUntil={};record=[{...player}];lastCountdownBeat=-1;}
+/* Build 044: path planning is static and tile-based, while motion still
+   uses the live collision, plate, relay and guard physics each frame. */
+let walkRoute=[],walkTarget=null;
+function updateWalkStatus(){
+ const button=$('walk-cancel');
+ button.hidden=!walkTarget;
+ if(walkTarget)button.textContent='⌖ Rotayı iptal et · '+walkRoute.length+' adım';
+}
+function cancelWalkRoute(){
+ const hadRoute=!!walkTarget;
+ walkRoute=[];walkTarget=null;
+ if(hadRoute){updateWalkStatus();needsRedraw=true}
+ return hadRoute;
+}
+function walkableRouteTile(x,y){
+ return x>=1&&x<W-1&&y>=1&&y<H-1&&
+  !level.block.some(p=>p.x===x&&p.y===y)&&
+  !level.barriers.some(b=>b.x===x&&(b.gate[0]!==x||b.gate[1]!==y));
+}
+function findWalkRoute(sx,sy,gx,gy){
+ if(!walkableRouteTile(sx,sy)||!walkableRouteTile(gx,gy))return null;
+ const start=sy*W+sx,goal=gy*W+gx;
+ const parent=new Int16Array(W*H);parent.fill(-1);parent[start]=start;
+ const queue=[start];
+ for(let i=0;i<queue.length&&parent[goal]===-1;i++){
+  const current=queue[i],x=current%W,y=Math.floor(current/W);
+  for(const [nx,ny] of [[x+1,y],[x,y+1],[x,y-1],[x-1,y]]){
+   if(!walkableRouteTile(nx,ny))continue;
+   const k=ny*W+nx;if(parent[k]!==-1)continue;
+   parent[k]=current;queue.push(k);
+  }
+ }
+ if(parent[goal]===-1)return null;
+ const path=[];
+ for(let n=goal;n!==start;n=parent[n])path.push({x:(n%W)+.5,y:Math.floor(n/W)+.5});
+ path.reverse();
+ const centre={x:sx+.5,y:sy+.5};
+ if(Math.hypot(player.x-centre.x,player.y-centre.y)>.11)path.unshift(centre);
+ if(!path.length)path.push(centre);
+ return path;
+}
+function requestWalkTo(x,y){
+ if(mode!=='playing'||!Number.isFinite(x)||!Number.isFinite(y))return false;
+ const path=findWalkRoute(Math.floor(player.x),Math.floor(player.y),Math.floor(x),Math.floor(y));
+ if(!path){flash('Bu hedefe yürünemez. Bir zemin karesi seç.');return false}
+ walkRoute=path;walkTarget=path[path.length-1];updateWalkStatus();needsRedraw=true;
+ return true;
+}
+function onScenePointer(event){
+ if(mode!=='playing'||event.pointerType==='mouse'&&event.button!==0)return;
+ const rect=canvas.getBoundingClientRect();
+ if(!rect.width||!rect.height)return;
+ const px=(event.clientX-rect.left)*canvas.width/rect.width,py=(event.clientY-rect.top)*canvas.height/rect.height;
+ if(px<OX||py<OY||px>=OX+W*T||py>=OY+H*T)return;
+ if(event.cancelable)event.preventDefault();
+ requestWalkTo((px-OX)/T,(py-OY)/T);
+}
+function drawWalkRoute(){
+ if(!walkTarget||!walkRoute.length)return;
+ ctx.save();ctx.strokeStyle='#6ef3dd';ctx.globalAlpha=.7;ctx.lineWidth=2.5;ctx.setLineDash([5,7]);
+ ctx.beginPath();ctx.moveTo(player.x*T,player.y*T);
+ for(const p of walkRoute)ctx.lineTo(p.x*T,p.y*T);
+ ctx.stroke();ctx.setLineDash([]);
+ const end=walkRoute[walkRoute.length-1];
+ ctx.beginPath();ctx.arc(end.x*T,end.y*T,11,0,Math.PI*2);
+ ctx.strokeStyle='#baffeb';ctx.lineWidth=2;ctx.stroke();ctx.restore();
+}
+function resetPlayer(){cancelWalkRoute();tensionCharge=Object.create(null);guardThreatActive=false;$('guard-warning').hidden=true;motionTrail=[];needsRedraw=true;player={x:level.start[0]+.5,y:level.start[1]+.5};elapsed=0;relayUntil={};record=[{...player}];lastCountdownBeat=-1;}
 /* Build 025: recordings are immutable; editing only changes the in-room roster. */
 /* Build 039: One shared palette and reference-stable visual selection. */
 const ECHO_PALETTE=['#c7a6ff','#6cd5ff','#ffc384','#ffa6cf','#84ebbb','#f2e083'];
@@ -1973,6 +2045,7 @@ function flash(s){msg=s;msgUntil=wallClock+2.3}
 function restart(){if(!level)return;loadLevel(levelIndex);hideOverlay();audioBeep(400,.1)}
 function pause(){if(mode==='playing'){clearInputs();mode='paused';showOverlay('SİSTEM DURAKLATILDI','Zaman bekliyor.','Hazır olduğunda devam et. Kayıtların korunuyor.','DEVAM ET →')}else if(mode==='paused'){clearInputs();mode='playing';hideOverlay()}updateHUD()}
 function clearInputs(){
+ cancelWalkRoute();
  keys.clear();keyboardHeld.clear();touchHeld.clear();gamepadMove={x:0,y:0};
  for(const btn of document.querySelectorAll('.mobilepad [data-dir]')){btn.classList.remove('is-held');btn.setAttribute('aria-pressed','false')}
 }
@@ -2019,7 +2092,7 @@ function restoreGameplayFocus(fallback){
  if(node&&typeof node.focus==='function')node.focus();
  lastGameplayFocus=null;
 }
-function onKeyDown(e){if(trapDialogTab(e))return;const focusedButton=e.target?.closest?.('button');if(e.code==='Space'&&((focusedButton&&!focusedButton.disabled&&!focusedButton.closest('.hidden'))||e.target?.closest?.('summary')))return;if(mode==='playing'&&['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)&&!(e.target?.matches?.('input,select,textarea')))e.preventDefault();if(e.repeat&&(['Space','KeyI','KeyB','KeyK','KeyO','KeyG','KeyC','KeyV','KeyH','KeyF','KeyP','KeyR','KeyX','KeyZ','Enter','KeyE','KeyL','Escape'].includes(e.code)||/^Digit[0-6]$/.test(e.code)))return;if(mode==='inspecting'){if(e.code==='Escape'||e.code==='KeyI')closeInspector();else if(e.code==='Space'&&!focusedButton&&!e.target?.matches?.('input,select,textarea')){e.preventDefault();toggleInspectorPlayback()}return}if(mode==='vaulting'){if(e.code==='Escape'||e.code==='KeyB')closeVault();return}if(mode==='investigating'){if(e.code==='Escape'||e.code==='KeyK')closeCaseBoard();return}if(mode==='selecting'){if(e.code==='Escape')closeRoomSelector();return}if(mode==='playing'&&['KeyW','KeyA','KeyS','KeyD','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.code)){keys.add(e.code);keyboardHeld.add(e.code)}if(mode==='auditing'){if(e.code==='Escape')exitAuditPanel();return}if(mode==='reading'){if(['Escape','KeyE','KeyL'].includes(e.code))closeArchive();return}if(mode==='decision'){if(e.code==='Escape')cancelDecision();else if(e.code==='Enter')confirmDecision();return}if(e.code==='KeyI'){openInspector();return}if(e.code==='KeyB'){openVault();return}if(e.code==='KeyK'){openCaseBoard();return}if(e.code==='KeyO'){openRoomSelector();return}if(e.code==='KeyH'){showHint();return}if(/^Digit[0-6]$/.test(e.code)&&['playing','paused'].includes(mode)){if(!e.target?.matches?.('input,select,textarea'))setEchoFocus(e.code==='Digit0'?-1:Number(e.code.slice(5))-1);return}if(e.code==='KeyG'){if(!e.target?.matches?.('input,select,textarea'))toggleObjectiveBeacon();return}if(e.code==='KeyC'){if(!e.target?.matches?.('input,select,textarea'))toggleHudMode();return}if(e.code==='KeyV'){if(!e.target?.matches?.('input,select,textarea'))toggleBestGhost();return}if(e.code==='KeyF'){toggleFrequency();return}if(e.code==='KeyM'){toggleSound();return}if(e.code==='KeyL'){openArchive();return}if(e.code==='KeyE'){interactTerminal();return}if(e.code==='Enter'&&mode!=='playing')startGame();if(e.code==='Space'){if(mode==='playing')cycleCommit();else if(mode==='menu'||mode==='leveldone'||mode==='allwon')startGame()}if(e.code==='KeyR'&&(mode==='playing'||mode==='paused'))restart();if(e.code==='KeyX'&&mode==='playing')retryCurrentLoop();if(e.code==='KeyZ'&&mode==='playing'){if(e.shiftKey)restoreEcho();else undoEcho();}if(e.code==='KeyP'&&(mode==='playing'||mode==='paused'))pause()}
+function onKeyDown(e){if(trapDialogTab(e))return;const focusedButton=e.target?.closest?.('button');if(e.code==='Space'&&((focusedButton&&!focusedButton.disabled&&!focusedButton.closest('.hidden'))||e.target?.closest?.('summary')))return;if(mode==='playing'&&['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)&&!(e.target?.matches?.('input,select,textarea')))e.preventDefault();if(e.repeat&&(['Space','KeyI','KeyB','KeyK','KeyO','KeyG','KeyC','KeyV','KeyH','KeyF','KeyP','KeyR','KeyX','KeyZ','Enter','KeyE','KeyL','Escape'].includes(e.code)||/^Digit[0-6]$/.test(e.code)))return;if(mode==='inspecting'){if(e.code==='Escape'||e.code==='KeyI')closeInspector();else if(e.code==='Space'&&!focusedButton&&!e.target?.matches?.('input,select,textarea')){e.preventDefault();toggleInspectorPlayback()}return}if(mode==='vaulting'){if(e.code==='Escape'||e.code==='KeyB')closeVault();return}if(mode==='investigating'){if(e.code==='Escape'||e.code==='KeyK')closeCaseBoard();return}if(mode==='selecting'){if(e.code==='Escape')closeRoomSelector();return}if(mode==='playing'&&['KeyW','KeyA','KeyS','KeyD','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.code)){keys.add(e.code);keyboardHeld.add(e.code)}if(mode==='auditing'){if(e.code==='Escape')exitAuditPanel();return}if(mode==='reading'){if(['Escape','KeyE','KeyL'].includes(e.code))closeArchive();return}if(mode==='decision'){if(e.code==='Escape')cancelDecision();else if(e.code==='Enter')confirmDecision();return}if(e.code==='Escape'&&mode==='playing'){cancelWalkRoute();return}if(e.code==='KeyI'){openInspector();return}if(e.code==='KeyB'){openVault();return}if(e.code==='KeyK'){openCaseBoard();return}if(e.code==='KeyO'){openRoomSelector();return}if(e.code==='KeyH'){showHint();return}if(/^Digit[0-6]$/.test(e.code)&&['playing','paused'].includes(mode)){if(!e.target?.matches?.('input,select,textarea'))setEchoFocus(e.code==='Digit0'?-1:Number(e.code.slice(5))-1);return}if(e.code==='KeyG'){if(!e.target?.matches?.('input,select,textarea'))toggleObjectiveBeacon();return}if(e.code==='KeyC'){if(!e.target?.matches?.('input,select,textarea'))toggleHudMode();return}if(e.code==='KeyV'){if(!e.target?.matches?.('input,select,textarea'))toggleBestGhost();return}if(e.code==='KeyF'){toggleFrequency();return}if(e.code==='KeyM'){toggleSound();return}if(e.code==='KeyL'){openArchive();return}if(e.code==='KeyE'){interactTerminal();return}if(e.code==='Enter'&&mode!=='playing')startGame();if(e.code==='Space'){if(mode==='playing')cycleCommit();else if(mode==='menu'||mode==='leveldone'||mode==='allwon')startGame()}if(e.code==='KeyR'&&(mode==='playing'||mode==='paused'))restart();if(e.code==='KeyX'&&mode==='playing')retryCurrentLoop();if(e.code==='KeyZ'&&mode==='playing'){if(e.shiftKey)restoreEcho();else undoEcho();}if(e.code==='KeyP'&&(mode==='playing'||mode==='paused'))pause()}
 window.addEventListener('keydown',onKeyDown);window.addEventListener('keyup',e=>{keyboardHeld.delete(e.code);if(!touchHeld.has(e.code))keys.delete(e.code)});window.addEventListener('blur',()=>{clearInputs();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)});document.addEventListener('visibilitychange',()=>{if(document.hidden){clearInputs();if(ambientBus&&audio)ambientBus.gain.setTargetAtTime(0,audio.currentTime,.04)}});
 $('audit-close').onclick=exitAuditPanel;for(const btn of $('audit-options').querySelectorAll('button'))btn.onclick=()=>submitVerdict(btn.dataset.verdict);$('decision-cancel').onclick=cancelDecision;$('decision-confirm').onclick=confirmDecision;$('replay-choice').onclick=()=>{loadLevel(levelIndex===18?18:levelIndex===16?16:levelIndex===14?14:levelIndex===12?12:5);hideOverlay()};$('archive-close').onclick=closeArchive;$('logbook').onclick=()=>mode==='reading'?closeArchive():openArchive();$('interact').onclick=interactTerminal;$('best-ghost-toggle').onclick=toggleBestGhost;$('hud-toggle').onclick=toggleHudMode;$('beacon-toggle').onclick=toggleObjectiveBeacon;$('inspector-button').onclick=openInspector;$('inspector-close').onclick=closeInspector;$('inspector-echo').onchange=drawInspector;$('inspector-scrub').oninput=e=>seekInspectorTime(e.target.value);$('inspector-back').onclick=()=>seekInspectorTime(Math.round((inspectorTime-.5)*10)/10);$('inspector-forward').onclick=()=>seekInspectorTime(Math.round((inspectorTime+.5)*10)/10);$('inspector-play').onclick=toggleInspectorPlayback;$('inspector-speed').onchange=e=>{const n=Number(e.target.value);if([.5,1,2].includes(n))inspectorSpeed=n};$('inspector-loop').onclick=()=>{inspectorLoop=!inspectorLoop;updateInspectorPlaybackUI()};$('inspector-prev-marker').onclick=()=>jumpInspectorMarker(-1);$('inspector-next-marker').onclick=()=>jumpInspectorMarker(1);$('save-vault-button').onclick=openVault;$('vault-close').onclick=closeVault;$('vault-export').onclick=exportSave;$('vault-import').addEventListener('change',importSaveFile);$('case-board-button').onclick=openCaseBoard;$('case-close').onclick=closeCaseBoard;$('room-select').onclick=openRoomSelector;$('room-picker-close').onclick=closeRoomSelector;$('help-button').onclick=showHint;$('start').onclick=startGame;$('commit').onclick=()=>cycleCommit();$('undo').onclick=undoEcho;$('retry').onclick=retryCurrentLoop;$('echo-restore').onclick=restoreEcho;$('restart').onclick=restart;$('sound').onclick=toggleSound;$('motion-toggle').onclick=toggleMotionSetting;$('contrast-toggle').onclick=toggleContrastSetting;$('frequency').onclick=toggleFrequency;
 for(const btn of document.querySelectorAll('.mobilepad [data-dir]')){
@@ -2032,7 +2105,7 @@ $('mobile-record').onclick=()=>cycleCommit();
 $('mobile-interact').onclick=interactTerminal;
 $('mobile-retry').onclick=retryCurrentLoop;
 $('mobile-undo').onclick=undoEcho;
-$('mobile-pause').onclick=pause;$('camera-toggle').onclick=toggleCamera;
+$('mobile-pause').onclick=pause;$('camera-toggle').onclick=toggleCamera;$('walk-cancel').onclick=cancelWalkRoute;canvas.addEventListener('pointerdown',onScenePointer);
 function echoDelay(c){return Number.isFinite(c.delay)?c.delay:0}
 function echoActive(c,t=elapsed){return t+DT/3>=echoDelay(c)}
 function echoAnchorAt(c){return Number.isFinite(c.anchorAt)?c.anchorAt:.5}
@@ -2709,7 +2782,31 @@ for(const f of fxRings)f.life-=dt;fxRings=fxRings.filter(f=>f.life>0);rewindWash
 if(sceneBannerUntil&&wallClock>sceneBannerUntil){$('scene-banner').classList.remove('visible');sceneBannerUntil=0}
 for(const t of motionTrail)t.life-=dt;motionTrail=motionTrail.filter(t=>t.life>0);
 if(mode!=='playing')return;decayImpactTrace(dt);roomActiveSeconds+=dt;elapsed+=dt;if(elapsed>=LOOP){cycleCommit(false);return}
- let dx=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0),dy=(keys.has('KeyS')||keys.has('ArrowDown')?1:0)-(keys.has('KeyW')||keys.has('ArrowUp')?1:0);dx+=gamepadMove.x;dy+=gamepadMove.y;let len=Math.hypot(dx,dy);if(len){const active=document.activeElement;if(active?.closest?.('.controls'))active.blur();dx=dx/Math.max(1,len)*SPEED*dt;dy=dy/Math.max(1,len)*SPEED*dt;if(!collides(player.x+dx,player.y))player.x+=dx;if(!collides(player.x,player.y+dy))player.y+=dy}record.push({...player});
+ let dx=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0),dy=(keys.has('KeyS')||keys.has('ArrowDown')?1:0)-(keys.has('KeyW')||keys.has('ArrowUp')?1:0);
+ dx+=gamepadMove.x;dy+=gamepadMove.y;
+ const manual=keys.size>0||Math.hypot(gamepadMove.x,gamepadMove.y)>.001;
+ if(manual)cancelWalkRoute();
+ let routing=false;
+ if(!manual&&walkRoute.length){
+  while(walkRoute.length&&Math.hypot(player.x-walkRoute[0].x,player.y-walkRoute[0].y)<.045)walkRoute.shift();
+  if(!walkRoute.length)cancelWalkRoute();
+  else{
+   const point=walkRoute[0],dist=Math.hypot(point.x-player.x,point.y-player.y);
+   const length=Math.min(SPEED*dt,dist);
+   dx=(point.x-player.x)/dist*length;dy=(point.y-player.y)/dist*length;routing=true;
+  }
+ }
+ const len=Math.hypot(dx,dy);
+ if(len){
+  const active=document.activeElement;if(active?.closest?.('.controls'))active.blur();
+  if(!routing){dx=dx/Math.max(1,len)*SPEED*dt;dy=dy/Math.max(1,len)*SPEED*dt}
+  if(!collides(player.x+dx,player.y))player.x+=dx;
+  if(!collides(player.x,player.y+dy))player.y+=dy;
+  if(routing&&Math.hypot(player.x-walkRoute[0].x,player.y-walkRoute[0].y)<.045){
+   walkRoute.shift();if(!walkRoute.length)cancelWalkRoute();else updateWalkStatus();
+  }
+ }
+ record.push({...player});
 if(!reducedMotion&&len>0){const last=motionTrail[motionTrail.length-1];if(!last||Math.hypot(player.x-last.x,player.y-last.y)>.14){motionTrail.push({x:player.x,y:player.y,life:.25});if(motionTrail.length>14)motionTrail.shift()}}
 updateTensionCharge(dt);updateRelays();updateGateFeedback();
 const secondLeft=Math.ceil(LOOP-elapsed);
@@ -2865,7 +2962,7 @@ function draw(){if(cameraMode==='focus')cameraFocusOrigin();ctx.clearRect(0,0,96
  ctx.fillStyle=sceneGradient;ctx.fillRect(0,0,960,610);
  ctx.save();ctx.translate(OX,OY);ctx.drawImage(floorCache,0,0);
  for(let y=0;y<H;y++)for(let x=0;x<W;x++){let px=x*T,py=y*T;const tp=tileType(x,y);if(tp==='wall'){ctx.fillStyle='#293a50';round(px+2,py+2,T-4,T-4,5);ctx.fill();ctx.fillStyle='#32475d';ctx.fillRect(px+5,py+5,T-10,3);ctx.fillStyle='#203247';ctx.fillRect(px+5,py+T-9,T-10,3)}else if(tp==='gate'||tp==='gateopen'){let col=tp==='gate'?'#f1ae6c':'#53f3d0';ctx.fillStyle=tp==='gate'?'#51382f':'#1a453d';ctx.fillRect(px+4,py+3,T-8,T-6);ctx.strokeStyle=col;ctx.lineWidth=tp==='gate'?3:1.5;ctx.strokeRect(px+6,py+5,T-12,T-10);if(tp==='gate'){ctx.fillStyle=col;for(let q=0;q<4;q++)ctx.fillRect(px+12+q*7,py+9,3,T-18)}}}
- drawSignalConduits();drawImpactTrace();drawBestGhost();
+ drawSignalConduits();drawWalkRoute();drawImpactTrace();drawBestGhost();
  // Trails follow materialization, reverse playback and held time.
  for(let j=0;j<clones.length;j++){
   const c=clones[j],selected=echoFocusIndex()===j;
