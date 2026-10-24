@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 054 — Onaylı Oda Sıfırlama / Yankı Kazalarını Önle
+
+Tek yanlış R tuşuyla oluşturulmuş yankıların ve editör ayarlarının silinmesine yol açan oyun akışı güvenli hâle getirildi.
+
+- **Açık onay:** R veya “Odayı sıfırla” düğmesi doğrudan kayıt silmez. Bir onay ekranında mevcut yankı sayısı, düzenlemelerin ve canlı döngünün kaybolacağı açıkça anlatılır. Oyuncu “EVET, ODAYI SIFIRLA” komutuyla silmeyi onaylar.
+- **Oyun zamanı donar:** Onay sırasında 12 saniyelik simülasyon durur; arka planda döngü kaydedilmez. Escape, “Vazgeç” ve oyun kolunda B ile onaydan çıkılabilir. Canlı konum, sayaç, yankı kayıtları, faz ve zaman çivileri korunur.
+- **Duraklatmayı korur:** Önceden duraklatılmış oyundan gelen oyuncu onaydan vazgeçerse önceki duraklatma ekranına geri döner. Oyun izinsiz yeniden başlamaz.
+- **Kalıcı ilerleme kalır:** Onaylanmış oda sıfırlaması yalnızca geçerli odanın yankılarını/denemesini kaldırır. Daha önce açılmış odalar, hikâye kararları, arşiv ve kazanılmış ödüller değişmez.
+- **Güvenli alternatif:** Yalnızca son canlı denemeyi başlatmak isteyen oyuncu X tuşunu kullanabilir; önceki yankıları korur.
+- **Erişilebilirlik ve testler:** Klavye odağı bir onay düğmesine alınır, onay ekranında Tab gezinmesi tutulur ve Escape iptal eder. Önceki bütün R sıfırlama testleri onay yoluna güncellendi. Chromium regresyonları yanlışlıkla R, zaman donması, silmeyi onaylama ve duraklatma hâlinin korunmasını denetler.
+
 ## Build 053 — Akıllı Rota Kurtarma / Tıklayarak Yürüyüşte Tıkanma Denetimi
 
 Dokun-ve-yürü yönlendirmesi, fiziksel olarak durduğu hâlde hedefe ulaşamayan bir kareyi sonsuza kadar zorlamıyor. Kendi oluşturduğun yankılar ve 12 saniyelik zaman sınırı aynen korunuyor.
