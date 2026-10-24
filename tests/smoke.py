@@ -15,6 +15,13 @@ def commit(page):
     page.keyboard.press("Space")
     page.evaluate('window.__echo12Test.tick(0.01)')
 
+def confirm_reset(page):
+    page.keyboard.press("r")
+    assert page.locator("#kicker").inner_text()=="GÜVENLİK ONAYI"
+    assert page.locator("#reset-cancel").is_visible()
+    page.locator("#start").click()
+    assert page.locator("#reset-cancel").is_hidden()
+
 def load(browser, level, use_user_hud=False, initial_store=None, start=True):
     # Isolate each level without requiring a previous save.
     html = HTML.replace("loadLevel(getUnlocked())", f"loadLevel({level})")
@@ -639,7 +646,7 @@ def main():
             assert page.evaluate("window.__echo12Test.inspect()['echoes']")==0
             move(page,'d',.5);commit(page)
             assert page.evaluate("localStorage.getItem('echo12-active-room-v1')")
-            page.keyboard.press('r')
+            confirm_reset(page)
             assert page.evaluate("localStorage.getItem('echo12-active-room-v1')") is None
             assert not errors,errors
             page.close()
@@ -677,6 +684,66 @@ def main():
             assert not errors,errors
             page.close()
             print('PASS Build 045: corrupt local room checkpoint rejected')
+
+            # Build 054: accidental R no longer destroys stored echoes.
+            # The live 12-second physical timer stays frozen for confirmation.
+            page, errors = load(browser,0)
+            move(page,'d',.99);move(page,'w',.49);commit(page)
+            before=page.evaluate("({state:window.__echo12Test.inspect(),echo:window.__echo12Test.echoIDs(),data:localStorage.getItem('echo12-active-room-v1')})")
+            assert before['state']['echoes']==1 and before['data']
+            page.keyboard.press('r')
+            verify(page,errors,'DURDU')
+            assert page.locator('#kicker').inner_text()=='GÜVENLİK ONAYI'
+            assert '1 yankıyı' in page.locator('#dialog-text').inner_text()
+            assert page.locator('#reset-cancel').is_visible()
+            page.evaluate("window.__echo12Test.tick(3)")
+            assert page.evaluate("window.__echo12Test.inspect()")==before['state']
+            assert page.evaluate("localStorage.getItem('echo12-active-room-v1')")==before['data']
+            page.keyboard.press('Escape')
+            verify(page,errors,'KAYIT')
+            assert page.evaluate("window.__echo12Test.inspect()")==before['state']
+            assert page.evaluate("window.__echo12Test.echoIDs()")==before['echo']
+            assert page.evaluate("localStorage.getItem('echo12-active-room-v1')")==before['data']
+            assert not errors,errors
+            page.close()
+            print('PASS Build 054: R pauses before deletion; Escape restores exact recorded session')
+
+            # Explicit confirmation really clears the in-room echo roster,
+            # never the permanent campaign progress.
+            page, errors = load(browser,0,initial_store={'echo12-unlocked':'6'})
+            move(page,'d',.99);move(page,'w',.49);commit(page)
+            assert page.locator('#clones').inner_text()=='1 / 6'
+            page.locator('#restart').click()
+            verify(page,errors,'DURDU')
+            assert page.locator('#reset-cancel').is_visible()
+            page.locator('#start').click()
+            verify(page,errors,'KAYIT')
+            assert page.locator('#clones').inner_text()=='0 / 6'
+            assert page.evaluate("window.__echo12Test.inspect()['elapsed']")==0
+            assert page.evaluate("localStorage.getItem('echo12-active-room-v1')") is None
+            assert page.evaluate("localStorage.getItem('echo12-unlocked')")=='6'
+            assert not errors,errors
+            page.close()
+            print('PASS Build 054: confirming reset clears local echoes, keeps campaign unlocks')
+
+            # From a manually paused game, cancelling a pending reset returns
+            # to the old pause dialog instead of unexpectedly resuming play.
+            page, errors = load(browser,0)
+            page.evaluate("window.__echo12Test.tick(.65)")
+            page.keyboard.press('p')
+            verify(page,errors,'DURDU')
+            page.keyboard.press('r')
+            assert page.locator('#kicker').inner_text()=='GÜVENLİK ONAYI'
+            page.locator('#reset-cancel').click()
+            verify(page,errors,'DURDU')
+            assert page.locator('#kicker').inner_text()=='SİSTEM DURAKLATILDI'
+            page.evaluate("window.__echo12Test.tick(2)")
+            assert page.evaluate("window.__echo12Test.inspect()['elapsed']")<.7
+            page.locator('#start').click()
+            verify(page,errors,'KAYIT')
+            assert not errors,errors
+            page.close()
+            print('PASS Build 054: pause -> reset confirmation -> cancel returns to pause')
 
             # Build 053: a transiently corrupted waypoint toward the map
             # border cannot waste the entire 12-second attempt. A re-plan
@@ -1359,7 +1426,7 @@ def main():
             assert page.locator('#impact-notice').is_visible()
             assert page.evaluate("window.__echo12Test.echoIDs()")==saved
             assert page.evaluate("window.__echo12Test.inspect()['elapsed']")==0
-            page.keyboard.press('r')
+            confirm_reset(page)
             assert page.evaluate("window.__echo12Test.impact()") is None
             assert page.locator('#impact-notice').is_hidden()
             assert not errors,errors
@@ -1647,7 +1714,7 @@ def main():
             page.locator('#echo-restore').click()
             assert page.locator('[data-echo-index="0"] [data-anchor-hold]').input_value()=='1'
             assert page.locator('[data-echo-index="0"] [data-anchor-at]').input_value()=='1'
-            page.keyboard.press('r')
+            confirm_reset(page)
             assert page.locator('#echo-editor-list .echo-editor-row').count()==0
             assert not errors,errors
             page.close()
@@ -1734,7 +1801,7 @@ def main():
             page.locator('#echo-restore').click()
             assert page.locator('[data-echo-index="0"] .echo-phase-controls output').get_attribute('data-phase')=='3'
             assert page.evaluate("window.__echo12Test.echoIDs()")==baseline
-            page.keyboard.press('r')
+            confirm_reset(page)
             assert page.locator('#echo-editor-list .echo-editor-row').count()==0
             assert not errors,errors
             page.close()
@@ -1795,7 +1862,7 @@ def main():
             assert page.locator('[data-plate="A"]').get_attribute('data-ready')=='true'
             assert page.locator('[data-plate="A"] [data-kind="contact"]').evaluate_all(
                 "(els)=>els.map(e=>e.getAttribute('title'))")==intervals
-            page.keyboard.press('r')
+            confirm_reset(page)
             assert page.locator('[data-plate="A"] [data-kind="contact"]').count()==0
             assert not errors,errors
             page.close()
@@ -1984,7 +2051,7 @@ def main():
             page.evaluate("window.__echo12Test.tick(.01)")
             assert page.locator('#echo-restore').is_disabled()
             assert not errors,errors
-            page.keyboard.press('r')
+            confirm_reset(page)
             assert page.locator('#echo-editor-list .echo-editor-row').count()==0
             assert page.locator('#echo-restore').is_disabled()
             assert not errors,errors
@@ -2041,7 +2108,7 @@ def main():
             commit(page)
             page.evaluate("window.__echo12Test.tick(.80)")
             assert page.evaluate("window.__echo12Test.gate('C')"), "Recorded echo should trigger C"
-            page.keyboard.press("r")
+            confirm_reset(page)
             move(page, "d", .493); move(page, "s", .247); commit(page)
             move(page, "d", 1.73)
             assert page.locator("#interact").is_enabled(), "Expected readable terminal"
@@ -2124,7 +2191,7 @@ def main():
             commit(page)
             page.evaluate("window.__echo12Test.tick(2.3)")
             assert page.evaluate("window.__echo12Test.gate('R')"), "Two synchronized echo replays must open R"
-            page.keyboard.press('r')
+            confirm_reset(page)
             move(page,'d',.493);move(page,'w',.493);commit(page)
             move(page,'d',1.73);move(page,'s',.493);commit(page)
             move(page,'d',1.73);move(page,'s',.493);commit(page)
@@ -2141,7 +2208,7 @@ def main():
             page.evaluate("window.__echo12Test.teleport(2.5,5.5)")
             page.evaluate("window.__echo12Test.tick(3)")
             assert not page.evaluate("window.__echo12Test.gate('P')"),"Live pulse must expire"
-            page.keyboard.press('r')
+            confirm_reset(page)
             move(page,'d',.493);move(page,'w',.493);commit(page)
             move(page,'d',.493);move(page,'w',.493);commit(page)
             page.evaluate("window.__echo12Test.tick(1.2)")
@@ -2164,13 +2231,13 @@ def main():
             assert 'AÇIK' in page.locator('#frequency').inner_text()
             page.evaluate("window.__echo12Test.tick(1.2)")
             assert not page.evaluate("window.__echo12Test.gate('T')"),'Phantom is not a recorded ghost'
-            page.keyboard.press('r')
+            confirm_reset(page)
             move(page,'d',.493);move(page,'w',.493);commit(page)
             page.evaluate("window.__echo12Test.tick(1.2)")
             assert not page.evaluate("window.__echo12Test.gate('T')"),'Recording without verification cannot trigger T'
             page.keyboard.press('f')
             assert page.evaluate("window.__echo12Test.gate('T')"),'Scanning must authenticate true ghost'
-            page.keyboard.press('r')
+            confirm_reset(page)
             move(page,'d',.493);move(page,'w',.493);commit(page)
             page.keyboard.press('f')
             move(page,'d',1.976);move(page,'s',.493)
@@ -2256,7 +2323,7 @@ def main():
             page.keyboard.press('f')
             page.evaluate("window.__echo12Test.tick(.3)")
             assert not page.evaluate("window.__echo12Test.gate('PROOF')"),'A rendered phantom is never signed proof'
-            page.keyboard.press('r')
+            confirm_reset(page)
             move(page,'d',.493);move(page,'w',.493);commit(page)
             # First real attempt uses B before A: deliberately invalid.
             move(page,'d',1.976);move(page,'s',.493);move(page,'w',.986);move(page,'a',.247);commit(page)
