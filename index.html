@@ -2623,7 +2623,7 @@ function renderChapterRecap(){
 }
 function victory(){
  if([5,12,18].includes(levelIndex)&&!endingChoice){flash('Çıkış mühürlü. Önce karar konsolunda seçim yapmalısın.');return}
- const improved=recordVictoryRun();clearedRooms.add(levelIndex);try{localStorage.setItem('echo12-room-clears',JSON.stringify([...clearedRooms].sort((a,b)=>a-b)))}catch(e){}mode='leveldone';playCue('win');pulseFX(player.x,player.y,'#53f3d0',2.3);rewindWash=.4;
+ cancelWalkRoute();const improved=recordVictoryRun();clearedRooms.add(levelIndex);try{localStorage.setItem('echo12-room-clears',JSON.stringify([...clearedRooms].sort((a,b)=>a-b)))}catch(e){}mode='leveldone';playCue('win');pulseFX(player.x,player.y,'#53f3d0',2.3);rewindWash=.4;
  const n=levelIndex+1;
  try{localStorage.setItem('echo12-unlocked',String(Math.max(getUnlocked(),Math.min(n,LVLS.length-1))))}catch(e){}
  for(let i=0;i<40;i++)spawnParticle(player.x,player.y,i%2?'#53f3d0':'#ba9dff');
