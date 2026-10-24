@@ -2,6 +2,16 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 044 — Dokun ve Yürü / Gerçek Fizikle Yol Bulma
+
+Klavye ve oyun koluna ek olarak, oyun sahnesine fareyle tıklayarak veya telefonda dokunarak karakteri **normal oyun fiziğiyle** hedefe yürütebilirsin. Özellikle mobilde zamanlamalı bulmacalarda uzun süre yön tuşlarına basmak artık zorunlu değil.
+
+- **Gerçek yol hesabı:** 18×11 haritanın duvarları, özel blokları ve geçit konumları üzerinden dört yönlü en kısa kare rotası oluşturulur. Engel seçilirse rota başlatılmaz. Hedef karenin merkezi kullanıldığı için plaka ve konsol temasları hassastır.
+- **Kapılar hâlâ kapıdır:** Kapalı geçit rota hesabında potansiyel yol olarak bulunabilir ama karakter canlı çarpışma motorunu kullanır; kilidi açan yankı olmadan geçemez. Devriyeler de normal şekilde yakalar.
+- **Sadece kontrol alternatifi:** Her ilerleme simülasyonun gerçek \(1/60\) saniyelik adımlarıyla kayda geçer. Işınlanma, hızlanma, ekstra yankı veya ipucu kazanımı yoktur. Görsel kesikli rota ve hedef halkası gösterilir.
+- **Hızlı iptal:** WASD / yön tuşları / oyun koluyla müdahale, Esc, ekrandaki rota düğmesi, denemeyi yenileme, duraklama veya oda değişimi rotayı temizler. Eski kayıtlar, hikâye, finaller ve yedek biçimi değişmez.
+- **Tarayıcı regresyonları:** Hedefe varma, normal yankı kaydıyla kapıyı aşma, kapalı kapıda bekleme, klavye/Esc/duraklatma iptali ve yakın kamera altında dokunmatik koordinat dönüşümü test edilir.
+
 ## Build 043 — Zaman Sigortası Kalibrasyon Ekranı
 
 20. odadaki zorunlu Zaman Çivisi bulmacası artık deneme-yanılma sırasında neden ilerlemediğini **gerçek kaynak ve fizik durumundan** gösteriyor. Yeni oda veya hikâye dalı eklenmedi.
