@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 048 — Sekme Değişince Zamanı Koruma
+
+Tarayıcı oyununun kontrol güvenliği tamamlanma hedefiyle iyileştirildi. Pencere odağı kaybolursa veya sekme gizlenirse aktif 12 saniyelik döngü hemen duraklatılır.
+
+- Zaman ve mevcut canlı kayıt korunur. Arka planda süre bitmez, yeni yankı otomatik oluşturulmaz; geri dönüşte oyuncu DEVAM ET düğmesini kullanır.
+- Klavye, dokunmatik, oyun kolu hareketi ve tıklanmış yürüyüş hedefi bırakılır. Dönüldüğünde hareket takılı kalmaz.
+- DÖNGÜ KORUMASI ekranı sekme değişimini veya pencere odağı kaybını açıklar. Devam etmek otomatik değildir. P tuşu ve oyun kolu Start komutu da çalışır.
+- Menüler, başarı ekranı, inceleme pencereleri ve oyuncunun kendi duraklatması otomatik uyarıyla değiştirilmez.
+- Görünürlük olayını geciktiren tarayıcılar için animasyon döngüsünde ikinci kontrol bulunur.
+- JSON kaydı, 20 oda, 12 saniyelik süre, yankı ve fizik kuralları aynı kalır. Chromium regresyonları gerçek zamanın durmasını, giriş sıfırlamayı ve bilinçli devamı doğrular.
+
 ## Build 047 — Kaldığın Oda / Kilidi Açılmış Eski Sektörlerde Kurtarma
 
 **Oyun tarayıcıda tamamlanana kadar geliştirmeye devam ediyoruz; Unreal top-down 3D sürümüne geçiş henüz başlamıyor.**

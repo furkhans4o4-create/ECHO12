@@ -25,7 +25,7 @@ def load(browser, level, use_user_hud=False, initial_store=None, start=True):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, plateReadouts(){return plateReadouts()}, bestGhost(){return bestGhostStatus()}, walkTo(x,y){return requestWalkTo(x+.5,y+.5)}, walkInfo(){return {target:walkTarget?{...walkTarget}:null,remaining:walkRoute.length}}, walkForecast(){return walkRouteDetails()}, resume(){const active=readActiveRoomCheckpoint();return active?{room:active.room,count:active.clips.length}:null}, fuse(key){return tensionState(level.plates.find(p=>p.key===key))}, sourceFuse(index,key){return sourceTensionCandidate(clones[index],level.plates.find(p=>p.key===key))}, nail(index,at,hold){return configureEchoAnchor(index,at,hold)}, forecast(key){return plateForecastData(level.plates.find(p=>p.key===key))}, openRoom(index){loadLevel(index)}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length,mode}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, plateReadouts(){return plateReadouts()}, bestGhost(){return bestGhostStatus()}, walkTo(x,y){return requestWalkTo(x+.5,y+.5)}, walkInfo(){return {target:walkTarget?{...walkTarget}:null,remaining:walkRoute.length}}, walkForecast(){return walkRouteDetails()}, resume(){const active=readActiveRoomCheckpoint();return active?{room:active.room,count:active.clips.length}:null}, fuse(key){return tensionState(level.plates.find(p=>p.key===key))}, sourceFuse(index,key){return sourceTensionCandidate(clones[index],level.plates.find(p=>p.key===key))}, nail(index,at,hold){return configureEchoAnchor(index,at,hold)}, forecast(key){return plateForecastData(level.plates.find(p=>p.key===key))}, openRoom(index){loadLevel(index)}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -196,6 +196,84 @@ def main():
             assert not errors,errors
             page.close()
             print('PASS Build 042: narrative final does not shift when calibration sector is added')
+
+            # Build 048: losing window focus pauses the live attempt without
+            # advancing the timer or keeping held movement / route inputs.
+            page, errors = load(browser,0)
+            assert page.evaluate("window.__echo12Test.walkTo(6,3)")
+            page.evaluate("window.__echo12Test.tick(.5)")
+            page.keyboard.down('w')
+            page.evaluate("window.__echo12Test.tick(.25)")
+            before=page.evaluate("window.__echo12Test.inspect()")
+            assert before['mode']=='playing'
+            assert page.evaluate("window.__echo12Test.held()")
+            page.evaluate("window.dispatchEvent(new Event('blur'))")
+            verify(page,errors,'DURDU')
+            assert page.locator('#kicker').inner_text()=='DÖNGÜ KORUMASI'
+            assert 'odağını kaybetti' in page.locator('#dialog-title').inner_text()
+            assert page.evaluate("window.__echo12Test.held()")==[]
+            assert page.evaluate("window.__echo12Test.walkInfo()['target']") is None
+            page.evaluate("window.__echo12Test.tick(3)")
+            frozen=page.evaluate("window.__echo12Test.inspect()")
+            for field in ('elapsed','record','position','echoes'):
+                assert frozen[field]==before[field],(field,frozen,before)
+            page.keyboard.up('w')
+            page.locator('#start').click()
+            verify(page,errors,'KAYIT')
+            assert page.evaluate("window.__echo12Test.held()")==[]
+            page.evaluate("window.__echo12Test.tick(.5)")
+            after=page.evaluate("window.__echo12Test.inspect()")
+            assert after['elapsed']>before['elapsed']+.4
+            assert after['echoes']==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 048: focus blur freezes loop and explicit resume works')
+
+            # Hidden tabs get a unique explanation. Returning to visibility
+            # cannot accidentally restart the loop.
+            page, errors = load(browser,0)
+            page.evaluate("window.__echo12Test.tick(.8)")
+            page.evaluate("""() => {
+                Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});
+                document.dispatchEvent(new Event('visibilitychange'));
+                window.dispatchEvent(new Event('blur'));
+            }""")
+            verify(page,errors,'DURDU')
+            assert 'Sekme değişti' in page.locator('#dialog-title').inner_text()
+            page.evaluate("window.__echo12Test.tick(2)")
+            assert page.evaluate("window.__echo12Test.inspect()['elapsed']")<1
+            page.evaluate("""() => {
+                Object.defineProperty(document,'hidden',{configurable:true,get:()=>false});
+                document.dispatchEvent(new Event('visibilitychange'));
+                window.dispatchEvent(new Event('focus'));
+            }""")
+            verify(page,errors,'DURDU')
+            page.locator('#start').click()
+            verify(page,errors,'KAYIT')
+            assert not errors,errors
+            page.close()
+            print('PASS Build 048: background tab needs explicit resume')
+
+            # Menu, previously paused screen and completed-room view are not
+            # hijacked by the protective pause.
+            page, errors = load(browser,0,start=False)
+            page.evaluate("window.dispatchEvent(new Event('blur'))")
+            verify(page,errors,'HAZIR')
+            page.locator('#start').click()
+            page.keyboard.press('p')
+            verify(page,errors,'DURDU')
+            assert page.locator('#kicker').inner_text()=='SİSTEM DURAKLATILDI'
+            page.evaluate("window.dispatchEvent(new Event('blur'))")
+            assert page.locator('#kicker').inner_text()=='SİSTEM DURAKLATILDI'
+            page.locator('#start').click()
+            page.evaluate("window.__echo12Test.teleport(15.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.02)")
+            verify(page,errors,'BAŞARILI')
+            page.evaluate("window.dispatchEvent(new Event('blur'))")
+            verify(page,errors,'BAŞARILI')
+            assert not errors,errors
+            page.close()
+            print('PASS Build 048: menu and existing pause/success screens are unchanged')
 
             # Build 047: the saved room, not the highest unlocked room,
             # becomes the real continuation target after a reload.
