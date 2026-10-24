@@ -519,6 +519,8 @@ body.high-contrast .room-resume{border:2px solid #d4fff1}
 .walk-info small{font:500 11px/1.35 system-ui,sans-serif;color:#accbd5}
 .walk-info[data-state="waiting"]{background:#332819;border-color:#c99658}
 .walk-info[data-state="waiting"] strong{color:#ffd59a}
+.walk-info[data-state="ahead"]{border-color:#698a90}
+.walk-info[data-state="ahead"] strong{color:#b6decf}
 .walk-info[data-state="late"]{background:#372029;border-color:#b96980}
 .walk-info[data-state="late"] strong{color:#ffb4c1}
 body.high-contrast .walk-info{border:2px solid #dafff3}
@@ -534,7 +536,7 @@ body.high-contrast .walk-info{border:2px solid #dafff3}
 </head>
 <body>
 <div class="wrap">
-<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 054</div></header>
+<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 055</div></header>
 <div class="topbar">
  <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 19</div></div>
  <div class="stat"><div class="label">Döngüye kalan</div><div class="value teal" id="time">12.0 sn</div><div class="meters"><div class="meter"><i id="timefill"></i></div></div></div>
@@ -569,7 +571,7 @@ body.high-contrast .walk-info{border:2px solid #dafff3}
 <section class="protocol-status" aria-label="Geçit hedefleri"><div class="protocol-status-head"><strong>ANLIK GEÇİT DURUMU</strong><small id="gate-counter">0 / 0 açık</small></div><div class="gate-status-grid" id="gate-status"></div></section>
 <section class="proof-panel" id="proof-panel" hidden aria-label="Sıralı kayıt doğrulama paneli"><div class="protocol-status-head"><strong>İMZA DOĞRULAMA / A VE B GEÇİŞLERİ</strong><small id="proof-status" role="status" aria-live="polite">Kayıt bekleniyor</small></div><p class="proof-help">Parlak A ve B noktalarına <strong>aynı döngü içinde</strong> sırayla dokun. Gerçek yankıyı kaydet; F doğrulayıcısı sahte görüntüleri ayırır.</p><div class="proof-grid"><div><span class="proof-label">BU DÖNGÜDE</span><div id="proof-live" class="proof-sequence">—</div></div><div><span class="proof-label">KAYDEDİLMİŞ İMZALAR</span><div id="proof-records" class="proof-record-list">Henüz yok</div></div></div><div id="proof-evidence" class="proof-evidence">A→B: 0/1</div></section>
 <section id="sync-panel" class="sync-panel" hidden aria-label="İki tanık senkronizasyonu"><div class="protocol-status-head"><strong>ÇİFTE TANIKLIK / AYRI KAYITLAR</strong><small id="sync-verdict" role="status" aria-live="polite">İmza bekleniyor</small></div><div class="sync-grid"><div id="sync-left">I · YANKI BEKLENİYOR</div><div id="sync-right">II · YANKI BEKLENİYOR</div></div><p id="sync-rule">İki farklı yankı aynı anda gerekli.</p></section>
-<footer>BUILD 054 · GÜVENLİ ODA SIFIRLAMA <span id="offline-state" role="status" aria-live="polite" hidden></span></footer>
+<footer>BUILD 055 · DOĞRU ROTA DURUMU <span id="offline-state" role="status" aria-live="polite" hidden></span></footer>
 </div>
 <script>
 (()=>{
@@ -2033,7 +2035,7 @@ function drawImpactTrace(){
 /* Build 044: path planning is static and tile-based, while motion still
    uses the live collision, plate, relay and guard physics each frame. */
 let walkRoute=[],walkTarget=null;
-let routeStalledFor=0,routeRecoveryAttempts=0;
+let routeStalledFor=0,routeRecoveryAttempts=0,routeProgressSeconds=0;
 let lastWalkStatusSignature='';
 /* Pure feedback: neither path sampling nor gate physics is changed.
    Minimum duration ignores waits for plates/relays and roaming guards. */
@@ -2049,7 +2051,12 @@ function walkRouteDetails(){
   }
  }
  const minimum=distance/SPEED,remaining=Math.max(0,LOOP-elapsed);
- return{status:closedGate?'waiting':minimum>remaining+.12?'late':'walking',
+ // A distant sealed gate is not a physical waiting state.
+ const next=walkRoute[0];
+ const atGate=!!closedGate&&Math.floor(next.x)===closedGate.gate[0]&&
+  Math.floor(next.y)===closedGate.gate[1]&&
+  Math.hypot(next.x-player.x,next.y-player.y)<1.15;
+ return{status:closedGate?(atGate?'waiting':'ahead'):minimum>remaining+.12?'late':'walking',
   gate:closedGate?.key||null,gateTile:closedGate?.gate||null,
   minimum,remaining,distance};
 }
@@ -2061,6 +2068,7 @@ function updateWalkStatus(){
  const info=walkRouteDetails();
  if(!info){pane.hidden=true;return}
  const name=info.status==='waiting'?info.gate+' KAPISI KAPALI · AÇILINCA DEVAM EDER':
+  info.status==='ahead'?info.gate+' KAPISI İLERİDE KAPALI · YÜRÜNÜYOR':
   info.status==='late'?'⚠ BU DÖNGÜYE YETİŞMEYEBİLİR':'⌖ HEDEFE YÜRÜNÜYOR';
  const estimate='En az '+(Math.ceil(info.minimum*2)/2).toFixed(1).replace('.',',')+
   ' sn yol · '+(Math.ceil(info.remaining*2)/2).toFixed(1).replace('.',',')+' sn kaldı';
@@ -2075,7 +2083,7 @@ function updateWalkStatus(){
 }
 function cancelWalkRoute(){
  const hadRoute=!!walkTarget;
- walkRoute=[];walkTarget=null;routeStalledFor=0;routeRecoveryAttempts=0;
+ walkRoute=[];walkTarget=null;routeStalledFor=0;routeRecoveryAttempts=0;routeProgressSeconds=0;
  if(hadRoute){updateWalkStatus();needsRedraw=true}
  return hadRoute;
 }
@@ -2110,19 +2118,23 @@ function requestWalkTo(x,y){
  if(mode!=='playing'||!Number.isFinite(x)||!Number.isFinite(y))return false;
  const path=findWalkRoute(Math.floor(player.x),Math.floor(player.y),Math.floor(x),Math.floor(y));
  if(!path){flash('Bu hedefe yürünemez. Bir zemin karesi seç.');return false}
- walkRoute=path;walkTarget=path[path.length-1];routeStalledFor=0;routeRecoveryAttempts=0;updateWalkStatus();needsRedraw=true;
+ walkRoute=path;walkTarget=path[path.length-1];routeStalledFor=0;routeRecoveryAttempts=0;routeProgressSeconds=0;updateWalkStatus();needsRedraw=true;
  return true;
 }
 /* Build 053 — Recover a physically blocked click route, but never
    bypass a locked gate. This does not move the player: any replacement
    route is executed through ordinary per-frame collision and recording. */
-function recoverStalledWalk(dt,moved){
+function recoverStalledWalk(dt,approached){
  if(!walkTarget||!walkRoute.length)return;
- if(moved){routeStalledFor=0;return}
  const next=walkRoute[0];
  const gate=level.barriers.find(b=>b.gate[0]===Math.floor(next.x)&&b.gate[1]===Math.floor(next.y));
- if(gate&&!gateOpen(gate.key)){routeStalledFor=0;return}
- routeStalledFor+=dt;
+ if(gate&&!gateOpen(gate.key)){routeStalledFor=0;routeProgressSeconds=0;return}
+ if(approached){
+  routeStalledFor=0;routeProgressSeconds+=dt;
+  if(routeProgressSeconds>=.75)routeRecoveryAttempts=0;
+  return;
+ }
+ routeProgressSeconds=0;routeStalledFor+=dt;
  if(routeStalledFor<.6)return;
  routeStalledFor=0;
  if(routeRecoveryAttempts>=2){
@@ -3146,7 +3158,8 @@ if(mode!=='playing')return;decayImpactTrace(dt);roomActiveSeconds+=dt;elapsed+=d
    dx=(point.x-player.x)/dist*length;dy=(point.y-player.y)/dist*length;routing=true;
   }
  }
- const len=Math.hypot(dx,dy),routeFrom=routing?{x:player.x,y:player.y}:null;
+ const len=Math.hypot(dx,dy),routePoint=routing?walkRoute[0]:null;
+ const routeDistanceBefore=routePoint?Math.hypot(player.x-routePoint.x,player.y-routePoint.y):0;
  if(len){
   const active=document.activeElement;if(active?.closest?.('.controls'))active.blur();
   if(!routing){dx=dx/Math.max(1,len)*SPEED*dt;dy=dy/Math.max(1,len)*SPEED*dt}
@@ -3155,7 +3168,8 @@ if(mode!=='playing')return;decayImpactTrace(dt);roomActiveSeconds+=dt;elapsed+=d
   if(routing&&Math.hypot(player.x-walkRoute[0].x,player.y-walkRoute[0].y)<.045){
    walkRoute.shift();if(!walkRoute.length)cancelWalkRoute();else updateWalkStatus();
   }
-  if(routing&&routeFrom)recoverStalledWalk(dt,Math.hypot(player.x-routeFrom.x,player.y-routeFrom.y)>.0001);
+  if(routing&&routePoint)recoverStalledWalk(dt,
+   routePoint!==walkRoute[0]||routeDistanceBefore-Math.hypot(player.x-routePoint.x,player.y-routePoint.y)>.0005);
  }
  record.push({...player});
 if(!reducedMotion&&len>0){const last=motionTrail[motionTrail.length-1];if(!last||Math.hypot(player.x-last.x,player.y-last.y)>.14){motionTrail.push({x:player.x,y:player.y,life:.25});if(motionTrail.length>14)motionTrail.shift()}}
