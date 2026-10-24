@@ -197,6 +197,98 @@ def main():
             page.close()
             print('PASS Build 042: narrative final does not shift when calibration sector is added')
 
+            # Build 049: native browser shortcuts have priority over game
+            # controls. Ctrl+R must never wipe committed room snapshots.
+            page, errors = load(browser,0)
+            move(page,'d',.99);move(page,'w',.49);commit(page)
+            before=page.evaluate("({echoes:window.__echo12Test.inspect().echoes,ids:window.__echo12Test.echoIDs(),checkpoint:localStorage.getItem('echo12-active-room-v1'),position:window.__echo12Test.position()})")
+            assert before['echoes']==1 and before['checkpoint']
+            for code, key, modifier in (
+                ('KeyR','r','ctrlKey'),('KeyR','r','metaKey'),
+                ('KeyZ','z','ctrlKey'),('KeyP','p','ctrlKey'),
+                ('KeyX','x','metaKey'),('KeyB','b','ctrlKey'),
+                ('KeyO','o','ctrlKey'),('KeyF','f','altKey'),
+                ('ArrowLeft','ArrowLeft','altKey')
+            ):
+                page.evaluate("""([code,key,modifier]) => {
+                    window.dispatchEvent(new KeyboardEvent('keydown',{
+                      code,key,bubbles:true,cancelable:true,[modifier]:true
+                    }));
+                }""",[code,key,modifier])
+            after=page.evaluate("({echoes:window.__echo12Test.inspect().echoes,ids:window.__echo12Test.echoIDs(),checkpoint:localStorage.getItem('echo12-active-room-v1'),position:window.__echo12Test.position()})")
+            assert before==after,(before,after)
+            assert page.evaluate("window.__echo12Test.focusMode()")=='playing'
+            assert page.evaluate("window.__echo12Test.held()")==[]
+            assert not errors,errors
+            page.close()
+            print('PASS Build 049: Ctrl/Meta/Alt shortcuts do not reset room, erase echoes or move')
+
+            # The echo editor uses native select controls. Typing WASD,
+            # restart/undo/pause shortcuts while a select is focused must not
+            # change the player or erase a recorded loop.
+            page, errors = load(browser,9)
+            commit(page)
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==1
+            page.locator('#echo-editor > summary').click()
+            selector=page.locator('[data-echo-index="0"] [data-anchor-hold]')
+            selector.focus()
+            assert selector.evaluate('(el)=>document.activeElement===el')
+            position=page.evaluate("window.__echo12Test.position()")
+            for key in ('w','a','s','d','r','z','p','f','g','c'):
+                page.keyboard.press(key)
+            page.evaluate("window.__echo12Test.tick(.25)")
+            assert page.evaluate("window.__echo12Test.position()")==position
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==1
+            assert page.evaluate("window.__echo12Test.focusMode()")=='playing'
+            assert page.evaluate("window.__echo12Test.held()")==[]
+            assert not errors,errors
+            page.close()
+            print('PASS Build 049: dropdown keyboard interaction does not invoke gameplay hotkeys')
+
+            # Enter on a menu button must activate that button, not the
+            # global "start game" shortcut. Unfocused Enter still starts.
+            page, errors = load(browser,0,start=False)
+            page.locator('#room-select').focus()
+            page.keyboard.press('Enter')
+            assert page.evaluate("window.__echo12Test.focusMode()")=='selecting'
+            assert page.locator('#room-picker').is_visible()
+            assert page.locator('#overlay').is_visible()
+            page.keyboard.press('Escape')
+            assert page.evaluate("window.__echo12Test.focusMode()")=='menu'
+            page.evaluate('document.activeElement.blur()')
+            page.keyboard.press('Enter')
+            assert page.evaluate("window.__echo12Test.focusMode()")=='playing'
+            assert not errors,errors
+            page.close()
+            print('PASS Build 049: native Enter activates menu control; unbound Enter starts game')
+
+            # A text editor (including input methods) never advances gameplay;
+            # Escape inside a true modal still closes it normally.
+            page, errors = load(browser,0)
+            page.evaluate("""() => {
+                const box=document.createElement('input');
+                box.id='test-text-input';box.type='text';
+                document.body.append(box);box.focus();
+            }""")
+            for code,key in (('KeyR','r'),('KeyZ','z'),('KeyP','p'),('KeyW','w'),('Space',' ')):
+                page.evaluate("""([code,key]) => {
+                  document.getElementById('test-text-input').dispatchEvent(
+                    new KeyboardEvent('keydown',{code,key,bubbles:true,cancelable:true})
+                  );
+                }""",[code,key])
+            assert page.evaluate("window.__echo12Test.focusMode()")=='playing'
+            assert page.evaluate("window.__echo12Test.held()")==[]
+            page.evaluate("window.__echo12Test.tick(.2)")
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==0
+            page.locator('#test-text-input').evaluate('(el)=>el.remove()')
+            page.locator('#save-vault-button').click()
+            assert page.evaluate("window.__echo12Test.focusMode()")=='vaulting'
+            page.keyboard.press('Escape')
+            assert page.evaluate("window.__echo12Test.focusMode()")=='playing'
+            assert not errors,errors
+            page.close()
+            print('PASS Build 049: text inputs never issue game commands and modal Escape remains active')
+
             # Build 048: losing window focus pauses the live attempt without
             # advancing the timer or keeping held movement / route inputs.
             page, errors = load(browser,0)
@@ -2597,6 +2689,7 @@ def main():
             page.keyboard.press('Escape')
             verify(page,errors,'KAYIT')
             assert page.locator('#inspector').is_hidden()
+            assert not page.evaluate("document.activeElement.closest('#inspector') !== null"), 'Hidden scrubber must release keyboard focus'
             page.keyboard.press('p')
             verify(page,errors,'DURDU')
             page.keyboard.press('i')
