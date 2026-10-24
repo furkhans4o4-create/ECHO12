@@ -25,7 +25,7 @@ def load(browser, level, use_user_hud=False, initial_store=None, start=True):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, plateReadouts(){return plateReadouts()}, bestGhost(){return bestGhostStatus()}, walkTo(x,y){return requestWalkTo(x+.5,y+.5)}, walkInfo(){return {target:walkTarget?{...walkTarget}:null,remaining:walkRoute.length}}, walkForecast(){return walkRouteDetails()}, fuse(key){return tensionState(level.plates.find(p=>p.key===key))}, sourceFuse(index,key){return sourceTensionCandidate(clones[index],level.plates.find(p=>p.key===key))}, nail(index,at,hold){return configureEchoAnchor(index,at,hold)}, forecast(key){return plateForecastData(level.plates.find(p=>p.key===key))}, openRoom(index){loadLevel(index)}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, plateReadouts(){return plateReadouts()}, bestGhost(){return bestGhostStatus()}, walkTo(x,y){return requestWalkTo(x+.5,y+.5)}, walkInfo(){return {target:walkTarget?{...walkTarget}:null,remaining:walkRoute.length}}, walkForecast(){return walkRouteDetails()}, resume(){const active=readActiveRoomCheckpoint();return active?{room:active.room,count:active.clips.length}:null}, fuse(key){return tensionState(level.plates.find(p=>p.key===key))}, sourceFuse(index,key){return sourceTensionCandidate(clones[index],level.plates.find(p=>p.key===key))}, nail(index,at,hold){return configureEchoAnchor(index,at,hold)}, forecast(key){return plateForecastData(level.plates.find(p=>p.key===key))}, openRoom(index){loadLevel(index)}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -196,6 +196,73 @@ def main():
             assert not errors,errors
             page.close()
             print('PASS Build 042: narrative final does not shift when calibration sector is added')
+
+            # Build 047: the saved room, not the highest unlocked room,
+            # becomes the real continuation target after a reload.
+            page, errors = load(browser,0)
+            move(page,'d',.99);move(page,'w',.49);commit(page)
+            saved_old=page.evaluate("localStorage.getItem('echo12-active-room-v1')")
+            originals=page.evaluate("window.__echo12Test.echoIDs()")
+            page.close()
+            page, errors = load(browser,6,initial_store={
+                'echo12-unlocked':'6','echo12-active-room-v1':saved_old},start=False)
+            assert page.evaluate("window.__echo12Test.resume()")=={'room':0,'count':1}
+            assert page.locator('#room-resume').is_visible()
+            assert 'İLK İZ' in page.locator('#room-resume-text').inner_text()
+            assert 'ODA 01' in page.locator('#room-resume-text').inner_text()
+            assert page.evaluate("localStorage.getItem('echo12-active-room-v1')")==saved_old
+            page.locator('#start').click()
+            assert page.locator('#room').inner_text().startswith('01')
+            assert page.evaluate("window.__echo12Test.echoIDs()")==originals
+            assert page.evaluate("window.__echo12Test.inspect()['elapsed']")==0
+            assert page.evaluate("window.__echo12Test.resume()")=={'room':0,'count':1}
+            assert page.evaluate("localStorage.getItem('echo12-unlocked')")=='6'
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 047: older unlocked room resumes with echoes and progression intact')
+
+            # Opting out of an older room must default to the latest unlocked
+            # sector, not accidentally restore or retain the old replay.
+            page, errors = load(browser,6,initial_store={
+                'echo12-unlocked':'6','echo12-active-room-v1':saved_old},start=False)
+            page.locator('#room-resume-discard').click()
+            assert page.evaluate("window.__echo12Test.resume()") is None
+            page.locator('#start').click()
+            assert page.locator('#room').inner_text().startswith('07')
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==0
+            assert page.evaluate("localStorage.getItem('echo12-active-room-v1')") is None
+            assert not errors,errors
+            page.close()
+            print('PASS Build 047: refusing recovery starts latest unlocked room')
+
+            # Switching away from a recovered old sector intentionally discards
+            # its single-room temporary snapshot (never the permanent progress).
+            page, errors = load(browser,6,initial_store={
+                'echo12-unlocked':'6','echo12-active-room-v1':saved_old})
+            assert page.evaluate("window.__echo12Test.openRoom(6)") is None
+            assert page.evaluate("window.__echo12Test.resume()") is None
+            assert page.evaluate("localStorage.getItem('echo12-active-room-v1')") is None
+            assert page.evaluate("localStorage.getItem('echo12-unlocked')")=='6'
+            assert not errors,errors
+            page.close()
+            print('PASS Build 047: changing rooms clears only the temporary checkpoint')
+
+            # Invalid room metadata cannot select a locked/out-of-range map.
+            for invalid_room in (-1,7,1000,'0',1.5):
+                malformed=json.loads(saved_old)
+                malformed['room']=invalid_room
+                page, errors = load(browser,6,initial_store={
+                    'echo12-unlocked':'6',
+                    'echo12-active-room-v1':json.dumps(malformed)},start=False)
+                assert page.locator('#room-resume').is_hidden()
+                assert page.evaluate("window.__echo12Test.resume()") is None
+                assert page.evaluate("localStorage.getItem('echo12-active-room-v1')") is None
+                page.locator('#start').click()
+                assert page.locator('#room').inner_text().startswith('07')
+                assert not errors,errors
+                page.close()
+            print('PASS Build 047: checkpoint room ID and unlock bounds validated')
 
             # Build 045: recover full immutable echoes across page reload.
             page, errors = load(browser,0)

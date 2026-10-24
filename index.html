@@ -523,7 +523,7 @@ body.high-contrast .walk-info{border:2px solid #dafff3}
 </head>
 <body>
 <div class="wrap">
-<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 046</div></header>
+<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 047</div></header>
 <div class="topbar">
  <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 19</div></div>
  <div class="stat"><div class="label">Döngüye kalan</div><div class="value teal" id="time">12.0 sn</div><div class="meters"><div class="meter"><i id="timefill"></i></div></div></div>
@@ -558,7 +558,7 @@ body.high-contrast .walk-info{border:2px solid #dafff3}
 <section class="protocol-status" aria-label="Geçit hedefleri"><div class="protocol-status-head"><strong>ANLIK GEÇİT DURUMU</strong><small id="gate-counter">0 / 0 açık</small></div><div class="gate-status-grid" id="gate-status"></div></section>
 <section class="proof-panel" id="proof-panel" hidden aria-label="Sıralı kayıt doğrulama paneli"><div class="protocol-status-head"><strong>İMZA DOĞRULAMA / A VE B GEÇİŞLERİ</strong><small id="proof-status" role="status" aria-live="polite">Kayıt bekleniyor</small></div><p class="proof-help">Parlak A ve B noktalarına <strong>aynı döngü içinde</strong> sırayla dokun. Gerçek yankıyı kaydet; F doğrulayıcısı sahte görüntüleri ayırır.</p><div class="proof-grid"><div><span class="proof-label">BU DÖNGÜDE</span><div id="proof-live" class="proof-sequence">—</div></div><div><span class="proof-label">KAYDEDİLMİŞ İMZALAR</span><div id="proof-records" class="proof-record-list">Henüz yok</div></div></div><div id="proof-evidence" class="proof-evidence">A→B: 0/1</div></section>
 <section id="sync-panel" class="sync-panel" hidden aria-label="İki tanık senkronizasyonu"><div class="protocol-status-head"><strong>ÇİFTE TANIKLIK / AYRI KAYITLAR</strong><small id="sync-verdict" role="status" aria-live="polite">İmza bekleniyor</small></div><div class="sync-grid"><div id="sync-left">I · YANKI BEKLENİYOR</div><div id="sync-right">II · YANKI BEKLENİYOR</div></div><p id="sync-rule">İki farklı yankı aynı anda gerekli.</p></section>
-<footer>BUILD 046 · AKILLI ROTA GÖSTERGESİ</footer>
+<footer>BUILD 047 · KALDIĞIN ODA</footer>
 </div>
 <script>
 (()=>{
@@ -949,15 +949,26 @@ function decodeRoomCheckpoint(raw,index){
  }
  return restored;
 }
-function readRoomCheckpoint(index){
+/* A checkpoint can belong to ANY unlocked room, not necessarily the
+   highest unlocked sector. The menu must never delete valid replay progress. */
+function readActiveRoomCheckpoint(){
  try{
   const serialized=localStorage.getItem(ROOM_CACHE_KEY);
   if(!serialized)return null;
   if(serialized.length>ROOM_CACHE_LIMIT){clearRoomCheckpoint();return null}
-  const clips=decodeRoomCheckpoint(JSON.parse(serialized),index);
-  if(!clips)clearRoomCheckpoint();
-  return clips;
+  const raw=JSON.parse(serialized);
+  const room=raw?.room;
+  if(!Number.isInteger(room)||room<0||room>=LVLS.length||room>getUnlocked()){
+   clearRoomCheckpoint();return null;
+  }
+  const clips=decodeRoomCheckpoint(raw,room);
+  if(!clips){clearRoomCheckpoint();return null}
+  return {room,clips};
  }catch(e){clearRoomCheckpoint();return null}
+}
+function readRoomCheckpoint(index){
+ const active=readActiveRoomCheckpoint();
+ return active?.room===index?active.clips:null;
 }
 function saveRoomCheckpoint(){
  if(!clones.length){clearRoomCheckpoint();return true}
@@ -992,11 +1003,12 @@ function restoreRoomCheckpoint(index){
 function refreshRoomResumePrompt(){
  const node=$('room-resume');node.hidden=true;
  if(mode!=='menu')return;
- const clips=readRoomCheckpoint(getUnlocked());
- if(!clips)return;
+ const active=readActiveRoomCheckpoint();
+ if(!active)return;
  node.hidden=false;
- $('room-resume-text').textContent='ODA '+String(getUnlocked()+1).padStart(2,'0')+
-  ' · '+clips.length+' yankı kayıtlı. Devam edersen yankıların geri gelir; canlı döngü yeniden başlar.';
+ $('room-resume-text').textContent='ODA '+String(active.room+1).padStart(2,'0')+
+  ' · '+LVLS[active.room].title+' · '+active.clips.length+
+  ' yankı kayıtlı. Devam edersen bu odaya dönersin; canlı döngü yeniden başlar.';
 }
 
 let vaultBefore='playing',vaultPreviousFocus=null;
@@ -1870,7 +1882,7 @@ function openArchive(entryId){if(mode==='reading')return;rememberGameplayFocus()
  mode='reading';renderArchive(entryId||[...archiveRead][archiveRead.size-1]||null);$('archive').classList.remove('hidden');$('archive').setAttribute('aria-hidden','false');$('archive-close').focus();updateHUD()}
 function closeArchive(){if(mode!=='reading')return;$('archive').classList.add('hidden');$('archive').setAttribute('aria-hidden','true');mode=readBefore;clearInputs();updateHUD();restoreGameplayFocus('logbook')}
 function interactTerminal(){if(mode!=='playing')return;if(nearWitnessConsole()){authorizeWitness();return}const sensor=nearestSensor();if(sensor){scanSensor(sensor);return}if(nearestAuditConsole()){openAuditPanel();return}const choice=nearestChoice();if(choice){openDecision(choice);return}const terminal=nearestTerminal();if(terminal)openArchive(terminal.entry);else flash('Bir terminale veya konsola yaklaş.')}
-function startGame(){if(mode==='allwon'&&levelIndex===18&&getUnlocked()>=19){loadLevel(19)}else if(mode==='leveldone'&&levelIndex===19){loadLevel(0)}else if(wonAll){loadLevel(0)}else if(mode==='menu'){loadLevel(getUnlocked())}else if(mode==='leveldone'){loadLevel(Math.min(levelIndex+1,LVLS.length-1))}else if(mode==='allwon'){loadLevel(0)}else if(mode==='paused'){mode='playing'}hideOverlay();audioBeep(700)}
+function startGame(){if(mode==='allwon'&&levelIndex===18&&getUnlocked()>=19){loadLevel(19)}else if(mode==='leveldone'&&levelIndex===19){loadLevel(0)}else if(wonAll){loadLevel(0)}else if(mode==='menu'){const active=readActiveRoomCheckpoint();if(active)loadLevel(active.room);else loadLevel(getUnlocked())}else if(mode==='leveldone'){loadLevel(Math.min(levelIndex+1,LVLS.length-1))}else if(mode==='allwon'){loadLevel(0)}else if(mode==='paused'){mode='playing'}hideOverlay();audioBeep(700)}
 /* Build 036: failed live movement becomes a temporary visual-only afterimage.
    Neither collisions nor retries silently record a ghost. */
 const IMPACT_TRACE_SECONDS=6;
