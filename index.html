@@ -1307,7 +1307,11 @@ function openInspector(){
 function closeInspector(){
  if(mode!=='inspecting')return;
  inspectorPlaying=false;
- $('inspector').classList.add('hidden');$('inspector').setAttribute('aria-hidden','true');
+ // A focused timeline input remains the keydown target after a modal gets
+ // hidden unless explicitly blurred. Never trap gameplay keys in hidden UI.
+ const inspector=$('inspector'),focused=document.activeElement;
+ if(focused&&inspector.contains(focused)&&typeof focused.blur==='function')focused.blur();
+ inspector.classList.add('hidden');$('inspector').setAttribute('aria-hidden','true');
  mode=inspectorBefore;clearInputs();updateHUD();
  if(inspectorPreviousFocus&&typeof inspectorPreviousFocus.focus==='function')inspectorPreviousFocus.focus();
 }
