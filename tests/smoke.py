@@ -197,6 +197,110 @@ def main():
             page.close()
             print('PASS Build 042: narrative final does not shift when calibration sector is added')
 
+            # Build 050: playing an earlier unlocked sector without committing
+            # an echo creates a lightweight, validated resume bookmark.
+            page, errors = load(browser,0,initial_store={'echo12-unlocked':'6'})
+            page.evaluate("window.__echo12Test.tick(.35)")
+            bookmarked=page.evaluate("localStorage.getItem('echo12-last-sector-v1')")
+            assert json.loads(bookmarked)['room']==0
+            assert page.evaluate("localStorage.getItem('echo12-active-room-v1')") is None
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==0
+            assert not errors,errors
+            page.close()
+            page, errors = load(browser,6,initial_store={
+                'echo12-unlocked':'6','echo12-last-sector-v1':bookmarked},start=False)
+            assert page.locator('#room-resume').is_visible()
+            assert 'ODA 01' in page.locator('#room-resume-text').inner_text()
+            assert 'Henüz yankı kaydı yok' in page.locator('#room-resume-text').inner_text()
+            page.locator('#start').click()
+            assert page.locator('#room').inner_text().startswith('01')
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==0
+            assert page.evaluate("window.__echo12Test.inspect()['elapsed']")==0
+            assert page.evaluate("localStorage.getItem('echo12-unlocked')")=='6'
+            assert not errors,errors
+            page.close()
+            print('PASS Build 050: zero-echo earlier sector resumes without losing unlocks')
+
+            # The player can discard only the bookmark and return directly
+            # to the furthest unlocked room without losing permanent progress.
+            page, errors = load(browser,6,initial_store={
+                'echo12-unlocked':'6','echo12-last-sector-v1':bookmarked},start=False)
+            page.locator('#room-resume-discard').click()
+            assert page.locator('#room-resume').is_hidden()
+            assert page.evaluate("localStorage.getItem('echo12-last-sector-v1')") is None
+            page.locator('#start').click()
+            assert page.locator('#room').inner_text().startswith('07')
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 050: discard a zero-echo bookmark to use latest room')
+
+            # Completed movement recordings must outrank a plain bookmark,
+            # even if they point to two different unlocked sectors.
+            page, errors = load(browser,0,initial_store={'echo12-unlocked':'6'})
+            move(page,'d',.99);move(page,'w',.49);commit(page)
+            saved_echo=page.evaluate("localStorage.getItem('echo12-active-room-v1')")
+            assert saved_echo
+            page.close()
+            bookmark_six=json.loads(bookmarked)
+            bookmark_six['room']=6
+            page, errors = load(browser,6,initial_store={
+                'echo12-unlocked':'6','echo12-last-sector-v1':json.dumps(bookmark_six),
+                'echo12-active-room-v1':saved_echo},start=False)
+            assert '1 yankı' in page.locator('#room-resume-text').inner_text()
+            page.locator('#start').click()
+            assert page.locator('#room').inner_text().startswith('01')
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==1
+            assert not errors,errors
+            page.close()
+            print('PASS Build 050: completed echo checkpoint takes precedence over bookmark')
+
+            # Out-of-range, locked, type-confused or story-mismatched sector
+            # bookmarks must be rejected before they can affect the menu.
+            for mutation in ({'room':-1},{'room':7},{'room':100},{'room':'0'},
+                             {'room':1.5},{'story':'incorrect|story'},
+                             {'version':2},{'format':'invalid'}):
+                bad=json.loads(bookmarked);bad.update(mutation)
+                page, errors = load(browser,6,initial_store={
+                    'echo12-unlocked':'6','echo12-last-sector-v1':json.dumps(bad)},start=False)
+                assert page.locator('#room-resume').is_hidden()
+                assert page.evaluate("localStorage.getItem('echo12-last-sector-v1')") is None
+                page.locator('#start').click()
+                assert page.locator('#room').inner_text().startswith('07')
+                assert not errors,errors
+                page.close()
+            print('PASS Build 050: bogus or locked sector bookmarks rejected')
+
+            # Imported JSON progress is independent of prior local echo
+            # snapshots. The import's atomic write clears old session keys.
+            page, errors = load(browser,6,initial_store={'echo12-unlocked':'6'})
+            exported=page.evaluate("window.__echo12Test.save()")
+            page.close()
+            page, errors = load(browser,0,initial_store={'echo12-unlocked':'6'})
+            move(page,'d',.99);move(page,'w',.49);commit(page)
+            assert page.evaluate("localStorage.getItem('echo12-active-room-v1')")
+            page.evaluate("(save)=>window.__echo12Test.restore(save)",exported)
+            assert page.evaluate("localStorage.getItem('echo12-active-room-v1')") is None
+            assert page.evaluate("JSON.parse(localStorage.getItem('echo12-last-sector-v1')).room")==6
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==0
+            assert page.locator('#room').inner_text().startswith('07')
+            assert not errors,errors
+            page.close()
+            print('PASS Build 050: import clears old local echoes and starts imported sector')
+
+            # After completion the checkpoint and bookmark are both gone:
+            # a fresh session should use the unlocked next sector.
+            page, errors = load(browser,0)
+            assert page.evaluate("localStorage.getItem('echo12-last-sector-v1')")
+            page.evaluate("window.__echo12Test.teleport(15.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.03)")
+            verify(page,errors,'BAŞARILI')
+            assert page.evaluate("localStorage.getItem('echo12-last-sector-v1')") is None
+            assert page.evaluate("localStorage.getItem('echo12-active-room-v1')") is None
+            assert not errors,errors
+            page.close()
+            print('PASS Build 050: successful room clears temporary resume bookmark')
+
             # Build 049: native browser shortcuts have priority over game
             # controls. Ctrl+R must never wipe committed room snapshots.
             page, errors = load(browser,0)
