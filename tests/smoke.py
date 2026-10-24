@@ -2,6 +2,7 @@
 from pathlib import Path
 import os
 import shutil
+import json
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -14,7 +15,7 @@ def commit(page):
     page.keyboard.press("Space")
     page.evaluate('window.__echo12Test.tick(0.01)')
 
-def load(browser, level, use_user_hud=False):
+def load(browser, level, use_user_hud=False, initial_store=None, start=True):
     # Isolate each level without requiring a previous save.
     html = HTML.replace("loadLevel(getUnlocked())", f"loadLevel({level})")
     html = html.replace("levelIndex=getUnlocked();level=", f"levelIndex={level};level=")
@@ -45,12 +46,19 @@ def load(browser, level, use_user_hud=False):
             'window.__echo12Store ??= {};',
             'window.__echo12Store ??= {"echo12-hud-mode":"full"};'
         )
+    if initial_store is not None:
+        initial = dict(initial_store)
+        if not use_user_hud:
+            initial.setdefault("echo12-hud-mode","full")
+        default = ('window.__echo12Store ??= {"echo12-hud-mode":"full"};'
+                   if not use_user_hud else 'window.__echo12Store ??= {};')
+        storage_stub=storage_stub.replace(default, 'window.__echo12Store ??= '+json.dumps(initial)+';')
     html=html.replace('<script>\n(()=>{',storage_stub+'<script>\n(()=>{')
     page = browser.new_page(viewport={"width": 1280, "height": 900})
     errors = []
     page.on("pageerror", lambda err: errors.append(str(err)))
     page.set_content(html, wait_until="load")
-    page.click("#start")
+    if start: page.click("#start")
     return page, errors
 
 def verify(page, errors, expected):
@@ -188,6 +196,75 @@ def main():
             assert not errors,errors
             page.close()
             print('PASS Build 042: narrative final does not shift when calibration sector is added')
+
+            # Build 045: recover full immutable echoes across page reload.
+            page, errors = load(browser,0)
+            move(page,'d',.99);move(page,'w',.49);commit(page)
+            ids=page.evaluate("window.__echo12Test.echoIDs()")
+            saved=page.evaluate("localStorage.getItem('echo12-active-room-v1')")
+            assert saved and len(json.loads(saved)['clips'][0]['samples'])==721
+            page.close()
+            page, errors = load(browser,0,initial_store={'echo12-active-room-v1':saved},start=False)
+            assert page.locator('#room-resume').is_visible()
+            assert '1 yankı' in page.locator('#room-resume-text').inner_text()
+            page.locator('#start').click()
+            assert page.evaluate("window.__echo12Test.echoIDs()")==ids
+            assert page.evaluate("window.__echo12Test.inspect()['elapsed']")==0
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert page.locator('#room-resume').is_hidden()
+            page.keyboard.press('z')
+            assert page.evaluate("localStorage.getItem('echo12-active-room-v1')") is None
+            assert not errors,errors
+            page.close()
+            print('PASS Build 045: room echo restoration and live-loop reset')
+
+            page, errors = load(browser,0,initial_store={'echo12-active-room-v1':saved},start=False)
+            page.locator('#room-resume-discard').click()
+            assert page.locator('#room-resume').is_hidden()
+            page.locator('#start').click()
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==0
+            move(page,'d',.5);commit(page)
+            assert page.evaluate("localStorage.getItem('echo12-active-room-v1')")
+            page.keyboard.press('r')
+            assert page.evaluate("localStorage.getItem('echo12-active-room-v1')") is None
+            assert not errors,errors
+            page.close()
+            print('PASS Build 045: fresh start and room reset clear recovery')
+
+            page, errors = load(browser,19)
+            page.evaluate("window.__echo12Test.tick(.3)")
+            page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.25)")
+            page.evaluate("window.__echo12Test.teleport(10.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            commit(page)
+            assert page.evaluate("window.__echo12Test.nail(0,.5,1.5)")
+            page.locator('#echo-editor > summary').click()
+            page.locator('[data-echo-index="0"] .echo-phase-controls button').last.click()
+            saved20=page.evaluate("localStorage.getItem('echo12-active-room-v1')")
+            assert json.loads(saved20)['clips'][0]['delay']==.5
+            assert json.loads(saved20)['clips'][0]['holdFor']==1.5
+            page.close()
+            page, errors = load(browser,19,initial_store={'echo12-unlocked':'19','echo12-active-room-v1':saved20})
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==1
+            assert page.locator('[data-echo-index="0"] [data-phase]').text_content()=='+0,5 sn'
+            assert page.locator('[data-echo-index="0"] [data-anchor-hold]').input_value()=='1.5'
+            assert page.evaluate("window.__echo12Test.sourceFuse(0,'N')")
+            assert page.evaluate("window.__echo12Test.fuse('N')")['seconds']==0
+            assert not page.evaluate("window.__echo12Test.gate('N')")
+            assert not errors,errors
+            page.close()
+            print('PASS Build 045: phase, nail and proof survive without transient charge')
+
+            bad='{"format":"ECHO12_ROOM_V1","version":1,"room":0,"story":"-|-","clips":[{"samples":[[2,5]]}]}'
+            page, errors = load(browser,0,initial_store={'echo12-active-room-v1':bad},start=False)
+            assert page.locator('#room-resume').is_hidden()
+            assert page.evaluate("localStorage.getItem('echo12-active-room-v1')") is None
+            page.locator('#start').click()
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 045: corrupt local room checkpoint rejected')
 
             # Build 044: optional path input uses ordinary recorded movement.
             page, errors = load(browser,0)

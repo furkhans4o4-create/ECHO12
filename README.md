@@ -2,6 +2,17 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 045 — Oda Oturumu Kurtarma
+
+Tarayıcı yenilemesi veya sekmenin kapanması artık **tamamlanmış yankı kayıtlarını kaybettirmez**. Sadece aynı cihazdaki güncel oda için geçici bir kayıt saklanır.
+
+- Her yankının 721 gerçek hareket örneği, kaydın normal/ters oynatma yönü, faz gecikmesi ve Zaman Çivisi ayarları saklanır. Açılış ekranı kaydın varlığını bildirir; oyuncu isterse **Odayı sıfırdan başlat** seçeneğiyle reddedebilir.
+- Canlı 12 saniyelik deneme, geçici plaka şarjı, röle, hikâye karar konsolu onayı ve kazanılmamış başarılar **asla** geri yüklenmez. Yeniden açıldığında oyuncu döngüye başlangıçtan girer.
+- R ile sıfırlama, oda değiştirme, tamamlanan odayı geçme, harici ilerleme yedeği içe aktarma ve tüm yankıları silme geçici kaydı kaldırır.
+- 400 KB üst sınır, oda/hikâye yolu eşleşmesi, sonlu koordinatlar, örnek sayısı ve oynatma ayarları doğrulanır. Bozuk veri güvenle yok sayılır; depolama kapalıysa normal oyun çalışır.
+- Taşınabilir JSON ilerleme yedeği sürüm 1 kalır; bu cihaz içi kurtarma verisini dışa aktarmıyoruz.
+- Chromium regresyonları yenileme, vazgeçme, R sıfırlama, faz/çivi bilgisi, fiziksel şarj ve bozuk yerel veriyi test eder.
+
 ## Build 044 — Dokun ve Yürü / Gerçek Fizikle Yol Bulma
 
 Klavye ve oyun koluna ek olarak, oyun sahnesine fareyle tıklayarak veya telefonda dokunarak karakteri **normal oyun fiziğiyle** hedefe yürütebilirsin. Özellikle mobilde zamanlamalı bulmacalarda uzun süre yön tuşlarına basmak artık zorunlu değil.
