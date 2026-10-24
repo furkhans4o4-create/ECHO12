@@ -2406,6 +2406,49 @@ function restoreEcho(){
  invalidateEditedEvidence();flash('Silinen yankı eski sırasına geri getirildi.');
  audioBeep(700,.12);pulseFX(player.x,player.y,'#8bf0d7');updateHUD();return true;
 }
+
+/* Build 058: report real recording contacts; never modify puzzle physics. */
+let recentEcho=null,lastEchoQualitySignature='';
+function echoTouchReport(echo){
+ const touches=point=>echo.samples.some(p=>Math.hypot(p.x-point.x-.5,p.y-point.y-.5)<.46);
+ const valid=[],invalid=[],powered=[];
+ for(const p of level.plates){
+  if(!touches(p))continue;
+  if(p.selfOnly||p.routeMode&&sourceVerdict!=='publish'){invalid.push(p.key+': canlı gerekli');continue}
+  if(p.reverseOnly&&!echo.reverse){invalid.push(p.key+': ters kayıt gerekli');continue}
+  if(p.forwardOnly&&echo.reverse){invalid.push(p.key+': normal kayıt gerekli');continue}
+  if(p.tension&&!sourceTensionCandidate(echo,p)){invalid.push(p.key+': kısa temas gerekli');continue}
+  valid.push('plaka '+p.key);
+  if(plateForecastData(p).contact.length)powered.push(p.key);
+ }
+ const probes=(level.probes||[]).filter(touches).map(p=>p.id);
+ const pads=(level.syncPads||[]).filter(touches).map(p=>p.id);
+ const contacts=valid.concat(probes.map(x=>'iz '+x),pads.map(x=>'tanık '+x));
+ if(!contacts.length){
+  return invalid.length
+   ?{grade:'invalid',title:'UYGUNSUZ KAYIT',detail:invalid.join(' · ')+'. Bu yankı bu sensörleri tetikleyemez; gerekmezse Z ile sil.'}
+   :{grade:'inert',title:'BOŞ YANKI',detail:'Hiçbir plaka, kanıt noktası veya tanık sensörüne dokunmuyor. Gerekmiyorsa Z ile sil.'};
+ }
+ const proofReady=!!echo.proofOrder&&(!level.timeWindow||echo.timeProof);
+ const witnessReady=pads.length>0&&recordedMissionConditions().witnessWindow;
+ const ready=powered.length>0||proofReady||witnessReady;
+ let note=ready?'Kaydedilen izde geçerli sinyal var; diğer kapı koşulları ayrıca gerekli olabilir.':'Koşullar henüz tamamlanmadı; ikinci yankı, doğru sıra veya zamanlama gerekebilir.';
+ if(probes.length&&level.timeWindow&&echo.proofOrder&&!echo.timeProof)note='A→B zaman aralığı tutmuyor; gerçek geçiş süresini düzenle.';
+ if(invalid.length)note+=' Uygunsuz temas: '+invalid.join(' · ')+'.';
+ return {grade:ready?'ready':'partial',title:ready?'SİNYAL ALGILANDI':'KISMİ KAYIT',
+  detail:'Temas: '+contacts.join(' · ')+'. '+note};
+}
+function updateEchoQuality(){
+ const el=$('echo-quality'),idx=recentEcho?clones.indexOf(recentEcho):-1;
+ if(idx<0){el.hidden=true;lastEchoQualitySignature='';return}
+ const signature=[levelIndex,echoRevision,idx,sourceVerdict].join(':');
+ if(signature===lastEchoQualitySignature)return;
+ lastEchoQualitySignature=signature;
+ const result=echoTouchReport(recentEcho);
+ el.hidden=false;el.dataset.grade=result.grade;
+ $('echo-quality-title').textContent='E'+String(idx+1).padStart(2,'0')+' / '+result.title;
+ $('echo-quality-detail').textContent=result.detail;
+}
 function cycleCommit(manual=true){if(mode!=='playing')return;clearImpactTrace();if(clones.length>=MAX_CLONES){if(!manual)resetPlayer();flash('6 yankı sınırı doldu. Z ile son yankıyı sil.');audioBeep(190,.2,'sawtooth');return}const samples=record.map(p=>({...p})),last=samples[samples.length-1];while(samples.length<Math.round(LOOP/DT)+1)samples.push({...last});const proofEvents=traceEvents(samples,level.probes),order=traceOrder(samples,level.probes),timeCheck=timeAttestation(proofEvents,level.timeWindow);clones.push({samples,color:clones.length,reverse:!!(level.reverseEnabled&&reverseMode),delay:0,anchorAt:.5,holdFor:0,proofOrder:order,proofEvents,proofGap:timeCheck.gap,timeProof:timeCheck.valid});removedEcho=null;echoRevision++;lastSyncTimelineSignature='';if(order){pulseFX(player.x,player.y,'#ffe6aa',1.2)}for(let j=0;j<17;j++)spawnParticle(player.x,player.y,'#ba9dff');pulseFX(player.x,player.y,'#bd9dff',2);rewindWash=.55;playCue('echo');resetPlayer();flash(manual?'Yankın kaydedildi. Yeni döngü başladı.':'12 saniye doldu. Geçmişin kaydedildi.');updateHUD()}
 function undoEcho(){if(mode!=='playing'||!clones.length)return;removeEchoAt(clones.length-1)}
 /* Build 026: discard only the live attempt. The existing recorded roster and
