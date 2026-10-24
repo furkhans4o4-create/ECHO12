@@ -1882,7 +1882,20 @@ function openArchive(entryId){if(mode==='reading')return;rememberGameplayFocus()
  mode='reading';renderArchive(entryId||[...archiveRead][archiveRead.size-1]||null);$('archive').classList.remove('hidden');$('archive').setAttribute('aria-hidden','false');$('archive-close').focus();updateHUD()}
 function closeArchive(){if(mode!=='reading')return;$('archive').classList.add('hidden');$('archive').setAttribute('aria-hidden','true');mode=readBefore;clearInputs();updateHUD();restoreGameplayFocus('logbook')}
 function interactTerminal(){if(mode!=='playing')return;if(nearWitnessConsole()){authorizeWitness();return}const sensor=nearestSensor();if(sensor){scanSensor(sensor);return}if(nearestAuditConsole()){openAuditPanel();return}const choice=nearestChoice();if(choice){openDecision(choice);return}const terminal=nearestTerminal();if(terminal)openArchive(terminal.entry);else flash('Bir terminale veya konsola yaklaş.')}
-function startGame(){if(mode==='allwon'&&levelIndex===18&&getUnlocked()>=19){loadLevel(19)}else if(mode==='leveldone'&&levelIndex===19){loadLevel(0)}else if(wonAll){loadLevel(0)}else if(mode==='menu'){const active=readActiveRoomCheckpoint();if(active)loadLevel(active.room);else loadLevel(getUnlocked())}else if(mode==='leveldone'){loadLevel(Math.min(levelIndex+1,LVLS.length-1))}else if(mode==='allwon'){loadLevel(0)}else if(mode==='paused'){mode='playing'}hideOverlay();audioBeep(700)}
+function startGame(){
+ if(mode==='paused'){
+  // Blur the resume button while still paused. A focus transition emitted
+  // by hideOverlay must never cause a fresh automatic pause after resuming.
+  clearInputs();hideOverlay();mode='playing';accum=0;audioBeep(700);updateHUD();return;
+ }
+ if(mode==='allwon'&&levelIndex===18&&getUnlocked()>=19){loadLevel(19)}
+ else if(mode==='leveldone'&&levelIndex===19){loadLevel(0)}
+ else if(wonAll){loadLevel(0)}
+ else if(mode==='menu'){const active=readActiveRoomCheckpoint();if(active)loadLevel(active.room);else loadLevel(getUnlocked())}
+ else if(mode==='leveldone'){loadLevel(Math.min(levelIndex+1,LVLS.length-1))}
+ else if(mode==='allwon'){loadLevel(0)}
+ hideOverlay();audioBeep(700);
+}
 /* Build 036: failed live movement becomes a temporary visual-only afterimage.
    Neither collisions nor retries silently record a ghost. */
 const IMPACT_TRACE_SECONDS=6;
@@ -2210,7 +2223,7 @@ function retryCurrentLoop(){
 }
 function flash(s){msg=s;msgUntil=wallClock+2.3}
 function restart(){if(!level)return;loadLevel(levelIndex);hideOverlay();audioBeep(400,.1)}
-function pause(){if(mode==='playing'){clearInputs();mode='paused';showOverlay('SİSTEM DURAKLATILDI','Zaman bekliyor.','Hazır olduğunda devam et. Kayıtların korunuyor.','DEVAM ET →')}else if(mode==='paused'){clearInputs();mode='playing';hideOverlay()}updateHUD()}
+function pause(){if(mode==='playing'){clearInputs();mode='paused';showOverlay('SİSTEM DURAKLATILDI','Zaman bekliyor.','Hazır olduğunda devam et. Kayıtların korunuyor.','DEVAM ET →')}else if(mode==='paused'){clearInputs();hideOverlay();mode='playing';accum=0}updateHUD()}
 /* Build 048: Focus loss protects the current physical loop. No implicit
    resume is allowed; dialogs and the main menu keep their own state. */
 function protectLoopOnFocusLoss(reason){
