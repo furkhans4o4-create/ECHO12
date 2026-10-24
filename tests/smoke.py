@@ -239,6 +239,7 @@ def main():
             page.evaluate("window.__echo12Test.tick(.2)")
             commit(page)
             assert page.evaluate("window.__echo12Test.nail(0,.5,1.5)")
+            page.locator('#echo-editor > summary').click()
             page.locator('[data-echo-index="0"] .echo-phase-controls button').last.click()
             saved20=page.evaluate("localStorage.getItem('echo12-active-room-v1')")
             assert json.loads(saved20)['clips'][0]['delay']==.5
