@@ -832,7 +832,7 @@ def main():
             # At the 12-second deadline the original auto-commit still
             # creates a real recording and the report remains advisory.
             page, errors = load(browser,0)
-            page.evaluate("window.__echo12Test.tick(12.01)")
+            page.evaluate("window.__echo12Test.tick(12.0)")
             assert page.locator('#clones').inner_text()=='1 / 6'
             assert page.locator('#echo-quality').get_attribute('data-grade')=='inert'
             assert page.evaluate("window.__echo12Test.inspect()['elapsed']")==0
