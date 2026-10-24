@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ECHO/12 — Kendi Geçmişinle Kaç</title>
+<meta name="theme-color" content="#090e18">
+<meta name="description" content="12 saniyelik zaman döngüsünde kendi yankılarınla 20 sektörlük bilim kurgu bulmacasını çöz.">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./icons/echo12.svg">
 <style>
 :root{color-scheme:dark;--bg:#090e18;--panel:#111b2a;--line:#2c3b50;--faint:#8294af;--teal:#53f3d0;--purple:#ba9dff;--gold:#f3c57a;--red:#ff6a7c}*{box-sizing:border-box}
 body{margin:0;min-height:100vh;font-family:Inter,Segoe UI,system-ui,sans-serif;background:radial-gradient(ellipse at 50% -16%,#213349 0%,#0a111d 50%,#080c14 100%);color:#ecf4ff}
@@ -519,11 +523,15 @@ body.high-contrast .room-resume{border:2px solid #d4fff1}
 .walk-info[data-state="late"] strong{color:#ffb4c1}
 body.high-contrast .walk-info{border:2px solid #dafff3}
 @media(max-width:680px){.walk-info{flex:1 1 100%;max-width:none}}
+/* Build 051: subtle status; shown only after offline shell installed. */
+#offline-state{display:inline-block;margin-left:10px;color:#a5eacb;font:700 10px ui-monospace,Consolas,monospace;letter-spacing:.04em}
+#offline-state[hidden]{display:none}
+#offline-state.is-offline{color:#f1c37d}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 050</div></header>
+<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 051</div></header>
 <div class="topbar">
  <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 19</div></div>
  <div class="stat"><div class="label">Döngüye kalan</div><div class="value teal" id="time">12.0 sn</div><div class="meters"><div class="meter"><i id="timefill"></i></div></div></div>
@@ -558,7 +566,7 @@ body.high-contrast .walk-info{border:2px solid #dafff3}
 <section class="protocol-status" aria-label="Geçit hedefleri"><div class="protocol-status-head"><strong>ANLIK GEÇİT DURUMU</strong><small id="gate-counter">0 / 0 açık</small></div><div class="gate-status-grid" id="gate-status"></div></section>
 <section class="proof-panel" id="proof-panel" hidden aria-label="Sıralı kayıt doğrulama paneli"><div class="protocol-status-head"><strong>İMZA DOĞRULAMA / A VE B GEÇİŞLERİ</strong><small id="proof-status" role="status" aria-live="polite">Kayıt bekleniyor</small></div><p class="proof-help">Parlak A ve B noktalarına <strong>aynı döngü içinde</strong> sırayla dokun. Gerçek yankıyı kaydet; F doğrulayıcısı sahte görüntüleri ayırır.</p><div class="proof-grid"><div><span class="proof-label">BU DÖNGÜDE</span><div id="proof-live" class="proof-sequence">—</div></div><div><span class="proof-label">KAYDEDİLMİŞ İMZALAR</span><div id="proof-records" class="proof-record-list">Henüz yok</div></div></div><div id="proof-evidence" class="proof-evidence">A→B: 0/1</div></section>
 <section id="sync-panel" class="sync-panel" hidden aria-label="İki tanık senkronizasyonu"><div class="protocol-status-head"><strong>ÇİFTE TANIKLIK / AYRI KAYITLAR</strong><small id="sync-verdict" role="status" aria-live="polite">İmza bekleniyor</small></div><div class="sync-grid"><div id="sync-left">I · YANKI BEKLENİYOR</div><div id="sync-right">II · YANKI BEKLENİYOR</div></div><p id="sync-rule">İki farklı yankı aynı anda gerekli.</p></section>
-<footer>BUILD 050 · KALDIĞIN SEKTÖR</footer>
+<footer>BUILD 051 · ÇEVRİMDIŞI PROTOKOL <span id="offline-state" role="status" aria-live="polite" hidden></span></footer>
 </div>
 <script>
 (()=>{
@@ -3356,6 +3364,33 @@ function frame(now){
  requestAnimationFrame(frame)
 }
 levelIndex=getUnlocked();level=LVLS[levelIndex];player={x:level.start[0]+.5,y:level.start[1]+.5};record=[{...player}];gateMemory=new Map(level.barriers.map(b=>[b.key,false]));$('sound').textContent='♪ Ses: '+(soundOn?'açık':'kapalı');applyCameraMode();applyAccessibility();applyHudMode();updateBeaconButton();refreshRoomResumePrompt();updateHUD();requestAnimationFrame(frame);
+})();
+</script>
+<script>
+/* BUILD 051 — static shell offline; independent from gameplay and player saves. */
+(()=>{
+ const status=document.getElementById('offline-state');
+ if(!status||!('serviceWorker' in navigator)||
+   !(location.protocol==='https:'||['localhost','127.0.0.1'].includes(location.hostname)))return;
+ function report(){
+  if(!navigator.onLine){
+   status.textContent='● ÇEVRİMDIŞI · YEREL KAYIT';
+   status.classList.add('is-offline');status.hidden=false;
+  }else if(navigator.serviceWorker.controller){
+   status.textContent='● ÇEVRİMDIŞI HAZIR';
+   status.classList.remove('is-offline');status.hidden=false;
+  }else status.hidden=true;
+ }
+ window.addEventListener('online',report);
+ window.addEventListener('offline',report);
+ navigator.serviceWorker.addEventListener('controllerchange',report);
+ window.addEventListener('load',()=>{
+  navigator.serviceWorker.register('./sw.js',{scope:'./'})
+   .then(()=>navigator.serviceWorker.ready)
+   .then(report)
+   .catch(()=>{status.hidden=true});
+ });
+ report();
 })();
 </script>
 </body>

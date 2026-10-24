@@ -28,3 +28,4 @@ jobs:
           done
           python -m playwright install --with-deps chromium
       - run: python tests/smoke.py
+      - run: python tests/offline.py
