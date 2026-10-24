@@ -2,6 +2,18 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 050 — Kaldığın Sektör / İlk Yankıdan Önce Güvenli Geri Dönüş
+
+Eski bir odaya dönüp henüz ilk yankıyı kaydetmeden tarayıcıyı yenilemek artık oyuncuyu en ileri açılmış odaya göndermiyor. Önceki tamamlanmış yankı kurtarma sistemi korunurken, sektöre ilk girildiğinde küçük bir yerel devam işareti kaydediliyor.
+
+- **Yankısız oda da hatırlanır:** Son ziyaret edilen sektörün numarası ve hikâye dalı saklanır; canlı hareket, plaka şarjı, kazanılmamış başarı ve geçici seçimler kaydedilmez. Menü, geçerli eski oda için “Henüz yankı kaydı yok” bilgisini gösterir. En ileri açılmış odada gereksiz devam seçeneği gösterilmez.
+- **Fiziksel yankılara öncelik:** Tam bir kayıtlı yankı oturumu varsa önce o kurtarılır; sektör işareti tamamlanmış hareketlerin üstüne yazılamaz.
+- **Oyuncunun kararı:** Odayı sıfırdan başlatmak hem eski yankı oturumunu hem de sektör işaretini kaldırır; açılmış son sektör normal şekilde başlar. Başarıyla tamamlanan oda da işareti temizler.
+- **Yedek geri yükleme izolasyonu:** Harici JSON ilerleme yedeği uygulanırken önceki oyun oturumuna ait geçici yankılar ve ziyaret edilen oda işareti aynı geri alınabilir depolama işlemi kapsamında temizlenir. İçe aktarılan ilerleme eski yankılarla karışmaz.
+- **Güvenli sınırlar:** Sürüm ve hikâye hattı eşleştirmesi, oda numarasının tam sayı ve açılmış sektör sınırları içinde olması, küçük depolama boyutu doğrulanır. Bozuk kayıtlar güvenle reddedilir.
+- **Geriye uyumluluk:** Önceki ECHO12_ROOM_V1 yankı kurtarması ve taşınabilir ECHO12_SAVE_V1 ilerleme yedeği aynı biçimde çalışır. Mevcut bulmacalar, 20 oda ve finaller değişmez.
+- **Otomatik testler:** Eski sektörde sıfır yankıyla yenileme, isteğe bağlı sıfırlama, tamamlanmış yankı önceliği, bozuk/kilitli işaretler, JSON içe aktarma ve tamamlanmış oda temizliği denetlenir.
+
 ## Build 049 — Klavye ve Arayüz Kısayolu Güvenliği
 
 Oyuncunun 12 saniyelik canlı turunu ve tamamlanmış yankı kayıtlarını yanlış klavye kısayollarından koruyan giriş denetimi eklendi.
