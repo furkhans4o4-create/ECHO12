@@ -197,6 +197,71 @@ def main():
             page.close()
             print('PASS Build 042: narrative final does not shift when calibration sector is added')
 
+            # Build 052: completed echoes still round-trip through the
+            # original version-1 room format, with source proof recomputed.
+            # A second real echo crosses a dynamic gate when E01 opens it.
+            page, errors = load(browser,0)
+            move(page,'d',.99);move(page,'w',.49);commit(page)
+            move(page,'d',2.2);commit(page)
+            real_room=page.evaluate("localStorage.getItem('echo12-active-room-v1')")
+            original_ids=page.evaluate("window.__echo12Test.echoIDs()")
+            assert len(original_ids)==2
+            assert json.loads(real_room)['version']==1
+            assert page.evaluate("window.__echo12Test.resume()")=={'room':0,'count':2}
+            page.close()
+            page, errors = load(browser,0,initial_store={'echo12-active-room-v1':real_room})
+            assert page.evaluate("window.__echo12Test.echoIDs()")==original_ids
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==2
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 052: two real movement echoes including opened-gate transit recover')
+
+            # Fake starting positions, teleport-sized one-frame motion, and
+            # permanent-wall samples are rejected before ghosts are spawned.
+            for kind in ('wrong-start','teleport','static-wall','nonfinite'):
+                forged=json.loads(real_room)
+                samples=forged['clips'][0]['samples']
+                if kind=='wrong-start':
+                    samples[0]=[samples[0][0]+.3,samples[0][1]]
+                elif kind=='teleport':
+                    samples[80]=[15.5,5.5]
+                elif kind=='static-wall':
+                    samples[110]=[9.5,4.5]
+                else:
+                    samples[80]=[float('inf'),5.5]
+                page, errors = load(browser,0,initial_store={
+                    'echo12-active-room-v1':json.dumps(forged)},start=False)
+                assert page.locator('#room-resume').is_hidden(),kind
+                assert page.evaluate("localStorage.getItem('echo12-active-room-v1')") is None,kind
+                page.locator('#start').click()
+                assert page.evaluate("window.__echo12Test.inspect()['echoes']")==0,kind
+                assert not errors,errors
+                page.close()
+            print('PASS Build 052: forged ghost starts, teleports, walls and nonfinite coords rejected')
+
+            # A fully speed-compliant movement trace that walks into a
+            # permanent wall must be rejected even without a teleport spike.
+            wall_copy=json.loads(real_room)
+            path=wall_copy['clips'][0]['samples']
+            x,y=2.5,5.5
+            for i in range(1,len(path)):
+                if y>4.5: y=max(4.5,y-.06)
+                elif x<9.5: x=min(9.5,x+.06)
+                path[i]=[x,y]
+            assert all(
+                ((path[i][0]-path[i-1][0])**2+
+                 (path[i][1]-path[i-1][1])**2)**.5 < 4.05/60+.0001
+                for i in range(1,len(path))
+            )
+            page, errors = load(browser,0,initial_store={
+                'echo12-active-room-v1':json.dumps(wall_copy)},start=False)
+            assert page.locator('#room-resume').is_hidden()
+            assert page.evaluate("localStorage.getItem('echo12-active-room-v1')") is None
+            assert not errors,errors
+            page.close()
+            print('PASS Build 052: speed-compliant ghost crossing permanent wall rejected')
+
             # Build 050: playing an earlier unlocked sector without committing
             # an echo creates a lightweight, validated resume bookmark.
             page, errors = load(browser,0,initial_store={'echo12-unlocked':'6'})
@@ -580,12 +645,10 @@ def main():
             page.close()
             print('PASS Build 045: fresh start and room reset clear recovery')
 
+            # Keep the snapshot physically authentic: teleport helpers used
+            # in other tests must not produce reloadable movement evidence.
             page, errors = load(browser,19)
-            page.evaluate("window.__echo12Test.tick(.3)")
-            page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
-            page.evaluate("window.__echo12Test.tick(.25)")
-            page.evaluate("window.__echo12Test.teleport(10.5,7.5)")
-            page.evaluate("window.__echo12Test.tick(.2)")
+            page.evaluate("window.__echo12Test.tick(.75)")
             commit(page)
             assert page.evaluate("window.__echo12Test.nail(0,.5,1.5)")
             page.locator('#echo-editor > summary').click()
@@ -598,7 +661,7 @@ def main():
             assert page.evaluate("window.__echo12Test.inspect()['echoes']")==1
             assert page.locator('[data-echo-index="0"] [data-phase]').text_content()=='+0,5 sn'
             assert page.locator('[data-echo-index="0"] [data-anchor-hold]').input_value()=='1.5'
-            assert page.evaluate("window.__echo12Test.sourceFuse(0,'N')")
+            assert not page.evaluate("window.__echo12Test.sourceFuse(0,'N')")
             assert page.evaluate("window.__echo12Test.fuse('N')")['seconds']==0
             assert not page.evaluate("window.__echo12Test.gate('N')")
             assert not errors,errors

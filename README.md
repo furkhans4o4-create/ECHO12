@@ -2,6 +2,18 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 052 — Fiziksel Yankı Kaydı Denetimi
+
+Yeniden yüklenen oda yankılarında koordinat aralığının yanında **gerçek 60 Hz hareket fiziği** denetlenir. Böylece bozulan veya elle değiştirilmiş yerel kayıtlar bir anda kapı/kanıt sistemini atlayamaz.
+
+- **Başlangıç doğruluğu:** Her kayıt odanın gerçek başlangıç konumundan başlamalı; örnek sayısı tam 721 olmalı. İlk kareden farklı bir yerden başlayan kayıtlar reddedilir.
+- **Hız ve süre bütünlüğü:** Her örnek arasında en fazla normal oyuncu hızı olan 4,05 kare/sn × 1/60 sn mesafe izinlidir. Işınlanma, boşluğu atlama ve hatalı koordinatlar geçerli yankı hâline gelemez.
+- **Duvar ve geçit ayrımı:** Bir yankının kalıcı duvar veya sabit engelin içinde bulunması reddedilir. **Dinamik kapı kareleri** ise kapı başka bir yankı tarafından gerçekten açıldığında geçilebilir; bunlar yanlışlıkla sabit duvar sanılmaz.
+- **Geçerli eski kayıtlar korunur:** Önceki `ECHO12_ROOM_V1` biçimi değiştirilmedi. Normal hız ve çarpışmalarla kaydedilmiş tüm eski yankılar, faz gecikmesi, ters oynatma ve Zaman Çivisi ayarlarıyla geri yüklenebilir.
+- **Kanıtlar tekrar hesaplanır:** Doğrulanmış hareket örneklerinden sıralı kanıt ve fiziksel zaman verisi yeniden çıkarılır. Sadece kayıttaki açıklama veya doğrulama bayraklarına güvenilmez.
+- **Hata güvenliği:** Herhangi bir örneği geçersiz olan geçici oda kaydı güvenli biçimde atılır; oyuncunun açtığı odalar, hikâye seçenekleri ve taşınabilir JSON ilerleme yedeği değişmez.
+- **Chromium testleri:** Gerçek fiziksel hareketle açılan geçitten geçen iki yankının kurtarılması; yanlış başlangıç, ani ışınlanma, duvar ihlali ve sonlu olmayan koordinatların reddi denetlenir.
+
 ## Build 051 — Çevrimdışı Protokol / Tarayıcı Oyununu İlk Açılıştan Sonra İnternetsiz Oyna
 
 ECHO/12 artık ilk başarılı çevrimiçi ziyaretin ardından aynı cihazda, servis çalışanı destekleyen güncel tarayıcılarda **internet kesilse bile açılıp oynanabilen** bir statik oyun kabuğuna sahip.

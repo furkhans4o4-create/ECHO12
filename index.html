@@ -531,7 +531,7 @@ body.high-contrast .walk-info{border:2px solid #dafff3}
 </head>
 <body>
 <div class="wrap">
-<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 051</div></header>
+<header><div class="brand"><div class="glyph">↺</div><div><h1>ECHO<span>/12</span></h1><div class="sub">Kendi geçmişinle kaç</div></div></div><div class="version">EARLY ACCESS · BUILD 052</div></header>
 <div class="topbar">
  <div class="stat"><div class="label">Oda</div><div class="value" id="room">01 / 19</div></div>
  <div class="stat"><div class="label">Döngüye kalan</div><div class="value teal" id="time">12.0 sn</div><div class="meters"><div class="meter"><i id="timefill"></i></div></div></div>
@@ -566,7 +566,7 @@ body.high-contrast .walk-info{border:2px solid #dafff3}
 <section class="protocol-status" aria-label="Geçit hedefleri"><div class="protocol-status-head"><strong>ANLIK GEÇİT DURUMU</strong><small id="gate-counter">0 / 0 açık</small></div><div class="gate-status-grid" id="gate-status"></div></section>
 <section class="proof-panel" id="proof-panel" hidden aria-label="Sıralı kayıt doğrulama paneli"><div class="protocol-status-head"><strong>İMZA DOĞRULAMA / A VE B GEÇİŞLERİ</strong><small id="proof-status" role="status" aria-live="polite">Kayıt bekleniyor</small></div><p class="proof-help">Parlak A ve B noktalarına <strong>aynı döngü içinde</strong> sırayla dokun. Gerçek yankıyı kaydet; F doğrulayıcısı sahte görüntüleri ayırır.</p><div class="proof-grid"><div><span class="proof-label">BU DÖNGÜDE</span><div id="proof-live" class="proof-sequence">—</div></div><div><span class="proof-label">KAYDEDİLMİŞ İMZALAR</span><div id="proof-records" class="proof-record-list">Henüz yok</div></div></div><div id="proof-evidence" class="proof-evidence">A→B: 0/1</div></section>
 <section id="sync-panel" class="sync-panel" hidden aria-label="İki tanık senkronizasyonu"><div class="protocol-status-head"><strong>ÇİFTE TANIKLIK / AYRI KAYITLAR</strong><small id="sync-verdict" role="status" aria-live="polite">İmza bekleniyor</small></div><div class="sync-grid"><div id="sync-left">I · YANKI BEKLENİYOR</div><div id="sync-right">II · YANKI BEKLENİYOR</div></div><p id="sync-rule">İki farklı yankı aynı anda gerekli.</p></section>
-<footer>BUILD 051 · ÇEVRİMDIŞI PROTOKOL <span id="offline-state" role="status" aria-live="polite" hidden></span></footer>
+<footer>BUILD 052 · YANKI FİZİĞİ DOĞRULAMASI <span id="offline-state" role="status" aria-live="polite" hidden></span></footer>
 </div>
 <script>
 (()=>{
@@ -956,6 +956,40 @@ function readRoomBookmark(){
  }catch(e){clearRoomBookmark();return null}
 }
 
+/* Build 052 — restored recordings must obey the same motion envelope and
+   permanent walls as live gameplay. A gate tile is NOT a static wall:
+   recordings may legitimately pass through when another echo opens it.
+   Do not trust proof metadata stored in JSON: rebuild from validated samples. */
+function checkpointStaticCollision(x,y,room){
+ const radius=.27;
+ for(let tx=Math.floor(x-radius);tx<=Math.floor(x+radius);tx++){
+  for(let ty=Math.floor(y-radius);ty<=Math.floor(y+radius);ty++){
+   const blocked=tx<1||tx>=W-1||ty<1||ty>=H-1||
+    room.block.some(p=>p.x===tx&&p.y===ty)||
+    room.barriers.some(b=>b.x===tx&&(b.gate[0]!==tx||b.gate[1]!==ty));
+   if(!blocked)continue;
+   const nearX=Math.max(tx,Math.min(x,tx+1));
+   const nearY=Math.max(ty,Math.min(y,ty+1));
+   if((x-nearX)**2+(y-nearY)**2<radius*radius)return true;
+  }
+ }
+ return false;
+}
+function checkpointMotionValid(samples,room){
+ if(!Array.isArray(samples)||samples.length!==Math.round(LOOP/DT)+1)return false;
+ const startX=room.start[0]+.5,startY=room.start[1]+.5;
+ if(!Array.isArray(samples[0])||Math.hypot(samples[0][0]-startX,samples[0][1]-startY)>.00001)return false;
+ let prevX=startX,prevY=startY;
+ for(const pair of samples){
+  if(!Array.isArray(pair)||pair.length!==2||
+    !Number.isFinite(pair[0])||!Number.isFinite(pair[1])||
+    pair[0]<0||pair[0]>W||pair[1]<0||pair[1]>H)return false;
+  if(Math.hypot(pair[0]-prevX,pair[1]-prevY)>SPEED*DT+.0001)return false;
+  if(checkpointStaticCollision(pair[0],pair[1],room))return false;
+  prevX=pair[0];prevY=pair[1];
+ }
+ return true;
+}
 function decodeRoomCheckpoint(raw,index){
  if(!raw||typeof raw!=='object'||Array.isArray(raw)||
    raw.format!==ROOM_CACHE_FORMAT||raw.version!==1||raw.room!==index||
@@ -971,7 +1005,8 @@ function decodeRoomCheckpoint(raw,index){
     Math.round(clip.anchorAt*2)!==clip.anchorAt*2||
     ![0,.5,1,1.5].includes(clip.holdFor)||
     (index<9&&(clip.anchorAt!==.5||clip.holdFor!==0))||
-    !Array.isArray(clip.samples)||clip.samples.length!==count)return null;
+    !Array.isArray(clip.samples)||clip.samples.length!==count||
+    !checkpointMotionValid(clip.samples,room))return null;
   const samples=[];
   for(const pair of clip.samples){
    if(!Array.isArray(pair)||pair.length!==2||
