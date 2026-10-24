@@ -25,7 +25,7 @@ def load(browser, level, use_user_hud=False, initial_store=None, start=True):
     window.__echo12Test = {
       tick(seconds) { const n=Math.round(seconds/DT); for(let i=0;i<n;i++)step(DT); draw();drawTimeline();updateHUD(); },
       key(code,down) {const name = code.length === 1 ? 'Key'+code.toUpperCase() : code; if(down)keys.add(name);else keys.delete(name)},
-      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, plateReadouts(){return plateReadouts()}, bestGhost(){return bestGhostStatus()}, walkTo(x,y){return requestWalkTo(x+.5,y+.5)}, walkInfo(){return {target:walkTarget?{...walkTarget}:null,remaining:walkRoute.length}}, fuse(key){return tensionState(level.plates.find(p=>p.key===key))}, sourceFuse(index,key){return sourceTensionCandidate(clones[index],level.plates.find(p=>p.key===key))}, nail(index,at,hold){return configureEchoAnchor(index,at,hold)}, forecast(key){return plateForecastData(level.plates.find(p=>p.key===key))}, openRoom(index){loadLevel(index)}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
+      gate(key){return gateOpen(key)}, openAudit(){openAuditPanel()}, fx(){return {rings:fxRings.length,gateA:gateMemory.get('A'),wash:rewindWash}}, teleport(x,y){player.x=x;player.y=y}, position(){return {x:player.x,y:player.y}}, held(){return [...keys]}, floor(){return [floorCache.width,floorCache.height]}, inspect(){return {time:inspectorTime,elapsed,position:{...player},record:record.length,echoes:clones.length}}, advanceInspector(seconds){advanceInspectorPlayback(seconds)}, hints(){return runHintCount}, conduits(){return signalConduits()}, guardPreview(at){return guardForecast(at)}, guardCueCount(){return guardWarningChirps}, impact(){return impactTrace?JSON.parse(JSON.stringify(impactTrace)):null}, echoVisuals(){return echoVisuals()}, plateReadouts(){return plateReadouts()}, bestGhost(){return bestGhostStatus()}, walkTo(x,y){return requestWalkTo(x+.5,y+.5)}, walkInfo(){return {target:walkTarget?{...walkTarget}:null,remaining:walkRoute.length}}, walkForecast(){return walkRouteDetails()}, fuse(key){return tensionState(level.plates.find(p=>p.key===key))}, sourceFuse(index,key){return sourceTensionCandidate(clones[index],level.plates.find(p=>p.key===key))}, nail(index,at,hold){return configureEchoAnchor(index,at,hold)}, forecast(key){return plateForecastData(level.plates.find(p=>p.key===key))}, openRoom(index){loadLevel(index)}, focusIndex(){return echoFocusIndex()}, pollPad(){return pollGamepad()}, padState(){return {mode,connected:gamepadConnected,move:{...gamepadMove}}}, waypoint(){return beaconEnabled&&objectiveWaypoint?{...objectiveWaypoint}:null}, save(){return snapshotSave()}, restore(raw){return applySave(raw)}, validate(raw){return validateSave(raw)}, grantFinalFiles(){caseSolved=new Set(CASE_FILES.map(x=>x.id));updateHUD()}, choose(){return endingChoice}, grantEvidence(ids){for(const id of ids)if(ARCHIVE.some(e=>e.id===id))archiveRead.add(id);renderCaseBoard();refreshArchiveCount()}, sync(){return {...syncedEchoOwners(),scannerOn,elapsed,clones:clones.map(c=>ghostAt(c))}}, echoIDs(){return clones.map(c=>captureFingerprint(c))}, setRoute(v){sourceVerdict=v;updateHUD()}, proof(){return {timed:timedSignatureCount(),valid:sourceProofValid(),gap:clones.at(-1)?.proofGap,relay:relayUntil.ROUTE||0}}
     };
     })();'''
     assert needle in html
@@ -265,6 +265,60 @@ def main():
             assert not errors,errors
             page.close()
             print('PASS Build 045: corrupt local room checkpoint rejected')
+
+            # Build 046: a clicked exit beyond a closed gate tells the player
+            # why the route pauses; the real echo later opens it naturally.
+            page, errors = load(browser,0)
+            assert page.locator('#walk-info').is_hidden()
+            assert page.evaluate("window.__echo12Test.walkTo(15,5)")
+            initial=page.evaluate("window.__echo12Test.walkForecast()")
+            assert initial['status']=='waiting' and initial['gate']=='A',initial
+            assert 'A KAPISI KAPALI' in page.locator('#walk-state').inner_text()
+            assert page.locator('#walk-info').get_attribute('data-state')=='waiting'
+            assert 'sn yol' in page.locator('#walk-time').inner_text()
+            page.evaluate("window.__echo12Test.tick(3)")
+            position=page.evaluate("window.__echo12Test.position()")
+            assert position['x']<9,position
+            assert page.evaluate("window.__echo12Test.walkForecast()['status']")=='waiting'
+            page.keyboard.press('Escape')
+            assert page.locator('#walk-info').is_hidden()
+            assert page.evaluate("window.__echo12Test.walkForecast()") is None
+            assert not errors,errors
+            page.close()
+            print('PASS Build 046: sealed-door route warning with physical collision')
+
+            page, errors = load(browser,0)
+            move(page,'d',.99);move(page,'w',.49);commit(page)
+            assert page.evaluate("window.__echo12Test.walkTo(15,5)")
+            assert page.evaluate("window.__echo12Test.walkForecast()['status']")=='waiting'
+            page.evaluate("window.__echo12Test.tick(2.0)")
+            after=page.evaluate("window.__echo12Test.walkForecast()")
+            assert after and after['status']=='walking' and after['gate'] is None,after
+            assert page.locator('#walk-info').get_attribute('data-state')=='walking'
+            assert 'HEDEFE YÜRÜNÜYOR' in page.locator('#walk-state').inner_text()
+            page.evaluate("window.__echo12Test.tick(2.5)")
+            verify(page,errors,'BAŞARILI')
+            assert page.locator('#walk-info').is_hidden()
+            page.close()
+            print('PASS Build 046: live echo opening restores route and completion')
+
+            # Time estimates are a warning only and do not give free speed,
+            # extend the 12-second loop, or consume the hint allowance.
+            page, errors = load(browser,0)
+            page.evaluate("window.__echo12Test.tick(11.1)")
+            assert page.evaluate("window.__echo12Test.walkTo(6,3)")
+            forecast=page.evaluate("window.__echo12Test.walkForecast()")
+            assert forecast['status']=='late' and forecast['minimum']>forecast['remaining'],forecast
+            assert page.locator('#walk-info').get_attribute('data-state')=='late'
+            assert 'YETİŞMEYEBİLİR' in page.locator('#walk-state').inner_text()
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            page.evaluate("window.__echo12Test.tick(1.0)")
+            assert page.evaluate("window.__echo12Test.walkForecast()") is None
+            assert page.locator('#walk-info').is_hidden()
+            assert page.evaluate("window.__echo12Test.inspect()['echoes']")==1
+            assert not errors,errors
+            page.close()
+            print('PASS Build 046: loop deadline forecast is read-only and resets')
 
             # Build 044: optional path input uses ordinary recorded movement.
             page, errors = load(browser,0)
