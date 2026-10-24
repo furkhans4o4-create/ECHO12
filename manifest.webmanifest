@@ -1,0 +1,21 @@
+{
+  "name": "ECHO/12 — Kendi Geçmişinle Kaç",
+  "short_name": "ECHO/12",
+  "description": "12 saniyelik zaman döngüsü: kendi yankılarınla kaç.",
+  "lang": "tr",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#090e18",
+  "theme_color": "#090e18",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./icons/echo12.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

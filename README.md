@@ -2,6 +2,18 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 051 — Çevrimdışı Protokol / Tarayıcı Oyununu İlk Açılıştan Sonra İnternetsiz Oyna
+
+ECHO/12 artık ilk başarılı çevrimiçi ziyaretin ardından aynı cihazda, servis çalışanı destekleyen güncel tarayıcılarda **internet kesilse bile açılıp oynanabilen** bir statik oyun kabuğuna sahip.
+
+- **Gerçek çevrimdışı açılış:** Sürüm kontrollü servis çalışanı ana oyunu, simgeyi ve web uygulaması bildirim dosyasını yerel tarayıcı önbelleğine indirir. Çevrimdışıyken aynı adresi açmak veya sayfayı yenilemek önbellekteki tam oyun dosyasını sunar.
+- **Güncel sürüm önceliği:** İnternet varken sayfa ziyaretlerinde önce ağdaki yeni oyun kodu alınır; bağlantı kesilirse son başarılı önbellek kullanılır. Yeni Build kurulumları eski ECHO12 uygulama kabuk önbelleklerini kaldırır. Üçüncü taraf sayfalar, API'ler, harici dosyalar ve hassas tarayıcı istekleri servis çalışanı tarafından yakalanmaz.
+- **Yerel kayıtlar aynen korunur:** İlerleme, yankılar ve ziyaret edilen sektörler zaten cihazın localStorage alanındadır. Servis çalışanı bu verilere erişmez, yedeklemez veya silmez. Mevcut JSON yedeği de aynı biçimde kalır.
+- **Kurulum kolaylığı:** Uygulama adı, renkleri, başlangıç adresi, kapsamı ve ölçeklenebilir simgesi olan bir web uygulaması bildirimi eklendi. Destekleyen tarayıcılar oyunu masaüstüne uygulama olarak ekleme seçeneği sunabilir. Bu özellik ayrı bir EXE değildir ve PWA desteği tarayıcıya bağlıdır.
+- **Şeffaf durum:** Çevrimdışı dosyalar hazırlanınca alt kısımda “ÇEVRİMDIŞI HAZIR”; bağlantı kaybolduğunda “ÇEVRİMDIŞI · YEREL KAYIT” görünür. Desteklenmeyen tarayıcılarda sıradan çevrimiçi oyun bozulmaz.
+- **Gerçek Chromium testi:** Yerel HTTP üzerinden ilk kez yükleme, servis çalışanı kontrolü ve dört temel varlığın önbelleği; ağı tamamen keserek aynı URL'yi yenileme, yankıyı geri yükleme, tekrar çevrimiçi olma ve kayıt sürekliliği ayrıca test edilir. GitHub Actions bu testi önceki bütün oynanış testleriyle birlikte çalıştırır.
+- **Sınır:** İlk açılış internete ihtiyaç duyar. Çevrimdışı çalışma tarayıcının site verileri/önbelleği silinmediği sürece geçerlidir; farklı cihazla otomatik senkronizasyon yoktur.
+
 ## Build 050 — Kaldığın Sektör / İlk Yankıdan Önce Güvenli Geri Dönüş
 
 Eski bir odaya dönüp henüz ilk yankıyı kaydetmeden tarayıcıyı yenilemek artık oyuncuyu en ileri açılmış odaya göndermiyor. Önceki tamamlanmış yankı kurtarma sistemi korunurken, sektöre ilk girildiğinde küçük bir yerel devam işareti kaydediliyor.
