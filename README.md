@@ -2,6 +2,15 @@
 
 Tarayıcıda oynanan, tek kişilik Türkçe bilim kurgu / **12 saniyelik zaman döngüsü bulmacası**. Geçmiş hareketlerin sonraki döngülerde yankılar tarafından tekrarlanır. Onların yardımıyla kilitli bölümleri aşar, eski kayıtları keşfeder ve çekirdeğin kaderini belirlersin.
 
+## Build 059 — Bağımsız Zaman Şarjı (Geliştirme)
+
+Yalnızca `develop` dalında. Canlı yayın ve kayıt formatı değişmez.
+
+- Zaman Sigortası her uygun yankının kesintisiz temas süresini ayrı takip eder. Başka bir yankının teması mevcut şarjı kesmez.
+- Şarjlar toplanmaz veya birbirine devredilmez. Tek bir uygun yankının 1,25 saniye kesintisiz teması gerekir.
+- Zaman haritası ve canlı fizik aynı şarj hesaplamasını kullanır.
+- Çakışan yankılar, çivisiz kısa temasların yetersizliği ve döngü sıfırlaması için regresyon testi eklendi.
+
 ## Build 058 — Yankı Temas Analizi / Boşa Harcanan Döngüleri Fark Et (Geliştirme)
 
 Bu build yalnızca `develop` dalındadır. `main` ve canlı Vercel yayını değiştirilmez.
