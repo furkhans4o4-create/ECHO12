@@ -598,7 +598,7 @@ body.high-contrast .walk-info{border:2px solid #dafff3}
 <section class="protocol-status" aria-label="Geçit hedefleri"><div class="protocol-status-head"><strong>ANLIK GEÇİT DURUMU</strong><small id="gate-counter">0 / 0 açık</small></div><div class="gate-status-grid" id="gate-status"></div></section>
 <section class="proof-panel" id="proof-panel" hidden aria-label="Sıralı kayıt doğrulama paneli"><div class="protocol-status-head"><strong>İMZA DOĞRULAMA / A VE B GEÇİŞLERİ</strong><small id="proof-status" role="status" aria-live="polite">Kayıt bekleniyor</small></div><p class="proof-help">Parlak A ve B noktalarına <strong>aynı döngü içinde</strong> sırayla dokun. Gerçek yankıyı kaydet; F doğrulayıcısı sahte görüntüleri ayırır.</p><div class="proof-grid"><div><span class="proof-label">BU DÖNGÜDE</span><div id="proof-live" class="proof-sequence">—</div></div><div><span class="proof-label">KAYDEDİLMİŞ İMZALAR</span><div id="proof-records" class="proof-record-list">Henüz yok</div></div></div><div id="proof-evidence" class="proof-evidence">A→B: 0/1</div></section>
 <section id="sync-panel" class="sync-panel" hidden aria-label="İki tanık senkronizasyonu"><div class="protocol-status-head"><strong>ÇİFTE TANIKLIK / AYRI KAYITLAR</strong><small id="sync-verdict" role="status" aria-live="polite">İmza bekleniyor</small></div><div class="sync-grid"><div id="sync-left">I · YANKI BEKLENİYOR</div><div id="sync-right">II · YANKI BEKLENİYOR</div></div><p id="sync-rule">İki farklı yankı aynı anda gerekli.</p></section>
-<footer>BUILD 058 · YANKI TEMAS ANALİZİ <span id="offline-state" role="status" aria-live="polite" hidden></span></footer>
+<footer>BUILD 059 · BAĞIMSIZ ZAMAN ŞARJI <span id="offline-state" role="status" aria-live="polite" hidden></span></footer>
 </div>
 <script>
 (()=>{
@@ -2733,13 +2733,27 @@ function updateCalibrationPanel(){
   row.append(name,detail);list.append(row);
  }
 }
+/* Build 059: independent continuous contact for each eligible echo.
+   A competing contact cannot reset another echo's own charge.
+   No transfer/summing of charge is allowed, and forecast uses this same rule. */
+function advanceTensionOwners(p,candidates,previous,at,dt){
+ const byOwner=new Map();
+ let owner=null,seconds=0;
+ for(const c of candidates){
+  if(!echoActive(c,at))continue;
+  const g=ghostAt(c,at);
+  if(Math.hypot(g.x-p.x-.5,g.y-p.y-.5)>=.46)continue;
+  const duration=(previous?.get(c)||0)+dt;
+  byOwner.set(c,duration);
+  if(duration>seconds){owner=c;seconds=duration}
+ }
+ return {byOwner,owner,seconds};
+}
 function updateTensionCharge(dt){
  for(const p of level.plates){
   if(!p.tension)continue;
-  const owner=clones.find(c=>sourceTensionCandidate(c,p)&&echoActive(c)&&
-   Math.hypot(ghostAt(c).x-p.x-.5,ghostAt(c).y-p.y-.5)<.46);
-  const old=tensionCharge[p.key];
-  tensionCharge[p.key]=owner?{owner,seconds:(old?.owner===owner?old.seconds:0)+dt}:{owner:null,seconds:0};
+  const candidates=clones.filter(c=>sourceTensionCandidate(c,p));
+  tensionCharge[p.key]=advanceTensionOwners(p,candidates,tensionCharge[p.key]?.byOwner,elapsed,dt);
  }
 }
 function platePressed(p){if(p.tension)return tensionState(p).seconds+1e-8>=p.holdSeconds;if(p.routeMode)return sourceVerdict==='publish'?liveRelayCount(p)>=2:plateOccupancy(p).live;const count=plateOccupancy(p);if(p.needsScan)return scannerOn&&count.echoes>0;if(p.reverseOnly||p.forwardOnly)return count.echoes>0;if(p.selfOnly)return count.live;if(p.echoCount)return count.echoes>=p.echoCount;if(p.echoOnly)return count.echoes>0;return count.live||count.echoes>0}
@@ -2875,7 +2889,9 @@ function plateForecastData(p){
  const liveOnly=!!p.selfOnly||!!p.routeMode&&sourceVerdict!=='publish';
  const needed=p.echoCount||((p.routeMode&&sourceVerdict==='publish')?2:1);
  const allowed=clones.filter(c=>(!p.reverseOnly||c.reverse)&&(!p.forwardOnly||!c.reverse));
- const direct=[],extended=[];let maxCount=0,until=-1;const tensionOwners=new Map();
+ const direct=[],extended=[];let maxCount=0,until=-1;
+ const tensionCandidates=p.tension?allowed.filter(c=>sourceTensionCandidate(c,p)):[];
+ let tensionOwners=new Map();
  const ticks=Math.round(LOOP/DT);
  for(let k=0;k<=ticks;k++){
   const second=k*DT;
@@ -2888,14 +2904,9 @@ function plateForecastData(p){
   maxCount=Math.max(maxCount,count);
   let pressed=!liveOnly&&count>=needed;
   if(p.tension){
-   pressed=false;
-   for(const c of allowed){
-    const inside=sourceTensionCandidate(c,p)&&echoActive(c,second)&&
-     Math.hypot(ghostAt(c,second).x-p.x-.5,ghostAt(c,second).y-p.y-.5)<.46;
-    const duration=inside?(tensionOwners.get(c)||0)+DT:0;
-    tensionOwners.set(c,duration);
-    if(duration+1e-8>=p.holdSeconds)pressed=true;
-   }
+   const charge=advanceTensionOwners(p,tensionCandidates,tensionOwners,second,k===0?0:DT);
+   tensionOwners=charge.byOwner;
+   pressed=charge.seconds+1e-8>=p.holdSeconds;
   }
   direct.push(pressed);
   if(pressed&&p.pulse)until=second+p.pulse;
