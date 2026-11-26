@@ -194,6 +194,38 @@ def main():
             page.close()
             print('PASS Build 042: source-bound time nail charges 1.25s, timed N gate and reset')
 
+            # Build 059: two eligible recordings overlap; E01 must not
+            # interrupt E02's independent, already-running nail charge.
+            page, errors = load(browser,19)
+            page.evaluate("window.__echo12Test.tick(.8)")
+            page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            page.evaluate("window.__echo12Test.teleport(10.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            commit(page)
+            page.evaluate("window.__echo12Test.tick(.3)")
+            page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.25)")
+            page.evaluate("window.__echo12Test.teleport(10.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            commit(page)
+            assert page.evaluate("window.__echo12Test.sourceFuse(0,'N')")
+            assert page.evaluate("window.__echo12Test.sourceFuse(1,'N')")
+            assert page.evaluate("window.__echo12Test.forecast('N').contact")==[]
+            assert page.evaluate("window.__echo12Test.nail(1,.5,1.5)")
+            prediction=page.evaluate("window.__echo12Test.forecast('N')")
+            assert prediction['contact'],prediction
+            page.evaluate("window.__echo12Test.tick(1.7)")
+            charge=page.evaluate("window.__echo12Test.fuse('N')")
+            assert charge['owner']==1 and charge['seconds']>=1.25,charge
+            assert page.evaluate("window.__echo12Test.gate('N')")
+            page.keyboard.press('x')
+            assert page.evaluate("window.__echo12Test.fuse('N')")['seconds']==0
+            assert not page.evaluate("window.__echo12Test.gate('N')")
+            assert not errors,errors
+            page.close()
+            print('PASS Build 059: independent echo charge, no pooling and retry reset')
+
             # The new optional level has its own three mastery challenges, and
             # the historic nineteenth room remains the narrative final.
             page, errors = load(browser,18)
@@ -684,6 +716,161 @@ def main():
             assert not errors,errors
             page.close()
             print('PASS Build 045: corrupt local room checkpoint rejected')
+
+            # Build 056: a completed room offers a direct mastery retry.
+            # Neither permanent unlocks nor already awarded medals are reset.
+            page, errors = load(browser,0)
+            assert page.locator('#room-replay').is_hidden()
+            page.keyboard.press('p')
+            assert page.locator('#room-replay').is_hidden()
+            page.locator('#start').click()
+            page.evaluate("window.__echo12Test.teleport(15.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.03)")
+            verify(page,errors,'BAŞARILI')
+            assert page.locator('#room-replay').is_visible()
+            assert 'ODA 01 YENİDEN OYNA' in page.locator('#room-replay').inner_text()
+            assert '3/3 USTALIK' in page.locator('#room-replay').inner_text()
+            assert 'USTALIK 3/3' in page.locator('#debrief .debrief-goal').inner_text()
+            # Build 057: show the measurable requirements for all three medals.
+            assert page.locator('#debrief .debrief-criterion').count()==3
+            for criterion in ('precise','focus','speed'):
+                item=page.locator(f'#debrief [data-challenge="{criterion}"]')
+                assert item.get_attribute('data-result')=='earned-now'
+                assert 'Hedef:' in item.inner_text() and 'Bu deneme:' in item.inner_text()
+                assert 'BU DENEMEDE BAŞARILI' in item.inner_text()
+            before=page.evaluate("""() => ({
+                unlock:localStorage.getItem('echo12-unlocked'),
+                medals:localStorage.getItem('echo12-room-challenges'),
+                records:localStorage.getItem('echo12-best-runs'),
+                clears:localStorage.getItem('echo12-room-clears')
+            })""")
+            page.locator('#room-replay').click()
+            verify(page,errors,'KAYIT')
+            assert page.locator('#room').inner_text().startswith('01')
+            assert page.locator('#room-replay').is_hidden()
+            assert page.locator('#overlay').is_hidden()
+            assert page.locator('#clones').inner_text()=='0 / 6'
+            assert page.evaluate("window.__echo12Test.inspect()['elapsed']")==0
+            after=page.evaluate("""() => ({
+                unlock:localStorage.getItem('echo12-unlocked'),
+                medals:localStorage.getItem('echo12-room-challenges'),
+                records:localStorage.getItem('echo12-best-runs'),
+                clears:localStorage.getItem('echo12-room-clears')
+            })""")
+            assert before==after,(before,after)
+            # Replaying with a hint does not erase the previously won focus medal.
+            # Its report must NOT falsely mark this attempt as hint-free.
+            page.locator('#help-button').click()
+            page.evaluate("window.__echo12Test.teleport(15.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.03)")
+            verify(page,errors,'BAŞARILI')
+            focus=page.locator('#debrief [data-challenge="focus"]')
+            assert focus.get_attribute('data-result')=='earned-earlier'
+            assert 'Bu deneme: 1' in focus.inner_text()
+            assert 'ÖNCEDEN KAZANILDI' in focus.inner_text()
+            assert 'USTALIK 3/3' in page.locator('#debrief .debrief-goal').inner_text()
+            assert not errors,errors
+            page.close()
+            print('PASS Build 057: exact mastery targets and historic medals versus current attempt')
+
+            # With a hint used, the results tell the player precisely what
+            # mastery is still missing rather than presenting a generic score.
+            page, errors = load(browser,0)
+            page.locator('#help-button').click()
+            page.evaluate("window.__echo12Test.teleport(15.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.03)")
+            verify(page,errors,'BAŞARILI')
+            goal=page.locator('#debrief .debrief-goal').inner_text()
+            assert 'USTALIK 2/3' in goal and 'İPUCUSUZ' in goal,goal
+            assert page.locator('#debrief [data-challenge="focus"]').get_attribute('data-result')=='missing'
+            assert 'Bu deneme: 1' in page.locator('#debrief [data-challenge="focus"]').inner_text()
+            assert '2/3 USTALIK' in page.locator('#room-replay').inner_text()
+            page.locator('#room-replay').focus()
+            page.keyboard.press('Enter')
+            verify(page,errors,'KAYIT')
+            assert page.evaluate("window.__echo12Test.inspect()['elapsed']")==0
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert page.locator('#room-replay').is_hidden()
+            assert not errors,errors
+            page.close()
+            print('PASS Build 056: debrief explains missing medals and Enter retries room')
+
+            # Build 057: use a real elapsed loop, not a fake timestamp, to
+            # demonstrate the speed target and measured overrun.
+            page, errors = load(browser,0)
+            page.evaluate("window.__echo12Test.tick(35.0)")
+            page.evaluate("window.__echo12Test.teleport(15.5,5.5)")
+            page.evaluate("window.__echo12Test.tick(.03)")
+            verify(page,errors,'BAŞARILI')
+            speed=page.locator('#debrief [data-challenge="speed"]')
+            assert speed.get_attribute('data-result')=='missing'
+            assert 'Hedef: 34 sn' in speed.inner_text()
+            assert 'Bu deneme: 35.' in speed.inner_text()
+            assert page.locator('#debrief [data-challenge="focus"]').get_attribute('data-result')=='earned-now'
+            assert not errors,errors
+            page.close()
+            print('PASS Build 057: time medal uses real elapsed time and explicit threshold')
+
+            # Existing next-room action stays the primary campaign path;
+            # replay is purely optional, even in another early room.
+            page, errors = load(browser,1)
+            page.evaluate("window.__echo12Test.teleport(15.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.03)")
+            verify(page,errors,'BAŞARILI')
+            assert page.locator('#room-replay').is_visible()
+            page.locator('#start').click()
+            verify(page,errors,'KAYIT')
+            assert page.locator('#room').inner_text().startswith('03')
+            assert page.locator('#room-replay').is_hidden()
+            assert not errors,errors
+            page.close()
+            print('PASS Build 056: next-sector button remains unchanged')
+
+            # Build 058: recording feedback distinguishes a wasted idle
+            # echo from an authentic plate contact; neither is auto-deleted.
+            page, errors = load(browser,0)
+            assert page.locator('#echo-quality').is_hidden()
+            commit(page)
+            assert page.locator('#echo-quality').is_visible()
+            assert page.locator('#echo-quality').get_attribute('data-grade')=='inert'
+            assert 'BOŞ YANKI' in page.locator('#echo-quality-title').inner_text()
+            assert 'Z ile sil' in page.locator('#echo-quality-detail').inner_text()
+            assert page.locator('#clones').inner_text()=='1 / 6'
+            page.keyboard.press('z')
+            assert page.locator('#echo-quality').is_hidden()
+            move(page,'d',.99);move(page,'w',.49);commit(page)
+            assert page.locator('#echo-quality').get_attribute('data-grade')=='ready'
+            assert 'plaka A' in page.locator('#echo-quality-detail').inner_text()
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 058: inert echo, undo cleanup and qualified plate contact')
+
+            # A physical contact of the wrong replay direction must never
+            # be labeled a valid gate activation.
+            page, errors = load(browser,9)
+            move(page,'d',.5);move(page,'w',.5);commit(page)
+            assert page.locator('#echo-quality').get_attribute('data-grade')=='invalid'
+            assert 'ters kayıt gerekli' in page.locator('#echo-quality-detail').inner_text()
+            page.keyboard.press('f')
+            move(page,'d',.5);move(page,'w',.5);commit(page)
+            assert page.locator('#echo-quality').get_attribute('data-grade')=='ready'
+            assert 'plaka V' in page.locator('#echo-quality-detail').inner_text()
+            assert page.evaluate("window.__echo12Test.hints()")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 058: reverse-only sensor rejects forward echo, accepts reverse')
+
+            # At the 12-second deadline the original auto-commit still
+            # creates a real recording and the report remains advisory.
+            page, errors = load(browser,0)
+            page.evaluate("window.__echo12Test.tick(12.0)")
+            assert page.locator('#clones').inner_text()=='1 / 6'
+            assert page.locator('#echo-quality').get_attribute('data-grade')=='inert'
+            assert page.evaluate("window.__echo12Test.inspect()['elapsed']")==0
+            assert not errors,errors
+            page.close()
+            print('PASS Build 058: automatic time-loop commit preserves existing rules')
 
             # Build 055: at the far start of a route the closed gate is
             # ahead; "waiting" is only displayed near the gate's face.
