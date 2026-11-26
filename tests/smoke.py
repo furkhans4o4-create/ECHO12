@@ -194,6 +194,38 @@ def main():
             page.close()
             print('PASS Build 042: source-bound time nail charges 1.25s, timed N gate and reset')
 
+            # Build 059: two eligible recordings overlap; E01 must not
+            # interrupt E02's independent, already-running nail charge.
+            page, errors = load(browser,19)
+            page.evaluate("window.__echo12Test.tick(.8)")
+            page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            page.evaluate("window.__echo12Test.teleport(10.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            commit(page)
+            page.evaluate("window.__echo12Test.tick(.3)")
+            page.evaluate("window.__echo12Test.teleport(9.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.25)")
+            page.evaluate("window.__echo12Test.teleport(10.5,7.5)")
+            page.evaluate("window.__echo12Test.tick(.2)")
+            commit(page)
+            assert page.evaluate("window.__echo12Test.sourceFuse(0,'N')")
+            assert page.evaluate("window.__echo12Test.sourceFuse(1,'N')")
+            assert page.evaluate("window.__echo12Test.forecast('N').contact")==[]
+            assert page.evaluate("window.__echo12Test.nail(1,.5,1.5)")
+            prediction=page.evaluate("window.__echo12Test.forecast('N')")
+            assert prediction['contact'],prediction
+            page.evaluate("window.__echo12Test.tick(1.7)")
+            charge=page.evaluate("window.__echo12Test.fuse('N')")
+            assert charge['owner']==1 and charge['seconds']>=1.25,charge
+            assert page.evaluate("window.__echo12Test.gate('N')")
+            page.keyboard.press('x')
+            assert page.evaluate("window.__echo12Test.fuse('N')")['seconds']==0
+            assert not page.evaluate("window.__echo12Test.gate('N')")
+            assert not errors,errors
+            page.close()
+            print('PASS Build 059: independent echo charge, no pooling and retry reset')
+
             # The new optional level has its own three mastery challenges, and
             # the historic nineteenth room remains the narrative final.
             page, errors = load(browser,18)
